@@ -73,6 +73,33 @@ int Menu::doMenu()
 
 	while (!moveSelected)
 	{
+		if (*bufferSize > 0)
+		{
+			//Reposition the cursor
+			std::cout << "\x1B[" << displayRow << ";1f";
+
+			//Copy last buf to string
+			tmpbuf = lastBuffer->str();
+
+			//Clear the screen for the last buffer size
+			for(int i = 0; i < *bufferSize; i++)
+			{
+				if(tmpbuf[i] == '\n')
+				{
+					std::cout << '\n';
+				}
+				else
+				{
+					std::cout << ' ';
+				}
+			}
+
+			*bufferSize = 0;
+
+			//clear last buf
+			lastBuffer->str("");
+			lastBuffer->clear();
+		}
 		//Don't redraw the grid, reposition cursor
 		//ROW;COLUMN
 		*buffer << "\x1B[" << displayRow << ";1f";
@@ -220,7 +247,7 @@ int main ()
 	cout << "\x1B[1;1f";
 
 	Menu test(&buf, &lastBuf, &bufSize);
-	test.setOptions(string("Normal Menu"), opts, 3, 0);
+	test.setOptions(string("Normal Menu"), opts, 3);
 	switch(test.doMenu())
 	{
 		case 0:
@@ -235,12 +262,47 @@ int main ()
 	}
 
 	Menu vtest(&buf, &lastBuf, &bufSize);
-	vtest.setOptions(string("Value Menu"), opts, 3, 0);
+	vtest.setOptions(string("Value Menu"), opts, 3);
 	vtest.setValues(val);
 	cout << "Picked: " << vtest.doMenu() << endl;
 
 	Menu dtest(&buf, &lastBuf, &bufSize);
-	dtest.setOptions(string("Describe Menu"), opts, 3, 0);
+	dtest.setOptions(string("Describe Menu"), opts, 3);
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
+	
+	string menuOptions[6] = {
+		"MY ACCOUNT",
+		"PAPER SUBMISSIONS",
+		"NOTIFICATIONS", 
+		"OPTIONS",
+		"REVIEW PAPERS",
+		"LOG OUT"
+	};
+	string menuDesc[6] = {
+		"View information about your account.", 
+		"Manage paper submissions.", 
+		"Manage notifications.",
+		"Configure options.",
+		"Manage reviews for assigned papers.",
+		"Log out of the system."
+	};
+	
+	Menu mainMenu(&buf, &lastBuf, &bufSize);
+	mainMenu.setOptions(string("Main Menu"), menuOptions, 6);
+	mainMenu.setDescriptions(menuDesc);
+	int menuResult = -1;
+	while (menuResult != 5)
+	{
+		menuResult = mainMenu.doMenu();
+		switch(menuResult)
+		{
+			case 0: break;
+			case 1: break;
+			case 2: break;
+			case 3: break;
+			case 4: break;
+			case 5: break;
+		}
+	}
 }

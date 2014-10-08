@@ -21,7 +21,7 @@ class Menu
 		Menu(std::ostringstream *, std::ostringstream *, int *);
 		~Menu();
 		
-		void setOptions(const std::string, std::string[], const int, const int);
+		void setOptions(const std::string, std::string[], const int, const int row = 0);
 		void setDescriptions(std::string *);
 		void setValues(int *);
 		int doMenu();
