@@ -38,6 +38,7 @@ class Menu
 		int * values;
 
 		int getCmd();
+		void clearLastBuffer();
 };
 
 class MenuManager 

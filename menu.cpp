@@ -34,15 +34,9 @@ void Menu::setValues(int * val)
 {
 	values = val;
 }
-int Menu::doMenu()
+void Menu::clearLastBuffer()
 {
-	static char BAR [] = "************************";
 	std::string tmpbuf;
-	bool moveSelected = false;
-	const int ENTERKEY = 10, UPKEY = 65, DOWNKEY = 66, BACKSPACE = 8, DELETE = 127;
-	const int LEFTKEY = 68, RIGHTKEY = 67;
-	int option = 0;
-
 	if (*bufferSize > 0)
 	{
 		//Reposition the cursor
@@ -70,36 +64,19 @@ int Menu::doMenu()
 		lastBuffer->str("");
 		lastBuffer->clear();
 	}
+}
+int Menu::doMenu()
+{
+	static char BAR [] = "************************";
+	std::string tmpbuf;
+	bool selected = false;
+	const int ENTERKEY = 10, UPKEY = 65, DOWNKEY = 66, BACKSPACE = 8, DELETE = 127;
+	const int LEFTKEY = 68, RIGHTKEY = 67;
+	int option = 0;
 
-	while (!moveSelected)
+	while (!selected)
 	{
-		if (*bufferSize > 0)
-		{
-			//Reposition the cursor
-			std::cout << "\x1B[" << displayRow << ";1f";
-
-			//Copy last buf to string
-			tmpbuf = lastBuffer->str();
-
-			//Clear the screen for the last buffer size
-			for(int i = 0; i < *bufferSize; i++)
-			{
-				if(tmpbuf[i] == '\n')
-				{
-					std::cout << '\n';
-				}
-				else
-				{
-					std::cout << ' ';
-				}
-			}
-
-			*bufferSize = 0;
-
-			//clear last buf
-			lastBuffer->str("");
-			lastBuffer->clear();
-		}
+		this->clearLastBuffer();
 		//Don't redraw the grid, reposition cursor
 		//ROW;COLUMN
 		*buffer << "\x1B[" << displayRow << ";1f";
@@ -155,7 +132,7 @@ int Menu::doMenu()
 
 		if(key == ENTERKEY)
 		{
-			moveSelected = true;
+			selected = true;
 		}
 		else
 		{
@@ -247,7 +224,7 @@ int main ()
 	cout << "\x1B[1;1f";
 
 	Menu test(&buf, &lastBuf, &bufSize);
-	test.setOptions(string("Normal Menu"), opts, 3);
+	test.setOptions("Normal Menu", opts, 3);
 	switch(test.doMenu())
 	{
 		case 0:
@@ -262,12 +239,12 @@ int main ()
 	}
 
 	Menu vtest(&buf, &lastBuf, &bufSize);
-	vtest.setOptions(string("Value Menu"), opts, 3);
+	vtest.setOptions("Value Menu", opts, 3);
 	vtest.setValues(val);
 	cout << "Picked: " << vtest.doMenu() << endl;
 
 	Menu dtest(&buf, &lastBuf, &bufSize);
-	dtest.setOptions(string("Describe Menu"), opts, 3);
+	dtest.setOptions("Describe Menu", opts, 3);
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
 	
@@ -289,7 +266,7 @@ int main ()
 	};
 	
 	Menu mainMenu(&buf, &lastBuf, &bufSize);
-	mainMenu.setOptions(string("Main Menu"), menuOptions, 6);
+	mainMenu.setOptions("Main Menu", menuOptions, 6);
 	mainMenu.setDescriptions(menuDesc);
 	int menuResult = -1;
 	while (menuResult != 5)
