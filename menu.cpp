@@ -1,11 +1,9 @@
 #include "menu.h"
 
-Menu::Menu(std::ostringstream *buf, std::ostringstream *prevBuf, int *bufSize)
+Menu::Menu(std::ostringstream *buf, int *bufSize)
 {
 	buffer = buf;
-	lastBuffer = prevBuf;
 	bufferSize = bufSize;
-
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
@@ -13,7 +11,6 @@ Menu::Menu(std::ostringstream *buf, std::ostringstream *prevBuf, int *bufSize)
 Menu::~Menu()
 {
 	buffer = NULL;
-	lastBuffer = NULL;
 	bufferSize = NULL;
 	options = NULL;
 	descriptions = NULL;
@@ -34,7 +31,7 @@ void Menu::setValues(int * val)
 {
 	values = val;
 }
-void Menu::clearLastBuffer()
+void Menu::clearLastDisplay()
 {
 	std::string tmpbuf;
 	if (*bufferSize > 0)
@@ -42,10 +39,10 @@ void Menu::clearLastBuffer()
 		//Reposition the cursor
 		std::cout << "\x1B[" << displayRow << ";1f";
 
-		//Copy last buf to string
-		tmpbuf = lastBuffer->str();
+		// save the buffer to a local string to save multiple calls
+		tmpbuf = buffer->str();
 
-		//Clear the screen for the last buffer size
+		// overwrites the last display by each character
 		for(int i = 0; i < *bufferSize; i++)
 		{
 			if(tmpbuf[i] == '\n')
@@ -58,25 +55,91 @@ void Menu::clearLastBuffer()
 			}
 		}
 
-		*bufferSize = 0;
-
-		//clear last buf
-		lastBuffer->str("");
-		lastBuffer->clear();
+		// ready the buffer for the next thing to display
+		*bufferSize = 0;		
+		buffer->str("");
+		buffer->clear();
 	}
+}
+void Menu::displayValue(const int i)
+{
+	if (values)
+	{
+		*buffer << std::setw(18 - options[i].length()) << values[i];
+	}
+}
+void Menu::displayDescription(const int option)
+{
+	if (descriptions)
+	{
+		*buffer << descriptions[option] << std::endl;
+	}	
+}
+bool Menu::processInput(int &option)
+{
+	static const int ENTERKEY = 10, UPKEY = 65, DOWNKEY = 66;
+	static const int LEFTKEY = 68, RIGHTKEY = 67;
+	static const int BACKSPACE = 8, DELETE = 127;
+	
+	int key = getCmd();
+	
+	if(key == ENTERKEY)
+	{
+		return true;
+	}
+	else
+	{
+		switch(key)
+		{
+			case UPKEY:	//Up
+				if(option > 0)
+				{ option--; }
+				else
+				{ option = optionNum -1; }
+			break;
+
+			case DOWNKEY:		//Down
+				if(option < optionNum -1)
+				{ option++; }
+				else
+				{ option = 0; }
+			break;
+
+			case LEFTKEY:	//Reduce value
+				if (values)
+				{
+					if (values[option] > 0)
+					{ values[option]--; }
+				}
+			break;
+			
+			case RIGHTKEY:	//Increase value
+				if (values)
+				{
+					if (values[option] < 10)		// Todo: change to actual max value 
+					{ values[option]++; }
+				}
+			break;
+
+			case BACKSPACE:     //Back/Cancel - Goes back up one menu level
+            case DELETE:
+            	option = -1;	
+            	return true;
+			break;
+		}
+	}
+	return false;
 }
 int Menu::doMenu()
 {
 	static char BAR [] = "************************";
-	std::string tmpbuf;
 	bool selected = false;
-	const int ENTERKEY = 10, UPKEY = 65, DOWNKEY = 66, BACKSPACE = 8, DELETE = 127;
-	const int LEFTKEY = 68, RIGHTKEY = 67;
 	int option = 0;
-
+	std::string tmpbuf;
+	
 	while (!selected)
 	{
-		this->clearLastBuffer();
+		this->clearLastDisplay();
 		//Don't redraw the grid, reposition cursor
 		//ROW;COLUMN
 		*buffer << "\x1B[" << displayRow << ";1f";
@@ -84,8 +147,10 @@ int Menu::doMenu()
 		*buffer << title << std::endl;
 		*buffer << BAR << std::endl;
 
+		// display the content of the menu
 		for (int i = 0; i < optionNum; i++)
 		{
+			// current selection is highlighted
 			if(option == i)
 			{
 				*buffer << "> ";
@@ -94,87 +159,24 @@ int Menu::doMenu()
 			{
 				*buffer << "  ";
 			}
-
 			*buffer << options[i];
-			if (values)
-			{
-				*buffer << std::setw(18 - options[i].length()) << values[i];
-			}
+			this->displayValue(i);
 			*buffer << std::endl;
 		}		
 		*buffer << BAR << std::endl;	
-		if (descriptions)
-		{
-			*buffer << descriptions[option] << std::endl;
-		}	
-
-		//Copy the buffer to a temporary string
+		this->displayDescription(option);
+		
+		// store the buffer in a local string to optimise
 		tmpbuf = buffer->str();
-
-		//Copy one instance of the buffer so we can overwrite it later
-		if(*bufferSize == 0)
-		{
-			*lastBuffer << buffer->str();
-		}
-
-		//Set the buffer size	
+		
+		// Set the buffer size	
 		*bufferSize = tmpbuf.length();
 
-		//Output the buffer to the screen
-		std::cout << buffer->str();
+		// Output the buffer to the screen
+		std::cout << tmpbuf;
 
-		//Clear the buffer
-		buffer->str("");
-		buffer->clear();
-
-		//Get and process input
-		int key = getCmd();
-
-		if(key == ENTERKEY)
-		{
-			selected = true;
-		}
-		else
-		{
-			switch(key)
-			{
-				case UPKEY:	//Up
-					if(option > 0)
-					{ option--; }
-					else
-					{ option = optionNum -1; }
-				break;
-
-				case DOWNKEY:		//Down
-					if(option < optionNum -1)
-					{ option++; }
-					else
-					{ option = 0; }
-				break;
-
-				case LEFTKEY:	//Reduce value
-					if (values)
-					{
-						if (values[option] > 0)
-						{ values[option]--; }
-					}
-				break;
-				
-				case RIGHTKEY:	//Increase value
-					if (values)
-					{
-						if (values[option] < 10)		// Todo: change to actual max value 
-						{ values[option]++; }
-					}
-				break;
-
-				case BACKSPACE:     //Back/Cancel
-                case DELETE:
-					
-				break;
-			}
-		}
-
+		// Get and process input
+		selected = processInput(option);
 	}
 	return option;
 }
@@ -206,12 +208,16 @@ int Menu::getCmd()
 	//Return
   	return ch;
 }
+bool Menu::notExited(const int result)
+{
+	return (result != optionNum-1 && result != Menu::Back);
+}
 
 using namespace std;
 
 int main ()
 {
-	ostringstream buf, lastBuf;
+	ostringstream buf;
 	int bufSize = 0;
 
 	string title = "Title";
@@ -223,7 +229,7 @@ int main ()
 	cout << "\033[2J";
 	cout << "\x1B[1;1f";
 
-	Menu test(&buf, &lastBuf, &bufSize);
+	Menu test(&buf, &bufSize);
 	test.setOptions("Normal Menu", opts, 3);
 	switch(test.doMenu())
 	{
@@ -238,12 +244,12 @@ int main ()
 		break;
 	}
 
-	Menu vtest(&buf, &lastBuf, &bufSize);
+	Menu vtest(&buf, &bufSize);
 	vtest.setOptions("Value Menu", opts, 3);
 	vtest.setValues(val);
 	cout << "Picked: " << vtest.doMenu() << endl;
 
-	Menu dtest(&buf, &lastBuf, &bufSize);
+	Menu dtest(&buf, &bufSize);
 	dtest.setOptions("Describe Menu", opts, 3);
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
@@ -265,18 +271,38 @@ int main ()
 		"Log out of the system."
 	};
 	
-	Menu mainMenu(&buf, &lastBuf, &bufSize);
+	string notifyOpts [2] = {
+		"VIEW NOTIFICATIONS",
+		"BACK"
+	};
+	Menu notifyMenu(&buf, &bufSize);
+	notifyMenu.setOptions("Notifications", notifyOpts, 2);
+	
+	Menu mainMenu(&buf, &bufSize);
 	mainMenu.setOptions("Main Menu", menuOptions, 6);
 	mainMenu.setDescriptions(menuDesc);
-	int menuResult = -1;
-	while (menuResult != 5)
+	int menuResult = 0;
+	while (mainMenu.notExited(menuResult))
 	{
 		menuResult = mainMenu.doMenu();
 		switch(menuResult)
 		{
+			case Menu::Back: break;
 			case 0: break;
 			case 1: break;
-			case 2: break;
+			case 2: 
+				menuResult = 0;
+				while(notifyMenu.notExited(menuResult))
+				{
+					menuResult = notifyMenu.doMenu();
+					switch(menuResult)
+					{
+						case Menu::Back: break;
+						case 0: break;
+						case 1: break;
+					}
+				}
+			break;
 			case 3: break;
 			case 4: break;
 			case 5: break;

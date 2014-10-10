@@ -18,16 +18,18 @@
 class Menu
 {
 	public:
-		Menu(std::ostringstream *, std::ostringstream *, int *);
+		static const int Back;
+	
+		Menu(std::ostringstream *, int *);
 		~Menu();
 		
 		void setOptions(const std::string, std::string[], const int, const int row = 0);
 		void setDescriptions(std::string *);
 		void setValues(int *);
 		int doMenu();
+		bool notExited(const int);
 	private:
 		std::ostringstream * buffer;
-		std::ostringstream * lastBuffer;
 		int * bufferSize;
 	
 		std::string title;
@@ -38,8 +40,13 @@ class Menu
 		int * values;
 
 		int getCmd();
-		void clearLastBuffer();
+		void clearLastDisplay();
+		void displayValue(const int);
+		void displayDescription(const int);
+		bool processInput(int &);
 };
+
+const int Menu::Back = -1;
 
 class MenuManager 
 {
