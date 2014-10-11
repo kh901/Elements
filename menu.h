@@ -28,6 +28,7 @@ class Menu
 		void setValues(int *);
 		int doMenu();
 		bool notExited(const int);
+		void clear();
 	private:
 		std::ostringstream * buffer;
 		int * bufferSize;
@@ -41,6 +42,8 @@ class Menu
 
 		int getCmd();
 		void clearLastDisplay();
+	protected:
+		void displayOption(const int);
 		void displayValue(const int);
 		void displayDescription(const int);
 		bool processInput(int &);

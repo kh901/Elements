@@ -130,9 +130,13 @@ bool Menu::processInput(int &option)
 	}
 	return false;
 }
+void Menu::displayOption(const int i)
+{
+	*buffer << options[i];
+}
 int Menu::doMenu()
 {
-	static char BAR [] = "************************";
+	static char BAR [] = "****************************";
 	bool selected = false;
 	int option = 0;
 	std::string tmpbuf;
@@ -159,12 +163,12 @@ int Menu::doMenu()
 			{
 				*buffer << "  ";
 			}
-			*buffer << options[i];
-			this->displayValue(i);
+			displayOption(i);
+			displayValue(i);
 			*buffer << std::endl;
 		}		
 		*buffer << BAR << std::endl;	
-		this->displayDescription(option);
+		displayDescription(option);
 		
 		// store the buffer in a local string to optimise
 		tmpbuf = buffer->str();
@@ -211,6 +215,12 @@ int Menu::getCmd()
 bool Menu::notExited(const int result)
 {
 	return (result != optionNum-1 && result != Menu::Back);
+}
+void Menu::clear()
+{
+	this->clearLastDisplay();
+	//Reposition the cursor
+	std::cout << "\x1B[" << displayRow << ";1f";
 }
 
 using namespace std;
@@ -276,7 +286,7 @@ int main ()
 		"BACK"
 	};
 	Menu notifyMenu(&buf, &bufSize);
-	notifyMenu.setOptions("Notifications", notifyOpts, 2);
+	notifyMenu.setOptions("Main Menu > Notifications", notifyOpts, 2);
 	
 	Menu mainMenu(&buf, &bufSize);
 	mainMenu.setOptions("Main Menu", menuOptions, 6);
@@ -287,7 +297,6 @@ int main ()
 		menuResult = mainMenu.doMenu();
 		switch(menuResult)
 		{
-			case Menu::Back: break;
 			case 0: break;
 			case 1: break;
 			case 2: 
@@ -297,15 +306,21 @@ int main ()
 					menuResult = notifyMenu.doMenu();
 					switch(menuResult)
 					{
-						case Menu::Back: break;
-						case 0: break;
-						case 1: break;
+						case 0: 
+							cout << "You have no notifications" << endl;
+							cin.ignore(1, '\n');
+							//Clear and reset cursor
+							cout << "\033[2J";
+							cout << "\x1B[1;1f";
+						break;
+						case 1: case Menu::Back: break;
 					}
 				}
+				menuResult = 0;
 			break;
 			case 3: break;
 			case 4: break;
-			case 5: break;
+			case 5: case Menu::Back: break;
 		}
 	}
 }
