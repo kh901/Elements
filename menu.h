@@ -26,19 +26,27 @@ class Menu
 		void setOptions(const std::string, std::string[], const int, const int row = 0);
 		void setDescriptions(std::string *);
 		void setValues(int *);
+		void setPaged();
+		void setScrolling();
+		void setVisibleNum(const int);
 		int doMenu();
 		bool notExited(const int);
 		void clear();
 	private:
+		// reference to buffer
 		std::ostringstream * buffer;
 		int * bufferSize;
 	
+		// menu data
 		std::string title;
 		std::string * options;
 		int optionNum;
 		int displayRow;
 		std::string * descriptions;
 		int * values;
+		bool isPaged, isScroll;
+		int visibleNum;
+		int scrollIndex;
 
 		int getCmd();
 		void clearLastDisplay();
@@ -47,6 +55,9 @@ class Menu
 		void displayValue(const int);
 		void displayDescription(const int);
 		bool processInput(int &);
+		void displayFixed(const int);
+		void displayScroll(const int);
+		void displayPaged(const int);
 };
 
 const int Menu::Back = -1;

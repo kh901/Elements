@@ -7,6 +7,9 @@ Menu::Menu(std::ostringstream *buf, int *bufSize)
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
+	isPaged = isScroll = false;
+	visibleNum = 1;
+	scrollIndex = 0;
 }
 Menu::~Menu()
 {
@@ -22,6 +25,7 @@ void Menu::setOptions(const std::string theTitle, std::string theOptions[], cons
 	options = theOptions;
 	optionNum = num;
 	displayRow = row;
+	visibleNum = num;
 }
 void Menu::setDescriptions(std::string * desc)
 {
@@ -30,6 +34,18 @@ void Menu::setDescriptions(std::string * desc)
 void Menu::setValues(int * val)
 {
 	values = val;
+}
+void Menu::setPaged()
+{
+	isPaged = true;
+}
+void Menu::setScrolling()
+{
+	isScroll = true;
+}
+void Menu::setVisibleNum(const int num)
+{
+	visibleNum = num;
 }
 void Menu::clearLastDisplay()
 {
@@ -93,16 +109,48 @@ bool Menu::processInput(int &option)
 		{
 			case UPKEY:	//Up
 				if(option > 0)
-				{ option--; }
+				{ 
+					option--; 
+					// if there is room to display the visible options
+					//if (isScroll)
+					if (isScroll && option < (optionNum - visibleNum + 1))
+					{
+						// update scroll index once 
+						// the cursor goes out of 
+						// the visible options
+						scrollIndex = option+1 / visibleNum;
+					}
+				}
 				else
-				{ option = optionNum -1; }
+				{ 
+					option = optionNum -1; 
+					if (isScroll)
+					{
+						//scrollIndex = option;
+						scrollIndex = option - visibleNum + 1;
+					}
+				}
 			break;
 
 			case DOWNKEY:		//Down
 				if(option < optionNum -1)
-				{ option++; }
+				{ 
+					option++; 
+					//if (isScroll && ((option+1) % visibleNum) == 0)
+					if (isScroll && option < (optionNum - visibleNum + 1))
+					{
+						//scrollIndex = option;
+						scrollIndex = option+1 / visibleNum;
+					}
+				}
 				else
-				{ option = 0; }
+				{ 
+					option = 0; 
+					if (isScroll)
+					{
+						scrollIndex = option;
+					}
+				}
 			break;
 
 			case LEFTKEY:	//Reduce value
@@ -134,12 +182,70 @@ void Menu::displayOption(const int i)
 {
 	*buffer << options[i];
 }
+void Menu::displayFixed(const int option)
+{
+	for (int i = 0; i < optionNum; i++)
+	{
+		// current selection is highlighted
+		if(option == i)
+		{
+			*buffer << "> ";
+		}
+		else
+		{
+			*buffer << "  ";
+		}
+		displayOption(i);
+		displayValue(i);
+		*buffer << std::endl;
+	}
+}
+void Menu::displayScroll(const int option)
+{
+	int end = scrollIndex + visibleNum;
+	if (end > optionNum) { end = optionNum; }
+	if (scrollIndex < 0) { scrollIndex = 0; }
+	for (int i = scrollIndex; i < end; i++)
+	{
+		// current selection is highlighted
+		if(option == i)
+		{
+			*buffer << "> ";
+		}
+		else
+		{
+			*buffer << "  ";
+		}
+		displayOption(i);
+		displayValue(i);
+		*buffer << std::endl;
+	}
+}
+void Menu::displayPaged(const int option)
+{
+	for (int i = 0; i < optionNum; i++)
+	{
+		// current selection is highlighted
+		if(option == i)
+		{
+			*buffer << "> ";
+		}
+		else
+		{
+			*buffer << "  ";
+		}
+		displayOption(i);
+		displayValue(i);
+		*buffer << std::endl;
+	}
+}
 int Menu::doMenu()
 {
 	static char BAR [] = "****************************";
 	bool selected = false;
 	int option = 0;
 	std::string tmpbuf;
+	scrollIndex = 0;
 	
 	while (!selected)
 	{
@@ -152,21 +258,9 @@ int Menu::doMenu()
 		*buffer << BAR << std::endl;
 
 		// display the content of the menu
-		for (int i = 0; i < optionNum; i++)
-		{
-			// current selection is highlighted
-			if(option == i)
-			{
-				*buffer << "> ";
-			}
-			else
-			{
-				*buffer << "  ";
-			}
-			displayOption(i);
-			displayValue(i);
-			*buffer << std::endl;
-		}		
+		if (isPaged) { displayPaged(option); }		
+		else if (isScroll) { displayScroll(option); }
+		else { displayFixed(option); }
 		*buffer << BAR << std::endl;	
 		displayDescription(option);
 		
@@ -291,6 +385,8 @@ int main ()
 	Menu mainMenu(&buf, &bufSize);
 	mainMenu.setOptions("Main Menu", menuOptions, 6);
 	mainMenu.setDescriptions(menuDesc);
+	mainMenu.setScrolling();
+	mainMenu.setVisibleNum(4);
 	int menuResult = 0;
 	while (mainMenu.notExited(menuResult))
 	{
