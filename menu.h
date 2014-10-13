@@ -15,6 +15,8 @@
 #include <unistd.h>
 //END INPUT STUFF
 
+#include "common.h"
+
 class Menu
 {
 	public:
@@ -33,6 +35,8 @@ class Menu
 		bool notExited(const int);
 		void clear();
 	private:
+		enum DisplayMode { Fixed, Scroll, Paged };
+	
 		// reference to buffer
 		std::ostringstream * buffer;
 		int * bufferSize;
@@ -44,7 +48,7 @@ class Menu
 		int displayRow;
 		std::string * descriptions;
 		int * values;
-		bool isPaged, isScroll;
+		DisplayMode displayMode; 
 		int visibleNum;
 		int scrollIndex;
 
@@ -55,6 +59,7 @@ class Menu
 		void displayValue(const int);
 		void displayDescription(const int);
 		bool processInput(int &);
+		void display(const int, const int, const int);
 		void displayFixed(const int);
 		void displayScroll(const int);
 		void displayPaged(const int);

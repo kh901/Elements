@@ -7,7 +7,7 @@ Menu::Menu(std::ostringstream *buf, int *bufSize)
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
-	isPaged = isScroll = false;
+	displayMode = Menu::Fixed;
 	visibleNum = 1;
 	scrollIndex = 0;
 }
@@ -37,11 +37,11 @@ void Menu::setValues(int * val)
 }
 void Menu::setPaged()
 {
-	isPaged = true;
+	displayMode = Menu::Paged;
 }
 void Menu::setScrolling()
 {
-	isScroll = true;
+	displayMode = Menu::Scroll;
 }
 void Menu::setVisibleNum(const int num)
 {
@@ -112,22 +112,25 @@ bool Menu::processInput(int &option)
 				{ 
 					option--; 
 					// if there is room to display the visible options
-					//if (isScroll)
-					if (isScroll && option < (optionNum - visibleNum + 1))
+					if (displayMode == Menu::Scroll && option < (optionNum - visibleNum + 1))
 					{
-						// update scroll index once 
-						// the cursor goes out of 
-						// the visible options
-						scrollIndex = option+1 / visibleNum;
+						scrollIndex = option;
+					}
+					if (displayMode == Menu::Paged && ((option+1) % visibleNum) == 0)
+					{
+						scrollIndex = (option / visibleNum) * visibleNum;		
 					}
 				}
 				else
 				{ 
 					option = optionNum -1; 
-					if (isScroll)
+					if (displayMode == Menu::Scroll)
 					{
-						//scrollIndex = option;
 						scrollIndex = option - visibleNum + 1;
+					}
+					if (displayMode == Menu::Paged)
+					{
+						scrollIndex = (option / visibleNum) * visibleNum;
 					}
 				}
 			break;
@@ -136,17 +139,19 @@ bool Menu::processInput(int &option)
 				if(option < optionNum -1)
 				{ 
 					option++; 
-					//if (isScroll && ((option+1) % visibleNum) == 0)
-					if (isScroll && option < (optionNum - visibleNum + 1))
+					if (displayMode == Menu::Scroll && option < (optionNum - visibleNum + 1))
 					{
-						//scrollIndex = option;
-						scrollIndex = option+1 / visibleNum;
+						scrollIndex = option;
+					}
+					if (displayMode == Menu::Paged && ((option) % visibleNum) == 0)
+					{
+						scrollIndex = option;
 					}
 				}
 				else
 				{ 
 					option = 0; 
-					if (isScroll)
+					if (displayMode == Menu::Scroll || displayMode == Menu::Paged)
 					{
 						scrollIndex = option;
 					}
@@ -182,9 +187,9 @@ void Menu::displayOption(const int i)
 {
 	*buffer << options[i];
 }
-void Menu::displayFixed(const int option)
+void Menu::display(const int start, const int end, const int option)
 {
-	for (int i = 0; i < optionNum; i++)
+	for (int i = start; i < end; i++)
 	{
 		// current selection is highlighted
 		if(option == i)
@@ -199,49 +204,44 @@ void Menu::displayFixed(const int option)
 		displayValue(i);
 		*buffer << std::endl;
 	}
+}
+void Menu::displayFixed(const int option)
+{
+	display(0, optionNum, option);
 }
 void Menu::displayScroll(const int option)
 {
 	int end = scrollIndex + visibleNum;
 	if (end > optionNum) { end = optionNum; }
 	if (scrollIndex < 0) { scrollIndex = 0; }
-	for (int i = scrollIndex; i < end; i++)
-	{
-		// current selection is highlighted
-		if(option == i)
-		{
-			*buffer << "> ";
-		}
-		else
-		{
-			*buffer << "  ";
-		}
-		displayOption(i);
-		displayValue(i);
-		*buffer << std::endl;
-	}
+	display(scrollIndex, end, option);
+	*buffer << "  ";
+	std::string scrollBar;
+	int barWidth = 24;
+	int barOptionPos = ((option+1) * barWidth)/optionNum;
+    for(int i = 0; i < barOptionPos-2; ++i)
+    {
+        scrollBar += "-";
+    }
+    scrollBar += "||";
+    int barOptionFill = ((optionNum-(option+1)) * barWidth)/optionNum;
+    for(int j = 0; j < barOptionFill; ++j)
+    {
+        scrollBar += "-";
+    }
+    *buffer << scrollBar << std::endl;
 }
 void Menu::displayPaged(const int option)
 {
-	for (int i = 0; i < optionNum; i++)
-	{
-		// current selection is highlighted
-		if(option == i)
-		{
-			*buffer << "> ";
-		}
-		else
-		{
-			*buffer << "  ";
-		}
-		displayOption(i);
-		displayValue(i);
-		*buffer << std::endl;
-	}
+	int end = scrollIndex + visibleNum;
+	if (end > optionNum) { end = optionNum; }
+	if (scrollIndex < 0) { scrollIndex = 0; }
+	display(scrollIndex, end, option);	
+	*buffer << "  Page " << (scrollIndex / visibleNum)+1 << " of " << Ceil(optionNum, visibleNum) << std::endl;
 }
 int Menu::doMenu()
 {
-	static char BAR [] = "****************************";
+	static char BAR [] = "********************************";
 	bool selected = false;
 	int option = 0;
 	std::string tmpbuf;
@@ -258,9 +258,12 @@ int Menu::doMenu()
 		*buffer << BAR << std::endl;
 
 		// display the content of the menu
-		if (isPaged) { displayPaged(option); }		
-		else if (isScroll) { displayScroll(option); }
-		else { displayFixed(option); }
+		switch(displayMode)
+		{
+			case Menu::Fixed: 	displayFixed(option); 	break;
+			case Menu::Scroll: 	displayScroll(option); 	break;
+			case Menu::Paged: 	displayPaged(option);	break;
+		}
 		*buffer << BAR << std::endl;	
 		displayDescription(option);
 		
@@ -324,15 +327,16 @@ int main ()
 	ostringstream buf;
 	int bufSize = 0;
 
-	string title = "Title";
-	string opts[3] = {"Option 1", "Option 2", "Option 3"};
-	string desc[3] = {"Describe 1", "Describe 2", "Describe 3"};
-	int val[3] = {1, 2, 3};
+	//string title = "Title";
+	//string opts[3] = {"Option 1", "Option 2", "Option 3"};
+	//string desc[3] = {"Describe 1", "Describe 2", "Describe 3"};
+	//int val[3] = {1, 2, 3};
 
 	//Clear and reset cursor
 	cout << "\033[2J";
 	cout << "\x1B[1;1f";
 
+	/*
 	Menu test(&buf, &bufSize);
 	test.setOptions("Normal Menu", opts, 3);
 	switch(test.doMenu())
@@ -357,6 +361,7 @@ int main ()
 	dtest.setOptions("Describe Menu", opts, 3);
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
+	*/
 	
 	string menuOptions[6] = {
 		"MY ACCOUNT",
@@ -379,13 +384,31 @@ int main ()
 		"VIEW NOTIFICATIONS",
 		"BACK"
 	};
+	
+	string * testNotifications = NULL;
+	testNotifications = new string[20];
+	ostringstream os;
+	for (int i = 0; i < 20; ++i)
+	{
+		os.str("");
+		os << "Test " << i+1;
+		testNotifications[i] = os.str();
+	}
+	
+	Menu viewNotifyMenu(&buf, &bufSize);
+	viewNotifyMenu.setOptions("Notifications > View", testNotifications, 20);
+	viewNotifyMenu.setScrolling();
+	viewNotifyMenu.setVisibleNum(5);
+	
 	Menu notifyMenu(&buf, &bufSize);
 	notifyMenu.setOptions("Main Menu > Notifications", notifyOpts, 2);
+	notifyMenu.setScrolling();
 	
 	Menu mainMenu(&buf, &bufSize);
 	mainMenu.setOptions("Main Menu", menuOptions, 6);
 	mainMenu.setDescriptions(menuDesc);
-	mainMenu.setScrolling();
+	//mainMenu.setScrolling();
+	mainMenu.setPaged();  
 	mainMenu.setVisibleNum(4);
 	int menuResult = 0;
 	while (mainMenu.notExited(menuResult))
@@ -403,11 +426,23 @@ int main ()
 					switch(menuResult)
 					{
 						case 0: 
+							/*
 							cout << "You have no notifications" << endl;
 							cin.ignore(1, '\n');
 							//Clear and reset cursor
 							cout << "\033[2J";
 							cout << "\x1B[1;1f";
+							*/
+							menuResult = 0;
+							while(viewNotifyMenu.notExited(menuResult))
+							{
+								menuResult = viewNotifyMenu.doMenu();
+								switch(menuResult)
+								{
+									case 19: case Menu::Back: break;
+								}
+							}
+							menuResult = -2;
 						break;
 						case 1: case Menu::Back: break;
 					}
@@ -419,4 +454,7 @@ int main ()
 			case 5: case Menu::Back: break;
 		}
 	}
+	
+	delete [] testNotifications;
+	testNotifications = NULL;
 }
