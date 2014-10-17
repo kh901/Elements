@@ -20,8 +20,6 @@
 class Menu
 {
 	public:
-		static const int Back;
-	
 		Menu(std::ostringstream *, int *);
 		~Menu();
 		
@@ -63,9 +61,8 @@ class Menu
 		void displayFixed(const int);
 		void displayScroll(const int);
 		void displayPaged(const int);
+		void displayScrollBar(const int);
 };
-
-const int Menu::Back = -1;
 
 class MenuManager 
 {

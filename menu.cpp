@@ -215,6 +215,10 @@ void Menu::displayScroll(const int option)
 	if (end > optionNum) { end = optionNum; }
 	if (scrollIndex < 0) { scrollIndex = 0; }
 	display(scrollIndex, end, option);
+	displayScrollBar(option);	
+}
+void Menu::displayScrollBar(const int option)
+{
 	*buffer << "  ";
 	std::string scrollBar;
 	int barWidth = 24;
@@ -311,7 +315,7 @@ int Menu::getCmd()
 }
 bool Menu::notExited(const int result)
 {
-	return (result != optionNum-1 && result != Menu::Back);
+	return (result != optionNum-1 && result != -1);
 }
 void Menu::clear()
 {
@@ -320,23 +324,7 @@ void Menu::clear()
 	std::cout << "\x1B[" << displayRow << ";1f";
 }
 
-using namespace std;
-
-int main ()
-{
-	ostringstream buf;
-	int bufSize = 0;
-
-	//string title = "Title";
-	//string opts[3] = {"Option 1", "Option 2", "Option 3"};
-	//string desc[3] = {"Describe 1", "Describe 2", "Describe 3"};
-	//int val[3] = {1, 2, 3};
-
-	//Clear and reset cursor
-	cout << "\033[2J";
-	cout << "\x1B[1;1f";
-
-	/*
+/*
 	Menu test(&buf, &bufSize);
 	test.setOptions("Normal Menu", opts, 3);
 	switch(test.doMenu())
@@ -362,6 +350,25 @@ int main ()
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
 	*/
+
+/*
+using namespace std;
+
+int main ()
+{
+	ostringstream buf;
+	int bufSize = 0;
+
+	//string title = "Title";
+	//string opts[3] = {"Option 1", "Option 2", "Option 3"};
+	//string desc[3] = {"Describe 1", "Describe 2", "Describe 3"};
+	//int val[3] = {1, 2, 3};
+
+	//Clear and reset cursor
+	cout << "\033[2J";
+	cout << "\x1B[1;1f";
+
+	
 	
 	string menuOptions[6] = {
 		"MY ACCOUNT",
@@ -426,35 +433,29 @@ int main ()
 					switch(menuResult)
 					{
 						case 0: 
-							/*
-							cout << "You have no notifications" << endl;
-							cin.ignore(1, '\n');
-							//Clear and reset cursor
-							cout << "\033[2J";
-							cout << "\x1B[1;1f";
-							*/
 							menuResult = 0;
 							while(viewNotifyMenu.notExited(menuResult))
 							{
 								menuResult = viewNotifyMenu.doMenu();
 								switch(menuResult)
 								{
-									case 19: case Menu::Back: break;
+									case 19: case -1: break;
 								}
 							}
 							menuResult = -2;
 						break;
-						case 1: case Menu::Back: break;
+						case 1: case -1: break;
 					}
 				}
 				menuResult = 0;
 			break;
 			case 3: break;
 			case 4: break;
-			case 5: case Menu::Back: break;
+			case 5: case -1: break;
 		}
 	}
 	
 	delete [] testNotifications;
 	testNotifications = NULL;
 }
+*/
