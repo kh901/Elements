@@ -194,12 +194,14 @@ void Menu::display(const int start, const int end, const int option)
 		if(option == i)
 		{
 			Menu::buffer << "> ";
+			Menu::buffer << text::styleString(options[i], text::Colour_Red, text::Effect_Bold);
 		}
 		else
 		{
 			Menu::buffer << "  ";
+			displayOption(i);
 		}
-		displayOption(i);
+		
 		displayValue(i);
 		Menu::buffer << std::endl;
 	}
@@ -458,3 +460,31 @@ int main ()
 	testNotifications = NULL;
 }
 */
+
+std::string text::styleString(const std::string & str, text::Colour col, text::Effect eft, text::Background bkg)
+{
+	std::ostringstream os;
+	os << "\033[";
+	
+	//os << '[';
+	// apply effect
+	if (eft != text::Effect_Intense)
+	{
+		os << eft << ';';
+		os << '3';
+	}
+	else if (eft == text::Effect_Intense)
+	{
+		os << "0;" << eft;
+	}
+	// apply colour
+	os << col << 'm';
+	// apply background
+	if (bkg != text::Bkg_None)
+	{
+		os << "\033[4" << bkg << "m";
+	}
+	// insert string
+	os << str << "\033[0m";
+	return os.str();
+}
