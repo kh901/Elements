@@ -20,6 +20,7 @@
 class Menu
 {
 	public:
+		Menu();
 		Menu(std::ostringstream *, int *);
 		~Menu();
 		
@@ -35,9 +36,9 @@ class Menu
 	private:
 		enum DisplayMode { Fixed, Scroll, Paged };
 	
-		// reference to buffer
-		std::ostringstream * buffer;
-		int * bufferSize;
+		// buffer shared by all menu objects
+		static std::ostringstream buffer;
+		static int bufferSize;
 	
 		// menu data
 		std::string title;

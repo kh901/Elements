@@ -1,9 +1,19 @@
-#include "menu.h"
+#include "Menu.h"
+
+Menu::Menu()
+{
+	options = NULL;
+	descriptions = NULL;
+	values = NULL;
+	displayMode = Menu::Fixed;
+	visibleNum = 1;
+	scrollIndex = 0;
+}
 
 Menu::Menu(std::ostringstream *buf, int *bufSize)
 {
-	buffer = buf;
-	bufferSize = bufSize;
+	buffer.str(buf->str());
+	bufferSize = *bufSize;
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
@@ -13,8 +23,6 @@ Menu::Menu(std::ostringstream *buf, int *bufSize)
 }
 Menu::~Menu()
 {
-	buffer = NULL;
-	bufferSize = NULL;
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
@@ -50,16 +58,16 @@ void Menu::setVisibleNum(const int num)
 void Menu::clearLastDisplay()
 {
 	std::string tmpbuf;
-	if (*bufferSize > 0)
+	if (bufferSize > 0)
 	{
 		//Reposition the cursor
 		std::cout << "\x1B[" << displayRow << ";1f";
 
 		// save the buffer to a local string to save multiple calls
-		tmpbuf = buffer->str();
+		tmpbuf = buffer.str();
 
 		// overwrites the last display by each character
-		for(int i = 0; i < *bufferSize; i++)
+		for(int i = 0; i < bufferSize; i++)
 		{
 			if(tmpbuf[i] == '\n')
 			{
@@ -72,23 +80,23 @@ void Menu::clearLastDisplay()
 		}
 
 		// ready the buffer for the next thing to display
-		*bufferSize = 0;		
-		buffer->str("");
-		buffer->clear();
+		bufferSize = 0;		
+		buffer.str("");
+		buffer.clear();
 	}
 }
 void Menu::displayValue(const int i)
 {
 	if (values)
 	{
-		*buffer << std::setw(18 - options[i].length()) << values[i];
+		buffer << std::setw(18 - options[i].length()) << values[i];
 	}
 }
 void Menu::displayDescription(const int option)
 {
 	if (descriptions)
 	{
-		*buffer << descriptions[option] << std::endl;
+		buffer << descriptions[option] << std::endl;
 	}	
 }
 bool Menu::processInput(int &option)
@@ -185,7 +193,7 @@ bool Menu::processInput(int &option)
 }
 void Menu::displayOption(const int i)
 {
-	*buffer << options[i];
+	buffer << options[i];
 }
 void Menu::display(const int start, const int end, const int option)
 {
@@ -194,15 +202,15 @@ void Menu::display(const int start, const int end, const int option)
 		// current selection is highlighted
 		if(option == i)
 		{
-			*buffer << "> ";
+			buffer << "> ";
 		}
 		else
 		{
-			*buffer << "  ";
+			buffer << "  ";
 		}
 		displayOption(i);
 		displayValue(i);
-		*buffer << std::endl;
+		buffer << std::endl;
 	}
 }
 void Menu::displayFixed(const int option)
@@ -219,7 +227,7 @@ void Menu::displayScroll(const int option)
 }
 void Menu::displayScrollBar(const int option)
 {
-	*buffer << "  ";
+	buffer << "  ";
 	std::string scrollBar;
 	int barWidth = 24;
 	int barOptionPos = ((option+1) * barWidth)/optionNum;
@@ -233,7 +241,7 @@ void Menu::displayScrollBar(const int option)
     {
         scrollBar += "-";
     }
-    *buffer << scrollBar << std::endl;
+    buffer << scrollBar << std::endl;
 }
 void Menu::displayPaged(const int option)
 {
@@ -241,7 +249,7 @@ void Menu::displayPaged(const int option)
 	if (end > optionNum) { end = optionNum; }
 	if (scrollIndex < 0) { scrollIndex = 0; }
 	display(scrollIndex, end, option);	
-	*buffer << "  Page " << (scrollIndex / visibleNum)+1 << " of " << Ceil(optionNum, visibleNum) << std::endl;
+	buffer << "  Page " << (scrollIndex / visibleNum)+1 << " of " << Ceil(optionNum, visibleNum) << std::endl;
 }
 int Menu::doMenu()
 {
@@ -256,10 +264,10 @@ int Menu::doMenu()
 		this->clearLastDisplay();
 		//Don't redraw the grid, reposition cursor
 		//ROW;COLUMN
-		*buffer << "\x1B[" << displayRow << ";1f";
+		buffer << "\x1B[" << displayRow << ";1f";
 
-		*buffer << title << std::endl;
-		*buffer << BAR << std::endl;
+		buffer << title << std::endl;
+		buffer << BAR << std::endl;
 
 		// display the content of the menu
 		switch(displayMode)
@@ -268,14 +276,14 @@ int Menu::doMenu()
 			case Menu::Scroll: 	displayScroll(option); 	break;
 			case Menu::Paged: 	displayPaged(option);	break;
 		}
-		*buffer << BAR << std::endl;	
+		buffer << BAR << std::endl;	
 		displayDescription(option);
 		
 		// store the buffer in a local string to optimise
-		tmpbuf = buffer->str();
+		tmpbuf = buffer.str();
 		
 		// Set the buffer size	
-		*bufferSize = tmpbuf.length();
+		bufferSize = tmpbuf.length();
 
 		// Output the buffer to the screen
 		std::cout << tmpbuf;
@@ -325,7 +333,7 @@ void Menu::clear()
 }
 
 /*
-	Menu test(&buf, &bufSize);
+	Menu test;
 	test.setOptions("Normal Menu", opts, 3);
 	switch(test.doMenu())
 	{
@@ -340,12 +348,12 @@ void Menu::clear()
 		break;
 	}
 
-	Menu vtest(&buf, &bufSize);
+	Menu vtest;
 	vtest.setOptions("Value Menu", opts, 3);
 	vtest.setValues(val);
 	cout << "Picked: " << vtest.doMenu() << endl;
 
-	Menu dtest(&buf, &bufSize);
+	Menu dtest;
 	dtest.setOptions("Describe Menu", opts, 3);
 	dtest.setDescriptions(desc);
 	cout << "Picked: " << dtest.doMenu() << endl;
@@ -402,16 +410,16 @@ int main ()
 		testNotifications[i] = os.str();
 	}
 	
-	Menu viewNotifyMenu(&buf, &bufSize);
+	Menu viewNotifyMenu;
 	viewNotifyMenu.setOptions("Notifications > View", testNotifications, 20);
 	viewNotifyMenu.setScrolling();
 	viewNotifyMenu.setVisibleNum(5);
 	
-	Menu notifyMenu(&buf, &bufSize);
+	Menu notifyMenu;
 	notifyMenu.setOptions("Main Menu > Notifications", notifyOpts, 2);
 	notifyMenu.setScrolling();
 	
-	Menu mainMenu(&buf, &bufSize);
+	Menu mainMenu;
 	mainMenu.setOptions("Main Menu", menuOptions, 6);
 	mainMenu.setDescriptions(menuDesc);
 	//mainMenu.setScrolling();
