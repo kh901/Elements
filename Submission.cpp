@@ -14,25 +14,24 @@ void Submission::submit()
     std::cout << "Main Menu > Submissions > Submit a paper" << std::endl << std::endl;
     
     std::cout << "Enter paper name: ";
-    std::cin >> filename;
+    getline(std::cin, filename);
     
     std::cout << "Enter title: ";
-    std::cin >> title;
+    getline(std::cin, title);
     
     std::cout << "Enter author: ";
-    std::cin >> author;
+    getline(std::cin, author);
     
-    std::cout << "Enter descritpion: ";
-    std::cin >> description;
+    std::cout << "Enter description: ";
+    getline(std::cin, description);
     
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
-    std::cin >> option;
+    getline(std::cin, option);
     
-    if(option == "n")
+    if(option[0] == 'n')
     {
         submitted = false;
-        return;
     }
     else
     {

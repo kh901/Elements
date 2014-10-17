@@ -30,7 +30,6 @@ void UserController::submissions()
     {
     	// employ the menu and get selected option
     	option = submissionMenu.doMenu();
-       	std::cout << "Option selected: " << option << std::endl;
        	switch(option)
        	{
 		    // Submit a paper
@@ -39,16 +38,27 @@ void UserController::submissions()
 		   		Submission sub;
 		        sub.submit();            
 		        mySubmissions.push_back(sub);
+		        // clear screen
+		        std::cout << "\033[2J";
 		    }
 		    break;
 		    // View submissions
 		    case 1:
 		        for(int i = 0; i < (int)mySubmissions.size(); i++)
-		            mySubmissions[i].view();        
+		            mySubmissions[i].view();  
+		        std::cout << "(Press Enter to continue)";
+		        std::cin.ignore(1, '\n');      
+		        // clear screen
+		        std::cout << "\033[2J";
 		    break;
 		    // Review a paper
 		    case 2:
-		        std::cout << "Which submission would you like to withdraw?" << std::endl;        
+		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
+		        std::string whichSub;
+		        getline(std::cin, whichSub);
+		        
+		        // clear screen
+		        std::cout << "\033[2J";   
 		    break;
         }
     }
