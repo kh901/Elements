@@ -1,4 +1,4 @@
-#include "account.h"
+#include "Account.h"
 
 template<class T>
 T Max(const T &a, const T &b)
@@ -16,12 +16,56 @@ std::string encrypt(const std::string &str)
 	}
 	//sum = sum % 128;
 	//sum = sum % 4096;
-	std::cout << "Sum: " << sum << std::endl;
+	//std::cout << "Sum: " << sum << std::endl;
 	for (int i = 0; i < (int)result.length(); ++i)
 	{
 		result[i] = result[i] ^ static_cast<char>(sum);
 	}
 	return result;
+}
+
+Account::Account()
+{
+	accountType = Account_User;
+	generateId();
+}
+
+bool Account::matchPassword(const std::string &str)
+{
+	return password == str;
+}
+
+void Account::generateId()
+{
+	std::ostringstream os;
+	srand(time(NULL));
+	for (int i = 0; i < 9; ++i)
+	{
+		if (i != 4)
+		{
+			switch(rand()%3)
+			{
+				// lower case
+				case 0:
+					os << static_cast<char>((rand()%26) + 97);
+				break;
+				// upper case
+				case 1:
+					os << static_cast<char>((rand()%26) + 65);
+				break;
+				// digits
+				case 2:
+					os << rand()%10;
+				break;
+			}
+		}
+		else
+		{
+			os << ':';
+		}
+	}
+	std::cout << "Gen id:" << os.str() << std::endl;
+	this->uniqueId = os.str();
 }
 
 using namespace std;
@@ -33,14 +77,16 @@ int main ()
 	cout << "\x1B[1;1f";
 
 	
-	string test = ".", pass = "?";
+	string test = ".asdhj$%^&*", pass = "?asdhj$%^&*";
 	string enc = encrypt(test), passEnc = encrypt(pass);
 	cout << "Encrypted: " << enc << endl;
 	cout << "Pass: " << passEnc << endl;
 	cout << (enc == passEnc ? "MATCHES" : "DOES NOT MATCH") << endl;
 	
-	std::ostringstream buf;
-	int bufSize = 0;
+	cin.ignore(1, '\n');
+	
+	//Clear and reset cursor
+	cout << "\033[2J";
 	
 	string accOpt[3] = {
 		"Login",
@@ -48,7 +94,7 @@ int main ()
 		"Exit"
 	}; 
 	
-	Menu accMenu(&buf, &bufSize);
+	Menu accMenu;
 	accMenu.setOptions("Welcome", accOpt, 3);
 	
 	string loginOpt[4] = {
@@ -58,7 +104,7 @@ int main ()
 		"Cancel"
 	};
 	
-	Menu loginMenu(&buf, &bufSize);
+	Menu loginMenu;
 	loginMenu.setOptions("Welcome > Login", loginOpt, 4);
 	
 	int accRes = -2, loginRes = -2;
@@ -85,18 +131,33 @@ int main ()
 						break;
 						// Enter password
 						case 1:
+						{
 							cout << "Enter password: ";
 							getline(cin, tmpPass);
-							loginOpt[1] = string("Password: ") + tmpPass;
+							string hidePass;
+							for (int i = 0; i < (int)tmpPass.length(); ++i)
+							{
+								hidePass += '*';
+							}
+							loginOpt[1] = string("Password: ") + hidePass;
 							cout << "\033[2J";
+						}
 						break;
 						case 2:
 							cout << "Signing you in...";
 							cin.ignore(1,'\n');
-							cout << "Success!" << endl;
-							cin.ignore(1,'\n');
+							if (encrypt(tmpPass) == encrypt(string("passyo")))
+							{
+								cout << "Success!" << endl;
+								cin.ignore(1,'\n');
+								loginRes = accRes = -1;
+							}
+							else
+							{
+								cout << "Failure!" << endl;
+								cin.ignore(1, '\n');
+							}
 							cout << "\033[2J";
-							loginRes = accRes = -1;
 						break; 
 						case 3: case -1:
 						break;
@@ -106,6 +167,12 @@ int main ()
 			
 			// Registering a new account
 			case 1:
+			{
+				// put register menu here 
+				Account newAccount;
+				cin.ignore(1,'\n');
+				cout << "\033[2J";
+			}
 			break;
 			
 			// Exiting
@@ -113,5 +180,8 @@ int main ()
 			break;
 		}
 	}
+	//Clear and reset cursor
+	cout << "\033[2J";
+	cout << "\x1B[1;1f";
 }
 
