@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
-#include "menu.h"
+#include "Menu.h"
 
 std::string encrypt(const std::string &);
 

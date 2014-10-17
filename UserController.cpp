@@ -15,49 +15,62 @@ void UserController::account()
 
 void UserController::submissions()
 {
-    std::cout << "Main Menu > Submissions" << std::endl << std::endl;
-    
-    int option;
-    
-    do
+	// set up menu for this part
+	Menu submissionMenu;
+	std::string subMenuOptions [4] = {
+		"Submit a paper",
+		"View submissions",
+		"Withdraw a paper",
+		"Back"
+	};
+	submissionMenu.setOptions("Main Menu > Submissions", subMenuOptions, 4);
+  
+    int option = 0;
+    while (submissionMenu.notExited(option))
     {
-        // I think Jon will need to change this menu form, so that it conforms with the actual menu system UI capabilities such as scrolling/backspace to go back and enter to select an option.
-        std::cout << "1 - submit a paper" << std::endl;
-        std::cout << "2 - view submissions" << std::endl;
-        std::cout << "3 - review a paper" << std::endl;
-        std::cout << "4 - go back" << std::endl;
-        std::cin >> option;
-        
-        /*  HUGE ERROR WHEN COMPILING NO IDEA WHATS CAUSING, NOT ENOUGH INFORMATION IS GIVEN FROM ERROR
-            HELP!!
-        if(option == 1)
-        {
-            Submission sub;
-            sub.submit();            
-            mySubmissions.push_back(sub);
-        }*/
-        if(option == 2)
-        {
-            for(int i = 0; i < mySubmissions.size(); i++)
-                mySubmissions[i].view();        
+    	// employ the menu and get selected option
+    	option = submissionMenu.doMenu();
+       	std::cout << "Option selected: " << option << std::endl;
+       	switch(option)
+       	{
+		    // Submit a paper
+		   	case 0:
+		   	{
+		   		Submission sub;
+		        sub.submit();            
+		        mySubmissions.push_back(sub);
+		    }
+		    break;
+		    // View submissions
+		    case 1:
+		        for(int i = 0; i < (int)mySubmissions.size(); i++)
+		            mySubmissions[i].view();        
+		    break;
+		    // Review a paper
+		    case 2:
+		        std::cout << "Which submission would you like to withdraw?" << std::endl;        
+		    break;
         }
-        if(option == 3)
-        {
-            std::cout << "Which submission would you like to withdraw?" << std::endl;        
-        }
-        if(option == 4)
-        {
-            std::cout << "Invalid input!" << std::endl;        
-        }
-    }while(option != 4);
+    }
 }
 
 void UserController::reviews()
 {
-    std::cout << "Main Menu > Reviews" << std::endl << std::endl;;
+	Menu reviewMenu;
+	std::string reviewMenuOptions [2] = {
+		"Review a paper",
+		"Back"
+	};
+	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, 2);
     
     // Need database code for reviews
     // Need to create review form 
+    int option;
+    do
+    {
+    	option = reviewMenu.doMenu();
+    	// put code to handle choices here
+    } while(reviewMenu.notExited(option));
 }
 
 void UserController::configuration()
@@ -70,6 +83,9 @@ void UserController::discussion()
 {
     std::cout << "Main Menu > Discussions" << std::endl << std::endl;
     // Need to create discussion forum some how
+    
+    // Simple forum: List of messages from different reviewers
+    // in chronological order about a topic (the paper they're reviewing)
 }
 
 void UserController::notifications()

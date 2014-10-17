@@ -1,3 +1,4 @@
+#include "Menu.h"
 #include "Submission.h"
 
 #include <iostream>
@@ -26,7 +27,6 @@ class UserController
         std::vector<Submission> mySubmissions;
         
         bool reviewed;
-        
 };
 
 #endif
