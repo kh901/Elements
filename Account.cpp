@@ -91,6 +91,17 @@ void Account::changeAccess(const std::string &conferenceId, const AccessLevel pe
 		addAccess(conferenceId, permissions);
 	}
 }
+Account::AccessLevel Account::getAccess(const std::string &conferenceId)
+{
+	std::map<std::string, AccessLevel>::iterator it;
+	AccessLevel recordedLevel = Access_None;
+	it = accessMap.find(conferenceId);
+	if (it != accessMap.end())
+	{
+		recordedLevel = it->second;
+	}
+	return recordedLevel;
+}
 bool Account::hasAccess(const std::string &conferenceId)
 {
 	return (accessMap.find(conferenceId) != accessMap.end());
@@ -104,7 +115,41 @@ int main ()
 	cout << "\033[2J";
 	cout << "\x1B[1;1f";
 
+	Account myAccount;
+
+	// add access to a new conference called TestA
+	string testConf = "TestA";
+	Account::AccessLevel testAccess = Account::Access_Author;
+	myAccount.addAccess(testConf, testAccess);
 	
+	if (myAccount.getAccess(testConf) == Account::Access_Author)
+	{
+		cout << "I am an author of " << testConf << endl;
+	}
+	
+	// change permissions
+	testAccess = Account::Access_Reviewer;
+	myAccount.changeAccess(testConf, testAccess);
+	
+	if (myAccount.getAccess(testConf) == Account::Access_Reviewer)
+	{
+		cout << "I am now a reviewer of " << testConf << endl;
+	}
+	
+	// check access to conference bob
+	if (myAccount.hasAccess("bob"))
+	{
+		cout << "I have access to bob" << endl;
+	}
+	else
+	{
+		cout << "I do not have access to bob" << endl;
+	}
+	
+	
+	// check if they have access
+
+	/*
 	string test = ".asdhj$%^&*", pass = "?asdhj$%^&*";
 	string enc = encrypt(test), passEnc = encrypt(pass);
 	cout << "Encrypted: " << enc << endl;
@@ -206,8 +251,10 @@ int main ()
 			break;
 		}
 	}
+	
 	//Clear and reset cursor
 	cout << "\033[2J";
 	cout << "\x1B[1;1f";
+	*/
 }
 
