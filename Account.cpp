@@ -68,6 +68,34 @@ void Account::generateId()
 	this->uniqueId = os.str();
 }
 
+bool Account::addAccess(const std::string &conferenceId, const AccessLevel permissions)
+{
+	std::pair< std::map<std::string, AccessLevel>::iterator, bool > ret;
+	ret = accessMap.insert( std::pair<std::string, AccessLevel>(conferenceId, permissions) );
+	return ret.second;
+}
+void Account::changeAccess(const std::string &conferenceId, const AccessLevel permissions)
+{
+	// alternatively:
+	//accessMap[conferenceId] = permissions;
+	std::map<std::string, AccessLevel>::iterator it;
+	// update the row in the access map if it exists
+	it = accessMap.find(conferenceId);
+	if (it != accessMap.end())
+	{
+		it->second = permissions;
+	}
+	// if it does not exist, create one
+	else
+	{
+		addAccess(conferenceId, permissions);
+	}
+}
+bool Account::hasAccess(const std::string &conferenceId)
+{
+	return (accessMap.find(conferenceId) != accessMap.end());
+}
+
 using namespace std;
 
 int main ()
@@ -96,6 +124,7 @@ int main ()
 	
 	Menu accMenu;
 	accMenu.setOptions("Welcome", accOpt, 3);
+	accMenu.setShowControls();
 	
 	string loginOpt[4] = {
 		"Username: ",
@@ -135,10 +164,7 @@ int main ()
 							cout << "Enter password: ";
 							getline(cin, tmpPass);
 							string hidePass;
-							for (int i = 0; i < (int)tmpPass.length(); ++i)
-							{
-								hidePass += '*';
-							}
+							hidePass.append(tmpPass.length(), '*');
 							loginOpt[1] = string("Password: ") + hidePass;
 							cout << "\033[2J";
 						}

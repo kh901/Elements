@@ -29,6 +29,9 @@ class Account
 			Account_Admin
 		};
 	
+		bool addAccess(const std::string &, const AccessLevel);
+		void changeAccess(const std::string &, const AccessLevel);
+		bool hasAccess(const std::string &);
 		bool isSystemAdmin() { return accountType == Account_Admin; }
 		bool matchPassword(const std::string &);
 	protected:
