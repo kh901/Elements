@@ -89,6 +89,19 @@ class Menu
 		int visibleNum;
 		int scrollIndex;
 		bool showControls;
+		
+		/*
+			Menu themes?
+			
+			Should we be able to set themes for their menus?
+			Some pre set themes or even custom ones?
+			Change how the title is displayed, what character is used for the bar,
+			how long the bar width is, what character is used as the cursor,
+			how the highlighted option is displayed (colour, effect, background, extra text),
+			how unhighlighted options are displayed (colour, effect, background, extra text),
+			how the last option is displayed (colour, effect, background, extra text),
+			and more?
+		*/
 
 		int getCmd();
 		void clearLastDisplay();
