@@ -27,7 +27,7 @@ namespace text
 		Colour_Blue = 4,
 		Colour_Purple = 5,
 		Colour_Cyan = 6,
-		Colour_White = 7
+		Colour_White = 7,
 	};
 	
 	// Effects
@@ -67,6 +67,7 @@ class Menu
 		void setPaged();
 		void setScrolling();
 		void setVisibleNum(const int);
+		void setShowControls();
 		int doMenu();
 		bool notExited(const int);
 		void clear();
@@ -87,6 +88,7 @@ class Menu
 		DisplayMode displayMode; 
 		int visibleNum;
 		int scrollIndex;
+		bool showControls;
 
 		int getCmd();
 		void clearLastDisplay();
@@ -100,6 +102,7 @@ class Menu
 		void displayScroll(const int);
 		void displayPaged(const int);
 		void displayScrollBar(const int);
+		void displayControls();
 };
 
 #endif

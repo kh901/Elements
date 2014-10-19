@@ -11,6 +11,7 @@ Menu::Menu()
 	displayMode = Menu::Fixed;
 	visibleNum = 1;
 	scrollIndex = 0;
+	showControls = false;
 }
 Menu::~Menu()
 {
@@ -45,6 +46,10 @@ void Menu::setScrolling()
 void Menu::setVisibleNum(const int num)
 {
 	visibleNum = num;
+}
+void Menu::setShowControls() 
+{
+	showControls = true;
 }
 void Menu::clearLastDisplay()
 {
@@ -194,7 +199,7 @@ void Menu::display(const int start, const int end, const int option)
 		if(option == i)
 		{
 			Menu::buffer << "> ";
-			Menu::buffer << text::styleString(options[i], text::Colour_Red, text::Effect_Bold);
+			Menu::buffer << text::styleString(options[i], text::Colour_Green, text::Effect_Bold);
 		}
 		else
 		{
@@ -244,9 +249,18 @@ void Menu::displayPaged(const int option)
 	display(scrollIndex, end, option);	
 	Menu::buffer << "  Page " << (scrollIndex / visibleNum)+1 << " of " << Ceil(optionNum, visibleNum) << std::endl;
 }
+void Menu::displayControls()
+{
+	static char controlHint [] = "Controls: Up, Down - Cursor Movement\nEnter - Select Option\nBackspace - Return to previous menu";
+	if (showControls)
+	{
+		Menu::buffer << controlHint << std::endl;
+	}
+}
 int Menu::doMenu()
 {
 	static char BAR [] = "********************************";
+	
 	bool selected = false;
 	int option = 0;
 	std::string tmpbuf;
@@ -271,6 +285,7 @@ int Menu::doMenu()
 		}
 		Menu::buffer << BAR << std::endl;	
 		displayDescription(option);
+		displayControls();
 		
 		// store the buffer in a local string to optimise
 		tmpbuf = Menu::buffer.str();
