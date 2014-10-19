@@ -7,10 +7,29 @@ UserController::UserController()
 
 void UserController::account()
 {
-    // Need to change Main Menu to whatever type of Account the user is, (Jon is working on accounts atm).
-    std::cout << "Main Menu > Account" << std::endl << std::endl;
-    
-    // Output Account details here.
+	Menu accountMenu;
+	std::string accountMenuOptions[] = {
+		"Change username",
+		"Change password",
+		"Back"
+	};
+	accountMenu.setOptions("Main Menu > Account", accountMenuOptions, 3);
+	int option;
+    do
+    {
+    	option = accountMenu.doMenu();
+    	switch(option)
+    	{
+    		// changing username
+    		case 0:
+    			// to do: add changing username functionality
+    		break;
+    		// changing password
+    			// to do: add changing password functionality
+    		case 1:
+    		break;
+    	}
+    } while (accountMenu.notExited(option));
 }
 
 void UserController::submissions()
