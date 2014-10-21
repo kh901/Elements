@@ -23,10 +23,14 @@ void UserController::account()
     		// changing username
     		case 0:
     			// to do: add changing username functionality
+		        // clear screen
+		        std::cout << "\033[2J";
     		break;
     		// changing password
     			// to do: add changing password functionality
     		case 1:
+		        // clear screen
+		        std::cout << "\033[2J";
     		break;
     	}
     } while (accountMenu.notExited(option));
@@ -36,13 +40,15 @@ void UserController::submissions()
 {
 	// set up menu for this part
 	Menu submissionMenu;
-	std::string subMenuOptions [4] = {
+	std::string subMenuOptions [] = {
 		"Submit a paper",
 		"View submissions",
 		"Withdraw a paper",
+        "Add comment",
+        "Display discussion",
 		"Back"
 	};
-	submissionMenu.setOptions("Main Menu > Submissions", subMenuOptions, 4);
+	submissionMenu.setOptions("Main Menu > Submissions", subMenuOptions, 6);
   
     int option = 0;
     while (submissionMenu.notExited(option))
@@ -70,7 +76,7 @@ void UserController::submissions()
 		        // clear screen
 		        std::cout << "\033[2J";
 		    break;
-		    // Review a paper
+		    // Withdraw a paper
 		    case 2:
 		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
 		        std::string whichSub;
@@ -79,6 +85,15 @@ void UserController::submissions()
 		        // clear screen
 		        std::cout << "\033[2J";   
 		    break;
+            // Add comment
+            case 3:
+            break;
+            // Display discussion
+            case 4:
+            break:
+            // Back
+            case 5:
+            break;
         }
     }
 }
@@ -105,7 +120,32 @@ void UserController::reviews()
 void UserController::configuration()
 {
     std::cout << "Main Menu > Configuration" << std::endl << std::endl;
-    // Need to ask team what goes in here
+    
+    Menu configurationMenu;
+	std::string configurationMenuOptions[] = {
+		"Advance to next phase",
+		"Change reviewers",
+        "Change papers per reviewer limit",
+        "Back"
+	};
+	configurationMenu.setOptions("Main Menu > Account", configurationMenuOptions, 4);
+	int option;
+    do
+    {
+    	option = configurationMenu.doMenu();
+    	switch(option)
+    	{
+    		case 0:
+                // 
+                break;
+    		case 1:
+                break;
+            case 2;
+                break;
+            case 3;
+                break;
+    	}
+    } while (configurationMenu.notExited(option));
 }
 
 void UserController::discussion()

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
+#include "Account.h"
 
 #ifndef SUBMISSION_H
 #define SUBMISSION_H
@@ -12,14 +14,24 @@ class Submission
         void view();
         void withdraw();
         
+        struct Comment
+        {
+            std::string username;
+            std::string comment;
+        };
+        
+        void addComment();
+        void displayComments();
+        
     private:
         bool submitted;
-        //std::fstream paper; might not need it, if filename is used as reference to database for paper
         std::string filename;
         
-        std::string author;
+        std::vector<std::string> authors;
         std::string title;
         std::string description;
+        
+        std::vector<Comment> comments;
     
 };
 
