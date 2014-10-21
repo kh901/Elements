@@ -1,6 +1,8 @@
 #include<iostream>
 #include<SFML/Network.hpp>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 using namespace sf;
@@ -14,10 +16,14 @@ void level5();
 int main(){
 
 	Packet login;
+	Packet validate;
 	size_t received;
 	string username;
 	string password;
-	int level;
+	int value = 0;
+	bool valid = false;
+
+	srand(time(NULL));
 
 	sf::TcpListener listener;
 	
@@ -29,21 +35,27 @@ int main(){
 	
 	sf::TcpSocket client;
 
-	//char data[100] = "hello world";
 	if(listener.accept(client)== sf::Socket::Done){
-		char data[100] = "Username: ";
-		client.send(data,100);
-		client.receive(data,100,received);
-		strcpy(data, "Password: ");
-		client.send(data,100);
-		client.receive(data,100,received);
-		strcpy(data, "Level: ");
-		client.send(data,100);
 		client.receive(login);
-		login >> username >> password >> level;
-		cout << username << endl;
-		cout << password << endl;
-		switch (level)
+		login >> username >> password;
+		value = rand() % 1;
+		if (value == 0)
+		{
+			valid = false;
+		}
+		else if (value == 1)
+		{
+			valid = true;
+		}
+		else
+		{
+			return -1;
+		}
+		
+		validate << valid;
+		client.send(validate);
+
+		/*switch (level)
 		{
 			case 1: level1();
 				break;
@@ -56,7 +68,7 @@ int main(){
 			case 5: level5();
 				break;
 			default: break;
-		}
+		}*/
 	
 	}
 	
