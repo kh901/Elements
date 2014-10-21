@@ -30,6 +30,11 @@ Account::Account(const Account &anAcc)
 	loggedIn = anAcc.loggedIn;
 	accessMap = anAcc.accessMap;
 	accountType = Account_User;
+	firstName = anAcc.firstName;
+	lastName = anAcc.lastName;
+	email = anAcc.email;
+	university = anAcc.university;
+	keywords = anAcc.keywords;
 }
 Account::Account(const AccountType accType, const bool loginStatus)
 {
@@ -168,6 +173,11 @@ Account & Account::operator=(const Account &acc)
 	loggedIn = acc.loggedIn;
 	accessMap = acc.accessMap;
 	accountType = acc.accountType;
+	firstName = acc.firstName;
+	lastName = acc.lastName;
+	email = acc.email;
+	university = acc.university;
+	keywords = acc.keywords;
 	return *this;
 }
 
