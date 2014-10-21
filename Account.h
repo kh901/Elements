@@ -8,13 +8,15 @@
 #include <ctime>
 #include <map>
 #include <vector>
+#include <fstream>
 #include "Menu.h"
+#include "File.h"
 
 #define ACCOUNT_MAX_ID_LEN 9
 
 std::string encrypt(const std::string &);
 
-class Account
+class Account : public FileIO
 {
 	public:
 		enum AccessLevel { 
@@ -57,6 +59,10 @@ class Account
 		bool isLoggedIn() { return loggedIn; }
 		
 		Account & operator=(const Account &);
+		
+		// write and read this class to a binary file stream
+		void writeFile(std::ofstream &);
+		bool readFile(std::ifstream &);
 	protected:
 		std::string username;
 		std::string password;			// user's "password" encrypted with our oneway encryption
@@ -66,11 +72,11 @@ class Account
 		std::string lastName;
 		std::string email;
 		std::string university;
-		std::vector<std::string> keywords;
 		bool loggedIn;
+		AccountType accountType;
+		std::vector<std::string> keywords;
 		// a map of each conference that this account has a level of access higher than none
 		std::map<std::string, AccessLevel> accessMap;
-		AccountType accountType;
 	private:
 		std::string generateId();
 };

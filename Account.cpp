@@ -181,6 +181,33 @@ Account & Account::operator=(const Account &acc)
 	return *this;
 }
 
+void Account::writeFile(std::ofstream &ofs)
+{
+	appendData<std::string>(ofs, this->username);
+	appendData<std::string>(ofs, this->password);
+	appendData<std::string>(ofs, this->firstName);
+	appendData<std::string>(ofs, this->lastName);
+	appendData<std::string>(ofs, this->email);
+	appendData<std::string>(ofs, this->university);
+	appendData<bool>(ofs, this->loggedIn);
+	appendData<AccountType>(ofs, this->accountType);
+	appendVector<std::string>(ofs, this->keywords);
+	appendMap<std::string, AccessLevel>(ofs, this->accessMap);
+}
+bool Account::readFile(std::ifstream &ifs)
+{
+	readData<std::string>(ifs, this->username);
+	readData<std::string>(ifs, this->password);
+	readData<std::string>(ifs, this->firstName);
+	readData<std::string>(ifs, this->lastName);
+	readData<std::string>(ifs, this->email);
+	readData<std::string>(ifs, this->university);
+	readData<bool>(ifs, this->loggedIn);
+	readData<AccountType>(ifs, this->accountType);
+	readVector<std::string>(ifs, this->keywords);
+	readMap<std::string, AccessLevel>(ifs, this->accessMap);
+}
+
 /*
 using namespace std;
 

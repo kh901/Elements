@@ -1,9 +1,12 @@
 #include <string>
+#include <iostream>
+#include <fstream>
+#include "File.h"
 
 #ifndef CONFERENCE_H
 #define CONFERENCE_H
 
-class Conference
+class Conference : public FileIO
 {
     public:
         Conference();
@@ -16,10 +19,14 @@ class Conference
             Phase_Finalising,
             Phase_Completed
         };
+        
+        // write and read this class to a binary file stream
+		void writeFile(std::ofstream &);
+		bool readFile(std::ifstream &);
     private:
-        string name;
-        string date;
-        string location;
+        std::string name;
+        std::string date;
+        std::string location;
         
 };
 #endif

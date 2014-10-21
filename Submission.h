@@ -2,11 +2,12 @@
 #include <fstream>
 #include <vector>
 #include "Account.h"
+#include "File.h"
 
 #ifndef SUBMISSION_H
 #define SUBMISSION_H
 
-class Submission
+class Submission : public FileIO
 {
     public:
         Submission();
@@ -22,19 +23,20 @@ class Submission
             std::string comment;
         };
         
-        void addComment();
+        void addComment(Account account);
         void displayComments();
-        
+
+		// write and read this class to a binary file stream
+		void writeFile(std::ofstream &);
+		bool readFile(std::ifstream &);
     private:
         bool submitted;
         bool reviewed;
         std::string filename;
-        
-        std::vector<std::string> authors;
-        std::vector<std::string> keywords;
         std::string title;
         std::string description;
-        
+        std::vector<std::string> authors;
+        std::vector<std::string> keywords;
         std::vector<Comment> comments;
     
 };

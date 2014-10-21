@@ -9,7 +9,7 @@ Submission::Submission()
     reviewed = false;
 }
 
-void setReviewed(bool reviewed)
+void Submission::setReviewed(bool reviewed)
 {
     this->reviewed = reviewed;
 }
@@ -50,7 +50,7 @@ void Submission::submit()
     {
         keywords.push_back(str);
     }
-    std::cin.ignore(1 ',\n');
+    std::cin.ignore(1, '\n');
         
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
@@ -99,5 +99,28 @@ void Submission::addComment(Account account)
 void Submission::displayComments()
 {
     for(int i = 0; i < comments.size(); i++)
-        cout << comments[i].username << ": " << comments[i].comment << std::endl;
+        std::cout << comments[i].username << ": " << comments[i].comment << std::endl;
+}
+
+void Submission::writeFile(std::ofstream &ofs)
+{
+	appendData<bool>(ofs, this->submitted);
+	appendData<bool>(ofs, this->reviewed);
+	appendData<std::string>(ofs, this->filename);
+	appendData<std::string>(ofs, this->title);
+	appendData<std::string>(ofs, this->description);
+	appendVector<std::string>(ofs, this->authors);
+	appendVector<std::string>(ofs, this->keywords);
+	appendVector<Comment>(ofs, this->comments);
+}
+bool Submission::readFile(std::ifstream &ifs)
+{
+	readData<bool>(ifs, this->submitted);
+	readData<bool>(ifs, this->reviewed);
+	readData<std::string>(ifs, this->filename);
+	readData<std::string>(ifs, this->title);
+	readData<std::string>(ifs, this->description);
+	readVector<std::string>(ifs, this->authors);
+	readVector<std::string>(ifs, this->keywords);
+	readVector<Comment>(ifs, this->comments);	
 }
