@@ -1,11 +1,5 @@
 #include "Account.h"
 
-template<class T>
-T Max(const T &a, const T &b)
-{
-	return (a > b ? a : b);
-}
-
 std::string encrypt(const std::string &str)
 {
 	std::string result(str);
@@ -27,19 +21,36 @@ std::string encrypt(const std::string &str)
 Account::Account()
 {
 	accountType = Account_User;
-	generateId();
+	loggedIn = false;
+	uniqueId = generateId();
+}
+Account::Account(const Account &anAcc)
+{
+	accountType = Account_User;
+	loggedIn = false;
+	uniqueId = generateId();
+}
+Account::Account(const std::string &anId, const AccountType accType, const bool loginStatus)
+{
+	accountType = accType;
+	loggedIn = loginStatus;
+	uniqueId = anId;
 }
 
-bool Account::matchPassword(const std::string &str)
+bool Account::matchPassword(const std::string &str, const bool encryptValue)
 {
+	if (encryptValue)
+	{
+		return password == encrypt(str);
+	}
 	return password == str;
 }
 
-void Account::generateId()
+std::string Account::generateId()
 {
 	std::ostringstream os;
 	srand(time(NULL));
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < ACCOUNT_MAX_ID_LEN; ++i)
 	{
 		if (i != 4)
 		{
@@ -65,9 +76,19 @@ void Account::generateId()
 		}
 	}
 	std::cout << "Gen id:" << os.str() << std::endl;
-	this->uniqueId = os.str();
+	return os.str();
 }
-
+std::string Account::startSession()
+{
+	sessionId = generateId();
+	loggedIn = true;
+	return sessionId;
+}
+void Account::endSession()
+{
+	sessionId.clear();
+	loggedIn = false;
+}
 bool Account::addAccess(const std::string &conferenceId, const AccessLevel permissions)
 {
 	std::pair< std::map<std::string, AccessLevel>::iterator, bool > ret;
@@ -106,6 +127,42 @@ bool Account::hasAccess(const std::string &conferenceId)
 {
 	return (accessMap.find(conferenceId) != accessMap.end());
 }
+void Account::printAccess()
+{
+	std::cout << "User " << username << " has access to: " << std::endl;
+	std::map<std::string, AccessLevel>::iterator it;
+	for (it = accessMap.begin(); it != accessMap.end(); ++it)
+	{
+		std::cout << "Conference: " << it->first << " - Access Level: ";
+		switch(it->second)
+		{
+			case Access_None:
+				std::cout << "None";
+			break;
+			case Access_Author:
+				std::cout << "Author";
+			break;
+			case Access_Reviewer:
+				std::cout << "Reviewer";
+			break;
+			case Access_Chairman:
+				std::cout << "Chairman";
+			break;
+			case Access_Admin:
+				std::cout << "Admin";
+			break;
+		}
+		std::cout << std::endl;
+	}
+}
+void Account::setUsername(const std::string &aUser)
+{
+	username = aUser;
+}
+void Account::setPassword(const std::string &aPass)
+{
+	password = encrypt(aPass);
+}
 
 using namespace std;
 
@@ -116,47 +173,15 @@ int main ()
 	cout << "\x1B[1;1f";
 
 	Account myAccount;
-
-	// add access to a new conference called TestA
-	string testConf = "TestA";
-	Account::AccessLevel testAccess = Account::Access_Author;
-	myAccount.addAccess(testConf, testAccess);
-	
-	if (myAccount.getAccess(testConf) == Account::Access_Author)
-	{
-		cout << "I am an author of " << testConf << endl;
-	}
-	
-	// change permissions
-	testAccess = Account::Access_Reviewer;
-	myAccount.changeAccess(testConf, testAccess);
-	
-	if (myAccount.getAccess(testConf) == Account::Access_Reviewer)
-	{
-		cout << "I am now a reviewer of " << testConf << endl;
-	}
-	
-	// check access to conference bob
-	if (myAccount.hasAccess("bob"))
-	{
-		cout << "I have access to bob" << endl;
-	}
-	else
-	{
-		cout << "I do not have access to bob" << endl;
-	}
-	
-	
-	// check if they have access
-
+	myAccount.setUsername("lol");
+	myAccount.setPassword("3server5me");
 	/*
 	string test = ".asdhj$%^&*", pass = "?asdhj$%^&*";
 	string enc = encrypt(test), passEnc = encrypt(pass);
 	cout << "Encrypted: " << enc << endl;
 	cout << "Pass: " << passEnc << endl;
 	cout << (enc == passEnc ? "MATCHES" : "DOES NOT MATCH") << endl;
-	
-	cin.ignore(1, '\n');
+	*/
 	
 	//Clear and reset cursor
 	cout << "\033[2J";
@@ -217,9 +242,10 @@ int main ()
 						case 2:
 							cout << "Signing you in...";
 							cin.ignore(1,'\n');
-							if (encrypt(tmpPass) == encrypt(string("passyo")))
+							if (myAccount.matchUsername(tmpUser) && myAccount.matchPassword(tmpPass, true))
 							{
 								cout << "Success!" << endl;
+								cout << "Welcome, " << myAccount.getUsername() << endl;
 								cin.ignore(1,'\n');
 								loginRes = accRes = -1;
 							}
@@ -255,6 +281,6 @@ int main ()
 	//Clear and reset cursor
 	cout << "\033[2J";
 	cout << "\x1B[1;1f";
-	*/
+	
 }
 
