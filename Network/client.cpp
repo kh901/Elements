@@ -1,31 +1,47 @@
 #include<iostream>
 #include<SFML/Network.hpp>
+#include<cstring>
+#include<SFML/System/Time.hpp>
 
 using namespace std;
-using namespace sf;
-
+using namespace sf;	
 
 int main(){
 
-	int option[1];
+	Packet login;
+
+	string username;
+	string password;
+	int level = 0;
+
 	TcpSocket socket;
-	Socket::Status status = socket.connect("localhost",60000);
+	
+	Time time = seconds(7);
+	
+	Socket::Status status = socket.connect("localhost",60000,time);
+	
 	if(status == Socket::Done){
-		//cout<< "status" <<endl;
-		char data[100] = "";
+		/*char data[100] = "";
 		size_t rec;
-		socket.receive(data,100,rec);
-		cout<<data<<endl;
-		cin >> option[0];
-		if (option[0] > 5 || option[0] < 1)
-		{
-			cout << "ERROR" << endl;
-			return -1;
+		socket.receive(data,100,rec);*/
+		bool valid = false;
+		Packet response;
+		while(valid==false){
+		
+			cout<<"Username: ";
+			cin>>username;
+			cout<<endl;
+		
+			cout<<"Password: ";
+			cin>>password;
+			cout<<endl;
+		
+			login << username << password;
+			socket.send(login);
+			socket.receive(response);
+			response >> valid;
 		}
-		socket.send(option, 1);
 	}
 	
 	return 0;
 }
-
-
