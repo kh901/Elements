@@ -57,10 +57,8 @@ class Account
 	protected:
 		std::string username;
 		std::string password;			// user's "password" encrypted with our oneway encryption
-		std::string uniqueId;			// unique id for this account 
 										// 8 character with colon separator - Theoretical maximum ids of 218340105584896
 										// a-z, A-Z, 0-9 as characters 
-		std::string sessionId;
 		bool loggedIn;
 		// a map of each conference that this account has a level of access higher than none
 		std::map<std::string, AccessLevel> accessMap;

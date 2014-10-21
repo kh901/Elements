@@ -164,6 +164,7 @@ void Account::setPassword(const std::string &aPass)
 	password = encrypt(aPass);
 }
 
+/*
 using namespace std;
 
 int main ()
@@ -175,13 +176,6 @@ int main ()
 	Account myAccount;
 	myAccount.setUsername("lol");
 	myAccount.setPassword("3server5me");
-	/*
-	string test = ".asdhj$%^&*", pass = "?asdhj$%^&*";
-	string enc = encrypt(test), passEnc = encrypt(pass);
-	cout << "Encrypted: " << enc << endl;
-	cout << "Pass: " << passEnc << endl;
-	cout << (enc == passEnc ? "MATCHES" : "DOES NOT MATCH") << endl;
-	*/
 	
 	//Clear and reset cursor
 	cout << "\033[2J";
@@ -283,4 +277,5 @@ int main ()
 	cout << "\x1B[1;1f";
 	
 }
+*/
 
