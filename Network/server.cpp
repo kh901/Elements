@@ -3,16 +3,18 @@
 
 using namespace std;
 
-void function1();
-void function2();
-void function3();
-void function4();
-void function5();
+void level1();
+void level2();
+void level3();
+void level4();
+void level5();
 
 int main(){
 
-	int option[1];
 	size_t received;
+	string username;
+	string password;
+	int level;
 
 	sf::TcpListener listener;
 	
@@ -25,23 +27,28 @@ int main(){
 	sf::TcpSocket client;
 
 	//char data[100] = "hello world";
-	char data[100] = "Please choose a number between 1 and 5";
 	if(listener.accept(client)== sf::Socket::Done){
-	
+		char data[100] = "Username: ";
 		client.send(data,100);
-		client.receive(option, 1, received);
-		int option_temp = option[0];
-		switch (option_temp)
+		client.receive(data,100,received);
+		data[100] = "Password: ";
+		client.send(data,100);
+		client.receive(data,100,received);
+		data[100] = "Level: ";
+		client.send(data,100);
+		client.receive(login);
+		login >> username >> password >> level;
+		switch (level)
 		{
-			case 1: function1();
+			case 1: level1();
 				break;
-			case 2: function2();
+			case 2: level2();
 				break;
-			case 3: function3();
+			case 3: level3();
 				break;
-			case 4: function4();
+			case 4: level4();
 				break;
-			case 5: function5();
+			case 5: level5();
 				break;
 			default: break;
 		}
@@ -51,27 +58,27 @@ int main(){
 	return 0;
 }
 
-void function1()
+void level1()
 {
-	cout << "Called Function 1" << endl;
+	cout << "The User has account permission level 1" << endl;
 }
 
-void function2()
+void level2()
 {
-	cout << "Called Function 2" << endl;
+	cout << "The User has account permission level 2" << endl;
 }
 
-void function3()
+void level3()
 {
-	cout << "Called Function 3" << endl;
+	cout << "The User has account permission level 3" << endl;
 }
 
-void function4()
+void level4()
 {
-	cout << "Called Function 4" << endl;
+	cout << "The User has account permission level 4" << endl;
 }
 
-void function5()
+void level5()
 {
-	cout << "Called Function 5" << endl;
+	cout << "The User has account permission level 5" << endl;
 }

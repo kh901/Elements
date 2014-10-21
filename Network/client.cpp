@@ -2,30 +2,39 @@
 #include<SFML/Network.hpp>
 
 using namespace std;
-using namespace sf;
-
+using namespace sf;	
 
 int main(){
 
-	int option[1];
+	Packet login;
+	string username;
+	string password;
+	int level = 0;
+
 	TcpSocket socket;
 	Socket::Status status = socket.connect("localhost",60000);
 	if(status == Socket::Done){
-		//cout<< "status" <<endl;
 		char data[100] = "";
 		size_t rec;
 		socket.receive(data,100,rec);
-		cout<<data<<endl;
-		cin >> option[0];
-		if (option[0] > 5 || option[0] < 1)
-		{
-			cout << "ERROR" << endl;
-			return -1;
-		}
-		socket.send(option, 1);
+		cout << data;
+		cin >> username;
+		cout << endl;
+		char data[100] = "";
+		socket.send(data,100,rec);
+		socket.receive(data,100,rec);
+		cout << data;
+		cin >> password;
+		cout << endl;
+		data[100] = "";
+		socket.send(data,100,rec);
+		socket.receive(data,100,rec);
+		cout << data;
+		cin >> level;
+		cout << endl;
+		login << username << password << level;
+		socket.send(login);
 	}
 	
-	return 0;
+	return 0
 }
-
-
