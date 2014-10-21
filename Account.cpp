@@ -22,19 +22,16 @@ Account::Account()
 {
 	accountType = Account_User;
 	loggedIn = false;
-	uniqueId = generateId();
 }
 Account::Account(const Account &anAcc)
 {
 	accountType = Account_User;
 	loggedIn = false;
-	uniqueId = generateId();
 }
-Account::Account(const std::string &anId, const AccountType accType, const bool loginStatus)
+Account::Account(const AccountType accType, const bool loginStatus)
 {
 	accountType = accType;
 	loggedIn = loginStatus;
-	uniqueId = anId;
 }
 
 bool Account::matchPassword(const std::string &str, const bool encryptValue)
@@ -78,15 +75,12 @@ std::string Account::generateId()
 	std::cout << "Gen id:" << os.str() << std::endl;
 	return os.str();
 }
-std::string Account::startSession()
+void Account::startSession()
 {
-	sessionId = generateId();
 	loggedIn = true;
-	return sessionId;
 }
 void Account::endSession()
 {
-	sessionId.clear();
 	loggedIn = false;
 }
 bool Account::addAccess(const std::string &conferenceId, const AccessLevel permissions)

@@ -31,7 +31,7 @@ class Account
 		
 		Account();
 		Account(const Account &);
-		Account(const std::string &, const AccountType, const bool = false);
+		Account(const AccountType, const bool = false);
 	
 		// functions dealing with access to conferences
 		bool addAccess(const std::string &, const AccessLevel);
@@ -51,7 +51,7 @@ class Account
 		bool matchPassword(const std::string &, const bool encryptValue = true);
 		
 		// login session functions
-		std::string startSession();
+	 	void startSession();
 		void endSession();
 		bool isLoggedIn() { return loggedIn; }
 	protected:
