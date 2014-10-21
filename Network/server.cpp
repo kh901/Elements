@@ -28,8 +28,6 @@ int main(){
 	
 	if(listener.listen(60000)!= Socket::Done)
 		cout<<"error"<<endl;
-	
-
 
 	if(listener.accept(client)== sf::Socket::Done){
 	
