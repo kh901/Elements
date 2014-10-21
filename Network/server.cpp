@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <list>
 
 using namespace std;
 using namespace sf;
@@ -17,6 +18,7 @@ void level5();
 bool checkAccount(vector<Account>,string,string);
 bool loginAccount(TcpSocket&,vector<Account>);
 bool registerAccount();
+void processClient(TcpSocket&, vector<Account>);
 
 
 vector<Account> loadFalseAccounts(){
@@ -54,56 +56,110 @@ vector<Account> loadFalseAccounts(){
 int main(){
 
 
-	Packet entryPacket;
-	string protocol;
+	
+
 	
 	vector<Account> accounts = loadFalseAccounts();
 	
 	TcpListener listener;
 	TcpSocket client;
 	
+	list<TcpSocket*> clients;
+	
+	SocketSelector selector;
+	
+
 	if(listener.listen(60000)!= Socket::Done)
 		cout<<"error"<<endl;
 		
-	for(;;){
-		if(listener.accept(client)== sf::Socket::Done){
+	selector.add(listener);
 	
-			client.receive(entryPacket);
-		
-			entryPacket >> protocol;
-		
-			if(protocol=="LOGIN"){
-				loginAccount(client,accounts);
+	
+	for(;;){
+	
+	
+		 if (selector.wait()){
+			// Test the listener
+			if (selector.isReady(listener))
+			{
+				// The listener is ready: there is a pending connection
+				TcpSocket* client = new TcpSocket;
+				if (listener.accept(*client) == Socket::Done)
+				{
+					// Add the new client to the clients list
+					clients.push_back(client);
+					// Add the new client to the selector so that we will
+					// be notified when he sends something
+					selector.add(*client);
+				}
+				else
+				{
+					// Error, we won't get a new connection, delete the socket
+					delete client;
+				}
 			}
-			else if(protocol=="REGISTER"){
-				registerAccount();
+			else
+			{
+				// The listener socket is not ready, test all other sockets (the clients)
+				for (std::list<sf::TcpSocket*>::iterator it = clients.begin(); it != clients.end(); ++it)
+				{
+					sf::TcpSocket& client = **it;
+					if (selector.isReady(client))
+					{
+					// The client has sent some data, we can receive it
+						sf::Packet packet;
+						if (client.receive(packet) == sf::Socket::Done)
+						{
+							processClient(client, accounts);
+						}
+						
+					
+					}
+				}
 			}
-			else if(protocol=="STUB1"){
-		
-		
-			}
-			else if(protocol=="STUB2"){
-		
-		
-			}
-			else if(protocol=="STUB3"){
-		
-		
-			}
-			else if(protocol=="STUB4"){
-		
-		
-			}
-			else if(protocol=="STUB5"){
-		
-		
-			}
+		}
 	}
 
 
-	}
+	
 	
 	return 0;
+}
+
+void processClient(TcpSocket &client, vector<Account> accounts)
+{
+	Packet entryPacket;
+	string protocol;
+	client.receive(entryPacket);
+		
+	entryPacket >> protocol;
+		
+	if(protocol=="LOGIN"){
+		loginAccount(client,accounts);
+	}
+	else if(protocol=="REGISTER"){
+		registerAccount();
+	}
+	else if(protocol=="STUB1"){
+
+
+	}
+	else if(protocol=="STUB2"){
+
+
+	}
+	else if(protocol=="STUB3"){
+
+
+	}
+	else if(protocol=="STUB4"){
+
+
+	}
+	else if(protocol=="BYE"){
+		
+
+	}
 }
 
 bool checkAccount(vector<Account> accounts,string username,string password){

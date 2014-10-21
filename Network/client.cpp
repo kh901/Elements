@@ -6,6 +6,8 @@
 using namespace std;
 using namespace sf;	
 
+bool loginHandler();
+
 int main(){
 
 	Packet protocol,login;
@@ -34,6 +36,7 @@ int main(){
 			key = "LOGIN";
 			protocol << key;
 			socket.send(protocol);
+			loginHandler();
 		}
 		else if (option == 2)
 		{
@@ -48,23 +51,30 @@ int main(){
 		}
 			
 
-		bool valid = false;
-		Packet response;
-		
-		while(valid==false){
-		
-			cout<<"Username: ";
-			cin>>username;
-	
-			cout<<"Password: ";
-			cin>>password;
-		
-			login << username << password;
-			socket.send(login);
-			socket.receive(response);
-			response >> valid;
-		}
 	}
 	
 	return 0;
 }
+
+bool loginHandler(){
+
+	bool valid = false;
+	Packet response;
+	
+	while(valid==false){
+	
+		cout<<"Username: ";
+		cin>>username;
+
+		cout<<"Password: ";
+		cin>>password;
+	
+		login << username << password;
+		socket.send(login);
+		socket.receive(response);
+		response >> valid;
+	}
+
+}
+
+
