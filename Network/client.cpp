@@ -21,20 +21,17 @@ int main(){
 	Socket::Status status = socket.connect("localhost",60000,time);
 	
 	if(status == Socket::Done){
-		/*char data[100] = "";
-		size_t rec;
-		socket.receive(data,100,rec);*/
+	
 		bool valid = false;
 		Packet response;
+		
 		while(valid==false){
 		
 			cout<<"Username: ";
 			cin>>username;
-			cout<<endl;
-		
+	
 			cout<<"Password: ";
 			cin>>password;
-			cout<<endl;
 		
 			login << username << password;
 			socket.send(login);
