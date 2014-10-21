@@ -158,6 +158,16 @@ void Account::setPassword(const std::string &aPass)
 	password = encrypt(aPass);
 }
 
+Account & Account::operator=(const Account &acc)
+{
+	username = acc.username;
+	password = acc.password;
+	loggedIn = acc.loggedIn;
+	accessMap = acc.accessMap;
+	accountType = acc.accountType;
+	return *this;
+}
+
 /*
 using namespace std;
 

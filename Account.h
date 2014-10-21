@@ -49,11 +49,13 @@ class Account
 		void setPassword(const std::string &);		// encrypts the given string with a one way encryption
 		bool matchUsername(const std::string &aUser) { return username == aUser; }
 		bool matchPassword(const std::string &, const bool encryptValue = true);
-		
+				
 		// login session functions
 	 	void startSession();
 		void endSession();
 		bool isLoggedIn() { return loggedIn; }
+		
+		Account & operator=(const Account &);
 	protected:
 		std::string username;
 		std::string password;			// user's "password" encrypted with our oneway encryption
