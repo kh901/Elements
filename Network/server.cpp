@@ -15,46 +15,37 @@ void level5();
 
 int main(){
 
-	Packet login;
-	Packet validate;
-	size_t received;
-	string username;
-	string password;
+	Packet login,validate;
+	string username,password;
 	int value = 0;
 	bool valid = false;
+	size_t received;
 
 	srand(time(NULL));
 
 	sf::TcpListener listener;
-	
-	if(listener.listen(60000)!=sf::Socket::Done){
-	
-		cout<<"error"<<endl;
-		
-	}
-	
 	sf::TcpSocket client;
+	
+	if(listener.listen(60000)!= Socket::Done)
+		cout<<"error"<<endl;
 
 	if(listener.accept(client)== sf::Socket::Done){
-		client.receive(login);
-		login >> username >> password;
-		value = rand() % 0 + 1;
-		if (value == 0)
-		{
-			valid = false;
-		}
-		else if (value == 1)
-		{
-			valid = true;
-		}
-		else
-		{
-			return -1;
-		}
+	
+		while(valid==false){
 		
-		validate << valid;
-		client.send(validate);
-
+			client.receive(login);
+			login >> username >> password;
+			value = rand() % 1 + 2;
+			cout<<"Value: "<<value<<endl;
+			if (value == 1)
+				valid = false;
+			else if (value == 2)
+				valid = true;
+		
+			validate << valid;
+		
+			client.send(validate);
+		}
 		/*switch (level)
 		{
 			case 1: level1();
