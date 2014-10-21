@@ -1,7 +1,9 @@
 #include<iostream>
 #include<SFML/Network.hpp>
+#include <cstring>
 
 using namespace std;
+using namespace sf;
 
 void level1();
 void level2();
@@ -11,6 +13,7 @@ void level5();
 
 int main(){
 
+	Packet login;
 	size_t received;
 	string username;
 	string password;
@@ -31,10 +34,10 @@ int main(){
 		char data[100] = "Username: ";
 		client.send(data,100);
 		client.receive(data,100,received);
-		data[100] = "Password: ";
+		strcpy(data, "Password: ");
 		client.send(data,100);
 		client.receive(data,100,received);
-		data[100] = "Level: ";
+		strcpy(data, "Level: ");
 		client.send(data,100);
 		client.receive(login);
 		login >> username >> password >> level;
