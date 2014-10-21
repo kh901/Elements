@@ -38,7 +38,7 @@ int main(){
 	if(listener.accept(client)== sf::Socket::Done){
 		client.receive(login);
 		login >> username >> password;
-		value = rand() % 1;
+		value = rand() % 0 + 1;
 		if (value == 0)
 		{
 			valid = false;
