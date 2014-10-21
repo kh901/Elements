@@ -20,6 +20,7 @@ class UserController
         void notifications();
         void viewLogs();
         void adminTools();
+        void mainMenu();
 
         void setReviewed(bool);
     private:

@@ -5,7 +5,6 @@ Submission::Submission()
     submitted = false;
     filename = "";
     title = "";
-    author = "";
     description = "";
 }
 
@@ -19,8 +18,21 @@ void Submission::submit()
     std::cout << "Enter title: ";
     getline(std::cin, title);
     
-    std::cout << "Enter author: ";
-    getline(std::cin, author);
+    std::string author;
+    do
+    {
+        std::cout << "Enter authors name: ";
+        getline(std::cin, author);
+        authors.push_back(author);
+      
+        do
+        {
+            std::cout << "Do you want to add another author to this paper? (y/n)";
+            getline(std::cin, author);
+            if(author != "y" && author != "n")
+                std::cout << "Invalid option, please try again" << std::endl;
+        }while(author != "y" && author != "n");
+    }while(author != "n");
     
     std::cout << "Enter description: ";
     getline(std::cin, description);
@@ -45,8 +57,10 @@ void Submission::submit()
 void Submission::view()
 {    
     std::cout << "Title: " << title << std::endl;
-    std::cout << "Author: " << author << std::endl;
-    std::cout << "Description: " << description << std::endl;
+    std::cout << "Authors: ";
+    for(int i = 0; i < authors.size(); i++)
+        std::cout << authors[i] << ", ";
+    std::cout << std::endl << "Description: " << description << std::endl;
 }
 
 void Submission::withdraw()
@@ -57,3 +71,17 @@ void Submission::withdraw()
     submitted = false;
 }
 
+void Submission::addComment(Account account)
+{
+    Comment com;
+    std::cout << "Add comment about this paper: ";
+    getline(std::cin, com.comment);
+    com.username = account.getUsername();
+    comments.push_back(com);
+}
+
+void Submission::displayComments()
+{
+    for(int i = 0; i < comments.size(); i++)
+        cout << comments[i].username << ": " << comments[i].comment << std::endl;
+}
