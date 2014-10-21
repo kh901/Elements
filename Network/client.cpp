@@ -8,7 +8,7 @@ using namespace sf;
 
 int main(){
 
-	Packet protocol;
+	Packet protocol,login;
 	string key;
 
 	string username;

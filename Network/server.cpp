@@ -15,7 +15,8 @@ void level3();
 void level4();
 void level5();
 bool checkAccount(vector<Account>,string,string);
-bool loginAccount();
+bool loginAccount(TcpSocket&,vector<Account>);
+bool registerAccount();
 
 
 vector<Account> loadFalseAccounts(){
@@ -56,49 +57,48 @@ int main(){
 	Packet entryPacket;
 	string protocol;
 	
-	vector<Account> accounts;
-	accounts = loadFalseAccounts();
+	vector<Account> accounts = loadFalseAccounts();
 	
-	sf::TcpListener listener;
-	
+	TcpListener listener;
+	TcpSocket client;
 	
 	if(listener.listen(60000)!= Socket::Done)
 		cout<<"error"<<endl;
 		
-	sf::TcpSocket client;
-	if(listener.accept(client)== sf::Socket::Done){
+	for(;;){
+		if(listener.accept(client)== sf::Socket::Done){
 	
-		client.receive(entryPacket);
+			client.receive(entryPacket);
 		
-		entryPacket >> protocol;
+			entryPacket >> protocol;
 		
-		if(protocol=="LOGIN"){
-			loginAccount();
-		}
-		else if(protocol=="REGISTER"){
-			registerAccount();
-		}
-		else if(protocol=="STUB1"){
-		
-		
-		}
-		else if(protocol=="STUB2"){
+			if(protocol=="LOGIN"){
+				loginAccount(client,accounts);
+			}
+			else if(protocol=="REGISTER"){
+				registerAccount();
+			}
+			else if(protocol=="STUB1"){
 		
 		
-		}
-		else if(protocol=="STUB3"){
+			}
+			else if(protocol=="STUB2"){
 		
 		
-		}
-		else if(protocol=="STUB4"){
+			}
+			else if(protocol=="STUB3"){
 		
 		
-		}
-		else if(protocol=="STUB5"){
+			}
+			else if(protocol=="STUB4"){
 		
 		
-		}
-	
+			}
+			else if(protocol=="STUB5"){
+		
+		
+			}
+	}
 
 
 	}
@@ -115,7 +115,7 @@ bool checkAccount(vector<Account> accounts,string username,string password){
 	return false;
 }
 
-bool loginAccount(){
+bool loginAccount(TcpSocket&client,vector<Account> accounts){
 
 	Packet login,validate;
 	string username,password;
@@ -137,7 +137,7 @@ bool loginAccount(){
 
 bool registerAccount(){
 
-	string username,password,email,university
+	string username,password,email,university;
 	
 
 }
