@@ -170,17 +170,6 @@ Account & Account::operator=(const Account &acc)
 	accountType = acc.accountType;
 	return *this;
 }
-#include <vector>
-int main()
-{
-	Account a;
-	a.setUsername("test");
-	
-	std::vector<Account> accounts;
-	accounts.push_back(a);
-	
-	std::cout << accounts[0].getUsername() << std::endl;
-}
 
 /*
 using namespace std;
