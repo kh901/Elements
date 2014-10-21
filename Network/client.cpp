@@ -8,11 +8,13 @@ using namespace sf;
 
 int main(){
 
-	Packet login;
+	Packet protocol;
+	string key;
 
 	string username;
 	string password;
-	int level = 0;
+	
+	int option;
 
 	TcpSocket socket;
 	
@@ -21,7 +23,31 @@ int main(){
 	Socket::Status status = socket.connect("localhost",60000,time);
 	
 	if(status == Socket::Done){
-	
+
+		cout << "Login (1)" << endl;
+		cout << "Register (2)" << endl;
+		cout << "Exit (3)" << endl;
+		cin >> option;
+
+		if (option == 1)
+		{
+			key = "LOGIN";
+			protocol << key;
+			socket.send(protocol);
+		}
+		else if (option == 2)
+		{
+			key = "REGISTER";
+			protocol << key;
+			socket.send(protocol);
+		}
+		else
+		{
+			cout << "TOPLEL" << endl;
+			return -1;
+		}
+			
+
 		bool valid = false;
 		Packet response;
 		
