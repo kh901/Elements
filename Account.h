@@ -48,7 +48,7 @@ class Account
 		void setUsername(const std::string &);
 		void setPassword(const std::string &);		// encrypts the given string with a one way encryption
 		bool matchUsername(const std::string &aUser) { return username == aUser; }
-		bool matchPassword(const std::string &, const bool encryptValue = false);
+		bool matchPassword(const std::string &, const bool encryptValue = true);
 		
 		// login session functions
 		std::string startSession();
