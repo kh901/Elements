@@ -14,6 +14,8 @@ class Submission
         void view();
         void withdraw();
         
+        void setReviewed(bool);
+        
         struct Comment
         {
             std::string username;
@@ -25,9 +27,11 @@ class Submission
         
     private:
         bool submitted;
+        bool reviewed;
         std::string filename;
         
         std::vector<std::string> authors;
+        std::vector<std::string> keywords;
         std::string title;
         std::string description;
         

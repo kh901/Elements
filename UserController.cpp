@@ -1,3 +1,15 @@
+/*
+sendLog(" has submitted a paper.")
+void sendLog(string details)
+{
+    time_t now = time(0);
+    char* dt = ctime(&now);
+    string log = dt + " " + username + " " + details;
+    // send log through socket to database
+}
+*/
+
+
 #include "UserController.h"
 
 UserController::UserController()
@@ -60,19 +72,19 @@ void UserController::submissions()
 		    // Submit a paper
 		   	case 0:
 		   	{
+            /*
+                pack submission and send
+                sf::Packet submitPacket;
+                submitPacket << sub;
+            */
 		   		Submission sub;
 		        sub.submit();            
-		        mySubmissions.push_back(sub);
 		        // clear screen
 		        std::cout << "\033[2J";
 		    }
 		    break;
 		    // View submissions
-		    case 1:
-		        for(int i = 0; i < (int)mySubmissions.size(); i++)
-		            mySubmissions[i].view();  
-		        std::cout << "(Press Enter to continue)";
-		        std::cin.ignore(1, '\n');      
+		    case 1:      
 		        // clear screen
 		        std::cout << "\033[2J";
 		    break;
@@ -151,28 +163,22 @@ void UserController::configuration()
 void UserController::discussion()
 {
     std::cout << "Main Menu > Discussions" << std::endl << std::endl;
-    // Need to create discussion forum some how
-    
-    // Simple forum: List of messages from different reviewers
-    // in chronological order about a topic (the paper they're reviewing)
+
+        // TO DO: get comments about submission
+        // query to server getting submissions
 }
 
 void UserController::notifications()
 {
     std::cout << "Main Menu > Notifications" << std::endl << std::endl;
-    // include notifications such as paper reviewed, need more than that i think
-}
-
-void UserController::setReviewed(bool reviewed)
-{
-    this->reviewed = reviewed;
+    // send query to server to check if papers have been reviewed
 }
 
 void UserController::viewLogs()
 {
     std::cout << "Main Menu > View Logs" << std::endl << std::endl;
     
-    // Need to create logging system/class
+    // Function call from Server Controller to view logs from database
 }
 
 void UserController::adminTools()
