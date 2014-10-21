@@ -1,2 +1,3 @@
 g++ server.cpp -c
-g++ -o servertest server.o -lsfml-network -lsfml-system
+g++ ../Account.cpp -c
+g++ -o servertest server.o Account.o -lsfml-network -lsfml-system
