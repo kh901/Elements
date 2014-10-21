@@ -6,6 +6,12 @@ Submission::Submission()
     filename = "";
     title = "";
     description = "";
+    reviewed = false;
+}
+
+void setReviewed(bool reviewed)
+{
+    this->reviewed = reviewed;
 }
 
 void Submission::submit()
@@ -37,6 +43,15 @@ void Submission::submit()
     std::cout << "Enter description: ";
     getline(std::cin, description);
     
+    std::string keyword, str;
+    std::cout << "Enter keywords: ";
+    getline(std::cin, keyword);
+    while (std::cin >> str)
+    {
+        keywords.push_back(str);
+    }
+    std::cin.ignore(1 ',\n');
+        
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
     getline(std::cin, option);
@@ -47,8 +62,7 @@ void Submission::submit()
     }
     else
     {
-        // send paper through network to store in database
-        
+        // send paper through network to server controller
         submitted = true;
     }
     
@@ -78,6 +92,8 @@ void Submission::addComment(Account account)
     getline(std::cin, com.comment);
     com.username = account.getUsername();
     comments.push_back(com);
+    
+    // send submission back to server controller
 }
 
 void Submission::displayComments()

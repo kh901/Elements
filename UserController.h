@@ -1,6 +1,7 @@
 #include "Menu.h"
 #include "Submission.h"
 
+#include <ctime>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@ class UserController
 {
     public:
         UserController();
+        void createConference();
         void account();
         void submissions();
         void reviews();
@@ -21,13 +23,11 @@ class UserController
         void viewLogs();
         void adminTools();
         void mainMenu();
-
-        void setReviewed(bool);
-    private:
-        // Object initialization of class type Account here (Jon is working on accounts atm).
-        std::vector<Submission> mySubmissions;
         
-        bool reviewed;
+    private
+        std::string username;
+        std::string conference;
+        //access level
 };
 
 #endif
