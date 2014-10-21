@@ -41,6 +41,8 @@ int main(){
 		client.send(data,100);
 		client.receive(login);
 		login >> username >> password >> level;
+		cout << username << endl;
+		cout << password << endl;
 		switch (level)
 		{
 			case 1: level1();
