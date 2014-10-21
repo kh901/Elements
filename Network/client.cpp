@@ -1,6 +1,6 @@
 #include<iostream>
 #include<SFML/Network.hpp>
-
+#include<cstring>
 using namespace std;
 using namespace sf;	
 
@@ -20,14 +20,14 @@ int main(){
 		cout << data;
 		cin >> username;
 		cout << endl;
-		char data[100] = "";
-		socket.send(data,100,rec);
+		strcpy(data,"");
+		socket.send(data,100);
 		socket.receive(data,100,rec);
 		cout << data;
 		cin >> password;
 		cout << endl;
-		data[100] = "";
-		socket.send(data,100,rec);
+		strcpy(data,"");
+		socket.send(data,100);
 		socket.receive(data,100,rec);
 		cout << data;
 		cin >> level;
@@ -36,5 +36,5 @@ int main(){
 		socket.send(login);
 	}
 	
-	return 0
+	return 0;
 }
