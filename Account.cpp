@@ -25,8 +25,11 @@ Account::Account()
 }
 Account::Account(const Account &anAcc)
 {
+	username = anAcc.username;
+	password = anAcc.password;
+	loggedIn = anAcc.loggedIn;
+	accessMap = anAcc.accessMap;
 	accountType = Account_User;
-	loggedIn = false;
 }
 Account::Account(const AccountType accType, const bool loginStatus)
 {
@@ -166,6 +169,17 @@ Account & Account::operator=(const Account &acc)
 	accessMap = acc.accessMap;
 	accountType = acc.accountType;
 	return *this;
+}
+#include <vector>
+int main()
+{
+	Account a;
+	a.setUsername("test");
+	
+	std::vector<Account> accounts;
+	accounts.push_back(a);
+	
+	std::cout << accounts[0].getUsername() << std::endl;
 }
 
 /*
