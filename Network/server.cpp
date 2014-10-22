@@ -102,6 +102,7 @@ int main(){
 							processClient(packet, client, accounts);
 							packet.clear();
 						}
+						// The client has disconnected, stop listening to them
 						else if (status == sf::Socket::Disconnected)
 						{
 							cout << "Client disconnected" << endl;
