@@ -19,15 +19,17 @@ int checkAccount(vector<Account> &,string,string, bool usernameOnly = false);
 void loginAccount(Packet&, TcpSocket&,vector<Account>&);
 bool registerAccount(Packet&, TcpSocket&,vector<Account>&);
 void processClient(Packet&, TcpSocket&, vector<Account>&);
-
+void getConferences(Packet&, TcpSocket&, vector<Account>&);
+void getAccess(Packet&, TcpSocket&, vector<Account>&);
 void loadFalseAccounts(vector<Account> &acc){
 	Account author;
 	author.setUsername("Adam");
 	author.setPassword("pass");
 	author.addAccess("AIDS conference", Account::Access_Author);
+	author.addAccess("Zombie apocalypse conference", Account::Access_Admin);
 	
 	Account reviewer;
-	reviewer.setUsername("Jonthan");
+	reviewer.setUsername("Jonathan");
 	reviewer.setPassword("pass");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
 	
@@ -120,13 +122,11 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 	else if(protocol=="REGISTER"){
 		registerAccount(packet, client, accounts);
 	}
-	else if(protocol=="STUB1"){
-
-
+	else if(protocol=="CONFERENCE_LIST"){
+		getConferences(packet, client, accounts);
 	}
-	else if(protocol=="STUB2"){
-
-
+	else if(protocol=="CONFERENCE_ACCESS"){
+		getAccess(packet, client, accounts);
 	}
 	else if(protocol=="STUB3"){
 
@@ -139,6 +139,42 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 	else if(protocol=="BYE"){
 		
 
+	}
+}
+
+void getAccess(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
+{
+	Packet accessDetails;
+	string user, tmp = "test", conference;
+	packet >> user >> conference;
+	
+	int findIndex = checkAccount(accounts, user, tmp, true);
+	Account::AccessLevel level;
+	if (findIndex != -1)
+	{
+		level = accounts[findIndex].getAccess(conference);
+		accessDetails << level;
+		socket.send(accessDetails);
+	}
+}
+
+void getConferences(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
+{
+	Packet list;
+	string user, tmp = "test";
+	packet >> user;
+	
+	int findIndex = checkAccount(accounts, user, tmp, true);
+	vector<string> results;
+	if (findIndex != -1)
+	{
+		accounts[findIndex].getConferences(results);
+		list << (int) results.size();
+		for (int i = 0; i < (int)results.size(); ++i)
+		{
+			list << results[i];
+		}
+		socket.send(list);
 	}
 }
 
@@ -193,8 +229,9 @@ bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts
 		keywords.push_back(tmpkeyword);
 	}
 	
-	bool exists = checkAccount(accounts, username, password, true);
-	if (!exists)
+	bool exists = false;
+	int index = checkAccount(accounts, username, password, true);
+	if (index == -1)
 	{
 		cout << "New user registered! Welcome " << username << endl;
 		Account tmp;
@@ -211,6 +248,10 @@ bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts
 		// registered users start logged in
 		tmp.startSession();			
 		accounts.push_back(tmp);
+	}
+	else
+	{
+		exists = true;
 	}
 	existsPacket << exists;
 	client.send(existsPacket);

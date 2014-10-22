@@ -1,2 +1,4 @@
 g++ client.cpp -c
-g++ -o clienttest client.o -lsfml-network -lsfml-system
+g++ ../Account.cpp -c
+g++ ../File.cpp -c
+g++ -o clienttest client.o Account.o File.o -lsfml-network -lsfml-system

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include <SFML/Network.hpp>
 #include "Menu.h"
 #include "File.h"
 
@@ -44,6 +45,7 @@ class Account : public FileIO
 		void clearAccess();
 		void printAccess();
 		bool hasAccess(const std::string &);
+		void getConferences(std::vector<std::string> &);
 		
 		bool isSystemAdmin() { return accountType == Account_Admin; }
 		void setSystemAdmin() { accountType = Account_Admin; }			// this must only be done in necessary circumstances
@@ -136,5 +138,9 @@ class Account : public FileIO
 	private:
 		std::string generateId();
 };
+
+sf::Packet & operator<<(sf::Packet &packet, const Account::AccessLevel &level);
+
+sf::Packet & operator>>(sf::Packet &packet, Account::AccessLevel &level);
 
 #endif

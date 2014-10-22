@@ -152,6 +152,14 @@ bool Account::hasAccess(const std::string &conferenceId)
 {
 	return (accessMap.find(conferenceId) != accessMap.end());
 }
+void Account::getConferences(std::vector<std::string> &list)
+{
+	std::map<std::string, AccessLevel>::const_iterator it;
+	for (it = accessMap.begin(); it != accessMap.end(); ++it)
+	{
+		list.push_back(it->first);
+	}
+}
 void Account::printAccess()
 {
 	std::cout << "User " << username << " has access to: " << std::endl;
@@ -233,6 +241,19 @@ void Account::readFile(std::ifstream &ifs)
 	readData<AccountType>(ifs, this->accountType);
 	readStringVector(ifs, this->keywords);
 	readStringKeyMap<AccessLevel>(ifs, this->accessMap);
+}
+
+sf::Packet & operator<<(sf::Packet &packet, const Account::AccessLevel &level)
+{
+	return packet << static_cast<int>(level);
+}
+
+sf::Packet & operator>>(sf::Packet &packet, Account::AccessLevel &level)
+{
+	int tmp;
+	packet >> tmp;
+	level = static_cast<Account::AccessLevel>(tmp);
+	return packet;
 }
 
 /*
