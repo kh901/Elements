@@ -9,6 +9,29 @@ Submission::Submission()
     reviewed = false;
 }
 
+Submission::Submission(const Submission &other)
+{
+	submitted = other.submitted;
+	filename = other.filename;
+	title = other.title;
+	description = other.description;
+	reviewed = other.reviewed;
+	authors = other.authors;
+	keywords = other.keywords;
+	comments = other.comments;
+}
+Submission & Submission::operator=(const Submission &other)
+{
+	submitted = other.submitted;
+	filename = other.filename;
+	title = other.title;
+	description = other.description;
+	reviewed = other.reviewed;
+	authors = other.authors;
+	keywords = other.keywords;
+	comments = other.comments;
+	return *this;
+}
 void Submission::setReviewed(bool reviewed)
 {
     this->reviewed = reviewed;
@@ -44,13 +67,12 @@ void Submission::submit()
     getline(std::cin, description);
     
     std::string keyword, str;
-    std::cout << "Enter keywords: ";
-    getline(std::cin, keyword);
-    while (std::cin >> str)
+    std::cout << "Enter keywords (when finished, type 'stop'): " << std::endl;
+    
+    while (getline(std::cin, keyword), keyword != "stop")
     {
         keywords.push_back(str);
     }
-    std::cin.ignore(1, '\n');
         
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
@@ -125,6 +147,17 @@ void Submission::readFile(std::ifstream &ifs)
 	readClassVector<Comment>(ifs, this->comments);	
 }
 
+Comment::Comment(const Comment &other)
+{
+	username = other.username;
+	comment = other.comment;
+}	
+Comment & Comment::operator=(const Comment &other)
+{
+	username = other.username;
+	comment = other.comment;
+	return *this;
+}
 void Comment::writeFile(std::ofstream &ofs) const
 {
 	appendString(ofs, this->username);

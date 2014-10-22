@@ -10,8 +10,13 @@
 class Comment : public FileIO
 {
 	public:
+	Comment() {}
+	Comment(const Comment &);
+	
     std::string username;
     std::string comment;
+	
+	Comment & operator=(const Comment &);
 	
 	// write and read this class to a binary file stream
 	void writeFile(std::ofstream &) const;
@@ -22,6 +27,7 @@ class Submission : public FileIO
 {
     public:
         Submission();
+        Submission(const Submission &);
         void submit();
         void view();
         void withdraw();
@@ -30,6 +36,8 @@ class Submission : public FileIO
         
         void addComment(Account account);
         void displayComments();
+        
+        Submission & operator=(const Submission &);
 
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
