@@ -80,6 +80,12 @@ void appendVector(std::ofstream &ofs, const std::vector<B> &vecdata)
 	ofs.write((char*)&vecdata[0], vecdata.size() * sizeof(B));
 }
 
+template <class D>
+void appendClass(std::ofstream &ofs, const D &data)
+{
+	data.writeFile(ofs); 	// use polymorphism to write each element
+}
+
 template<class T>
 void writeFile(const std::string &filename, const std::vector<T> &myvec)
 {
@@ -89,6 +95,20 @@ void writeFile(const std::string &filename, const std::vector<T> &myvec)
 	appendVector<T>(fout, myvec);
 	
 	fout.close();
+}
+
+template<class R>
+void appendClassVector(std::ofstream &ofs, const std::vector<R> &myvec)
+{
+	// write size of vector
+	int size = myvec.size();
+	ofs.write((char*)&size, sizeof(int));
+	
+	// write vector data
+	for (int i = 0; i < size; ++i)
+	{
+		appendClass<R>(ofs, myvec[i]); 	// use polymorphism to write each element
+	}
 }
 
 /*
@@ -103,20 +123,13 @@ void writeFile(const std::string &filename, const std::vector<T> &myvec)
 	in order to save their class's data to a binary file properly.
 */
 template<class T>
-void writeFileClass(const std::string &filename, const std::vector<T> &myvec)
+void writeFileClassVector(const std::string &filename, const std::vector<T> &myvec)
 {
 	std::ofstream fout;
 	fout.open(filename.c_str(), std::ios::binary);
 	
-	// write size of vector
-	int size = myvec.size();
-	fout.write((char*)&size, sizeof(int));
+	appendClassVector<T>(fout, myvec);
 	
-	// write vector data
-	for (int i = 0; i < size; ++i)
-	{
-		myvec[i].writeFile(fout); 	// use polymorphism to write each element
-	}
 	fout.close();
 }
 
@@ -207,6 +220,13 @@ bool readMap(std::ifstream &ifs, std::map<K, L> &mapdata)
 	return true;
 }
 
+template <class N>
+bool readClass(std::ifstream &ifs, N &data)
+{
+	data.readFile(ifs);		// use polymorphism from classes which implement FileIO interface
+	return true;		// hacky workaround!!
+}
+
 template<class C>
 bool readFile(const std::string &filename, std::vector<C> &myvec) 
 {
@@ -219,30 +239,15 @@ bool readFile(const std::string &filename, std::vector<C> &myvec)
 	return readStatus;
 }
 
-/*
-	Each class that uses this function should inherit  
-	and implement the interface described in the FileIO class.
-	
-	MyClass::readFile(myFileStream) should use a combination of:
-		readData<datatype>(myFileStream, this->mydata);
-		(and)
-		readVector<datatype>(myFileStream, this->mylist);
-	
-	in order to read in their class's data from a vector saved in a binary file properly.
-*/
-template<class Y>
-bool readFileClass(const std::string &filename, std::vector<Y> &myvec) 
+template<class Q>
+bool readClassVector(std::ifstream &ifs, std::vector<Q> &myvec)
 {
-	std::ifstream fin;
-    fin.open(filename.c_str(), std::ios::binary);
-    
-    // read size of vector
+	// read size of vector
     int size;
-    fin.read((char*)&size, sizeof(int));
+    ifs.read((char*)&size, sizeof(int));
     
     if (size <= 0)
     {
-    	fin.close();
     	return false;
     }
     myvec.clear();
@@ -251,12 +256,50 @@ bool readFileClass(const std::string &filename, std::vector<Y> &myvec)
     // read contents of binary file into vector
     for (int i = 0; i < size; ++i)
     {
-    	Y tmp;
-    	tmp.readFile(fin);		// use polymorphism to read in each element
+    	Q tmp;
+    	readClass<Q>(ifs, tmp);		// use polymorphism to read in each element
     	myvec.push_back(tmp);
     }
-	fin.close();
 	return true;
+}
+
+/*
+	Each class that uses this function should inherit  
+	and implement the interface described in the FileIO class.
+	
+	MyClass::readFile(myFileStream) should use a combination of:
+		Simple data types: readData<datatype>(myFileStream, this->mydata);
+		
+		The above in a vector: readVector<datatype>(myFileStream, this->mylist);
+
+		Strings: readString(myFileStream, this->mystring);
+
+		String vectors: readStringVector(myFileStream, this->mystringvec);
+
+		Classes which implement the FileIO interface:
+			readClass<MyClass>(myFileStream, this->myclass);
+
+		Vector of the above classes:
+			readClassVector<MyClass>(myFileStream, this->myclassvec);
+
+		Map of simple data types: readMap<Key, Value>(myFileStream, this->mymap);
+
+		Special cases like:
+			Map where the key is a string:
+				readStringKeyMap<MyValue>(myFileStream, this->mystringkeymap);
+	
+	in order to read in their class's data from a vector saved in a binary file properly.
+*/
+template<class Y>
+bool readFileClassVector(const std::string &filename, std::vector<Y> &myvec) 
+{
+	std::ifstream fin;
+    fin.open(filename.c_str(), std::ios::binary);
+    
+	bool readStatus = readClassVector<Y>(fin, myvec);
+    
+	fin.close();
+	return readStatus;
 }
 
 #endif
