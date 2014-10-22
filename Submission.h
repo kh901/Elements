@@ -27,8 +27,8 @@ class Submission : public FileIO
         void displayComments();
 
 		// write and read this class to a binary file stream
-		void writeFile(std::ofstream &);
-		bool readFile(std::ifstream &);
+		void writeFile(std::ofstream &) const;
+		void readFile(std::ifstream &);
     private:
         bool submitted;
         bool reviewed;

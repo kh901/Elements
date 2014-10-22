@@ -21,8 +21,8 @@ class Conference : public FileIO
         };
         
         // write and read this class to a binary file stream
-		void writeFile(std::ofstream &);
-		bool readFile(std::ifstream &);
+		void writeFile(std::ofstream &) const;
+		void readFile(std::ifstream &);
     private:
         std::string name;
         std::string date;

@@ -99,6 +99,20 @@ bool Account::addAccess(const std::string &conferenceId, const AccessLevel permi
 }
 void Account::changeAccess(const std::string &conferenceId, const AccessLevel permissions)
 {
+	if (permissions != Access_None)
+	{
+		accessMap[conferenceId] = permissions;
+	}
+	else
+	{
+		std::map<std::string, AccessLevel>::iterator it;	
+		it = accessMap.find(conferenceId);
+		if (it != accessMap.end())
+		{
+			accessMap.erase(it);
+		}
+	}
+	/*
 	// alternatively:
 	//accessMap[conferenceId] = permissions;
 	std::map<std::string, AccessLevel>::iterator it;
@@ -106,13 +120,22 @@ void Account::changeAccess(const std::string &conferenceId, const AccessLevel pe
 	it = accessMap.find(conferenceId);
 	if (it != accessMap.end())
 	{
-		it->second = permissions;
+		// modify permissions if not being removed
+		if (permissions != Access_None)
+		{
+			it->second = permissions;
+		}
+		else
+		{
+			accessMap.erase(it);
+		}
 	}
 	// if it does not exist, create one
 	else
 	{
 		addAccess(conferenceId, permissions);
 	}
+	*/
 }
 Account::AccessLevel Account::getAccess(const std::string &conferenceId)
 {
@@ -157,6 +180,10 @@ void Account::printAccess()
 		std::cout << std::endl;
 	}
 }
+void Account::clearAccess()
+{
+	accessMap.clear();
+}
 void Account::setUsername(const std::string &aUser)
 {
 	username = aUser;
@@ -181,7 +208,7 @@ Account & Account::operator=(const Account &acc)
 	return *this;
 }
 
-void Account::writeFile(std::ofstream &ofs)
+void Account::writeFile(std::ofstream &ofs) const
 {
 	appendData<std::string>(ofs, this->username);
 	appendData<std::string>(ofs, this->password);
@@ -191,10 +218,10 @@ void Account::writeFile(std::ofstream &ofs)
 	appendData<std::string>(ofs, this->university);
 	appendData<bool>(ofs, this->loggedIn);
 	appendData<AccountType>(ofs, this->accountType);
-	appendVector<std::string>(ofs, this->keywords);
-	appendMap<std::string, AccessLevel>(ofs, this->accessMap);
+	appendStringVector(ofs, this->keywords);
+	appendStringKeyMap<AccessLevel>(ofs, this->accessMap);
 }
-bool Account::readFile(std::ifstream &ifs)
+void Account::readFile(std::ifstream &ifs)
 {
 	readData<std::string>(ifs, this->username);
 	readData<std::string>(ifs, this->password);
@@ -204,8 +231,8 @@ bool Account::readFile(std::ifstream &ifs)
 	readData<std::string>(ifs, this->university);
 	readData<bool>(ifs, this->loggedIn);
 	readData<AccountType>(ifs, this->accountType);
-	readVector<std::string>(ifs, this->keywords);
-	readMap<std::string, AccessLevel>(ifs, this->accessMap);
+	readStringVector(ifs, this->keywords);
+	readStringKeyMap<AccessLevel>(ifs, this->accessMap);
 }
 
 /*

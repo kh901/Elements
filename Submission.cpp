@@ -102,7 +102,7 @@ void Submission::displayComments()
         std::cout << comments[i].username << ": " << comments[i].comment << std::endl;
 }
 
-void Submission::writeFile(std::ofstream &ofs)
+void Submission::writeFile(std::ofstream &ofs) const
 {
 	appendData<bool>(ofs, this->submitted);
 	appendData<bool>(ofs, this->reviewed);
@@ -113,7 +113,7 @@ void Submission::writeFile(std::ofstream &ofs)
 	appendVector<std::string>(ofs, this->keywords);
 	appendVector<Comment>(ofs, this->comments);
 }
-bool Submission::readFile(std::ifstream &ifs)
+void Submission::readFile(std::ifstream &ifs)
 {
 	readData<bool>(ifs, this->submitted);
 	readData<bool>(ifs, this->reviewed);

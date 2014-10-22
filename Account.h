@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <map>
+#include <algorithm>
 #include <vector>
 #include <fstream>
 #include "Menu.h"
@@ -40,6 +41,7 @@ class Account : public FileIO
 		bool addAccess(const std::string &, const AccessLevel);
 		void changeAccess(const std::string &, const AccessLevel);
 		AccessLevel getAccess(const std::string &);
+		void clearAccess();
 		void printAccess();
 		bool hasAccess(const std::string &);
 		
@@ -53,6 +55,28 @@ class Account : public FileIO
 		bool matchUsername(const std::string &aUser) { return username == aUser; }
 		bool matchPassword(const std::string &, const bool encryptValue = true);
 				
+		// get/set details
+		void setFirstName(const std::string &);
+		std::string getFirstName();
+		void setLastName(const std::string &);
+		std::string getLastName();
+		void setName(const std::string &, const std::string &);
+		void setEmail (const std::string &anEmail) { email = anEmail; }
+		std::string getEmail() { return email; }
+		void setUniversity(const std::string &);
+		std::string getUniversity();
+		void addKeyword(const std::string &word) { keywords.push_back(word); }
+		bool findKeyword(const std::string &word) { return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); }
+		void clearKeywords() { keywords.clear(); }
+		void displayKeywords()
+		{
+			std::vector<std::string>::iterator it;
+			for (it = keywords.begin(); it != keywords.end(); ++it)
+			{
+				std::cout << "Keyword: " << *it << std::endl;
+			}
+		}
+		
 		// login session functions
 	 	void startSession();
 		void endSession();
@@ -61,8 +85,8 @@ class Account : public FileIO
 		Account & operator=(const Account &);
 		
 		// write and read this class to a binary file stream
-		void writeFile(std::ofstream &);
-		bool readFile(std::ifstream &);
+		void writeFile(std::ofstream &) const;
+		void readFile(std::ifstream &);
 	protected:
 		std::string username;
 		std::string password;			// user's "password" encrypted with our oneway encryption

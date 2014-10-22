@@ -1,11 +1,11 @@
 #include "Conference.h"
 
-void Conference::writeFile(std::ofstream &ofs)
+void Conference::writeFile(std::ofstream &ofs) const
 {
 	
 }
 
-bool Conference::readFile(std::ifstream &ifs)
+void Conference::readFile(std::ifstream &ifs)
 {
 	
 }
