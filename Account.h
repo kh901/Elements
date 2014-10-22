@@ -56,18 +56,50 @@ class Account : public FileIO
 		bool matchPassword(const std::string &, const bool encryptValue = true);
 				
 		// get/set details
-		void setFirstName(const std::string &);
-		std::string getFirstName();
-		void setLastName(const std::string &);
-		std::string getLastName();
-		void setName(const std::string &, const std::string &);
-		void setEmail (const std::string &anEmail) { email = anEmail; }
-		std::string getEmail() { return email; }
-		void setUniversity(const std::string &aUni) { university = aUni; }
-		std::string getUniversity() { return university; }
-		void addKeyword(const std::string &word) { keywords.push_back(word); }
-		bool findKeyword(const std::string &word) { return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); }
-		void clearKeywords() { keywords.clear(); }
+		void setFirstName(const std::string &aFirst)
+		{
+			firstName = aFirst;
+		}
+		std::string getFirstName()
+		{
+			return firstName;
+		}
+		void setLastName(const std::string &aLast)
+		{
+			lastName = aLast;
+		}
+		std::string getLastName()
+		{
+			return lastName;
+		}
+		void setEmail (const std::string &anEmail) 
+		{ 
+			email = anEmail; 
+		}
+		std::string getEmail() 
+		{ 
+			return email; 
+		}
+		void setUniversity(const std::string &aUni) 
+		{ 
+			university = aUni; 
+		}
+		std::string getUniversity() 
+		{ 
+			return university;
+	 	}
+		void addKeyword(const std::string &word) 
+		{ 
+			keywords.push_back(word); 
+		}
+		bool findKeyword(const std::string &word) 
+		{ 
+			return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 
+		}
+		void clearKeywords() 
+		{ 
+			keywords.clear(); 
+		}
 		void displayKeywords()
 		{
 			std::vector<std::string>::iterator it;

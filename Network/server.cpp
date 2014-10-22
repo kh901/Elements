@@ -15,51 +15,36 @@ void level2();
 void level3();
 void level4();
 void level5();
-bool checkAccount(vector<Account>,string,string);
-bool loginAccount(TcpSocket&,vector<Account>);
-bool registerAccount();
-void processClient(TcpSocket&, vector<Account>);
+int checkAccount(vector<Account> &,string,string, bool usernameOnly = false);
+void loginAccount(Packet&, TcpSocket&,vector<Account>&);
+bool registerAccount(Packet&, TcpSocket&,vector<Account>&);
+void processClient(Packet&, TcpSocket&, vector<Account>&);
 
-
-vector<Account> loadFalseAccounts(){
-	vector<Account> temp;
-	
+void loadFalseAccounts(vector<Account> &acc){
 	Account author;
 	author.setUsername("Adam");
 	author.setPassword("pass");
 	author.addAccess("AIDS conference", Account::Access_Author);
-	
 	
 	Account reviewer;
 	reviewer.setUsername("Jonthan");
 	reviewer.setPassword("pass");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
 	
-	
 	Account admin;
 	admin.setUsername("Kieran");
 	admin.setPassword("pass");
 	admin.addAccess("AIDS conference", Account::Access_Admin);
-	
-	
-	temp.push_back(author);
-	temp.push_back(reviewer);
-	temp.push_back(admin);
-
-
-
-	return temp;
+		
+	acc.push_back(author);
+	acc.push_back(reviewer);
+	acc.push_back(admin);
 }
 
-
-
 int main(){
-
-
 	
-
-	
-	vector<Account> accounts = loadFalseAccounts();
+	vector<Account> accounts;
+	loadFalseAccounts(accounts);
 	
 	TcpListener listener;
 	TcpSocket client;
@@ -68,15 +53,12 @@ int main(){
 	
 	SocketSelector selector;
 	
-
 	if(listener.listen(60000)!= Socket::Done)
 		cout<<"error"<<endl;
 		
 	selector.add(listener);
 	
-	
 	for(;;){
-	
 	
 		 if (selector.wait()){
 			// Test the listener
@@ -86,6 +68,7 @@ int main(){
 				TcpSocket* client = new TcpSocket;
 				if (listener.accept(*client) == Socket::Done)
 				{
+					cout << "New connection" << endl;
 					// Add the new client to the clients list
 					clients.push_back(client);
 					// Add the new client to the selector so that we will
@@ -110,35 +93,32 @@ int main(){
 						sf::Packet packet;
 						if (client.receive(packet) == sf::Socket::Done)
 						{
-							processClient(client, accounts);
-						}
-						
-					
+							cout << "Processing client" << endl;
+							processClient(packet, client, accounts);
+							packet.clear();
+						}			
 					}
 				}
 			}
 		}
 	}
-
-
-	
 	
 	return 0;
 }
 
-void processClient(TcpSocket &client, vector<Account> accounts)
+void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 {
-	Packet entryPacket;
 	string protocol;
-	client.receive(entryPacket);
 		
-	entryPacket >> protocol;
+	packet >> protocol;
+		
+	cout << "Protocol " << protocol;
 		
 	if(protocol=="LOGIN"){
-		loginAccount(client,accounts);
+		loginAccount(packet, client,accounts);
 	}
 	else if(protocol=="REGISTER"){
-		registerAccount();
+		registerAccount(packet, client, accounts);
 	}
 	else if(protocol=="STUB1"){
 
@@ -162,40 +142,78 @@ void processClient(TcpSocket &client, vector<Account> accounts)
 	}
 }
 
-bool checkAccount(vector<Account> accounts,string username,string password){
-	
+int checkAccount(vector<Account> &accounts,string username,string password, bool usernameOnly){
 	for(int i=0;i<accounts.size();i++){
-		if(accounts[i].matchUsername(username) && accounts[i].matchPassword(password))
-			return true;
+		if(accounts[i].matchUsername(username))
+		{
+			if (usernameOnly || accounts[i].matchPassword(password))
+			{
+				return i;
+			}
+		}
 	}
-	return false;
+	return -1;
 }
 
-bool loginAccount(TcpSocket&client,vector<Account> accounts){
+void loginAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts){
 
-	Packet login,validate;
+	Packet validate;
 	string username,password;
 	
 	bool valid = false;
-
-	while(valid==false){
-
-		client.receive(login);
-		login >> username >> password;
-		valid = checkAccount(accounts,username,password);
-
-		validate << valid;
-
-		client.send(validate);
+	
+	packet >> username >> password;
+	int findIndex = checkAccount(accounts,username,password);
+	
+	if (findIndex != -1) 
+	{
+		valid = true;
 	}
-
+	
+	if (valid)
+	{
+		// set the user as logged in
+		accounts[findIndex].startSession();
+	}
+	validate << valid;
+	client.send(validate);
 }
 
-bool registerAccount(){
+bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts){
+	Packet existsPacket;
+	string username,password,email,university, firstname, lastname;
+	vector<string> keywords;
+	int keywordSize = 0;
 
-	string username,password,email,university;
+	packet >> username >> password >> email >> university >> keywordSize;
+	string tmpkeyword;
+	for (int i = 0; i < keywordSize; ++i)
+	{
+		packet >> tmpkeyword;
+		keywords.push_back(tmpkeyword);
+	}
 	
-
+	bool exists = checkAccount(accounts, username, password, true);
+	if (!exists)
+	{
+		cout << "New user registered! Welcome " << username << endl;
+		Account tmp;
+		tmp.setUsername(username);
+		tmp.setPassword(password);
+		tmp.setFirstName(firstname);
+		tmp.setLastName(lastname);
+		tmp.setEmail(email);
+		tmp.setUniversity(university);
+		for (int i = 0; i < keywordSize; ++i)
+		{
+			tmp.addKeyword(keywords[i]);
+		}
+		// registered users start logged in
+		tmp.startSession();			
+		accounts.push_back(tmp);
+	}
+	existsPacket << exists;
+	client.send(existsPacket);
 }
 
 void level1()
