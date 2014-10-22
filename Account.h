@@ -63,8 +63,8 @@ class Account : public FileIO
 		void setName(const std::string &, const std::string &);
 		void setEmail (const std::string &anEmail) { email = anEmail; }
 		std::string getEmail() { return email; }
-		void setUniversity(const std::string &);
-		std::string getUniversity();
+		void setUniversity(const std::string &aUni) { university = aUni; }
+		std::string getUniversity() { return university; }
 		void addKeyword(const std::string &word) { keywords.push_back(word); }
 		bool findKeyword(const std::string &word) { return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); }
 		void clearKeywords() { keywords.clear(); }

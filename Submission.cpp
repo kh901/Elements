@@ -106,21 +106,32 @@ void Submission::writeFile(std::ofstream &ofs) const
 {
 	appendData<bool>(ofs, this->submitted);
 	appendData<bool>(ofs, this->reviewed);
-	appendData<std::string>(ofs, this->filename);
-	appendData<std::string>(ofs, this->title);
-	appendData<std::string>(ofs, this->description);
-	appendVector<std::string>(ofs, this->authors);
-	appendVector<std::string>(ofs, this->keywords);
-	appendVector<Comment>(ofs, this->comments);
+	appendString(ofs, this->filename);
+	appendString(ofs, this->title);
+	appendString(ofs, this->description);
+	appendStringVector(ofs, this->authors);
+	appendStringVector(ofs, this->keywords);
+	appendClassVector<Comment>(ofs, this->comments);
 }
 void Submission::readFile(std::ifstream &ifs)
 {
 	readData<bool>(ifs, this->submitted);
 	readData<bool>(ifs, this->reviewed);
-	readData<std::string>(ifs, this->filename);
-	readData<std::string>(ifs, this->title);
-	readData<std::string>(ifs, this->description);
-	readVector<std::string>(ifs, this->authors);
-	readVector<std::string>(ifs, this->keywords);
-	readVector<Comment>(ifs, this->comments);	
+	readString(ifs, this->filename);
+	readString(ifs, this->title);
+	readString(ifs, this->description);
+	readStringVector(ifs, this->authors);
+	readStringVector(ifs, this->keywords);
+	readClassVector<Comment>(ifs, this->comments);	
+}
+
+void Comment::writeFile(std::ofstream &ofs) const
+{
+	appendString(ofs, this->username);
+	appendString(ofs, this->comment);
+}
+void Comment::readFile(std::ifstream &ifs)
+{
+	readString(ifs, this->username);
+	readString(ifs, this->comment);	
 }
