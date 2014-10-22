@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-#define MAX_STRING_LEN 256
+#define MAX_STRING_LEN 384
 
 class FileIO
 {

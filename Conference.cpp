@@ -1,4 +1,18 @@
 #include "Conference.h"
+Conference::Conference()
+{
+	currentPhase = Phase_Submission;
+}
+Conference::Conference(const Conference &other)
+{
+	name = other.name;
+    date = other.date;
+    location = other.location;
+    currentPhase = other.currentPhase;
+    reviewers = other.reviewers;
+	subchairs = other.subchairs;
+	chairman = other.chairman;
+}
 
 void Conference::setName(const std::string &aName)
 {
@@ -9,13 +23,17 @@ std::string Conference::getName()
 	return name;
 }
 
-void addReviewer(const std::string &aReviewer)
+void Conference::addReviewer(const std::string &aReviewer)
 {
 	reviewers.push_back(aReviewer);
 }
-void printReviewers()
+void Conference::printReviewers()
 {
-	
+	std::vector<std::string>::iterator it;
+	for (it = reviewers.begin(); it != reviewers.end(); ++it)
+	{
+		std::cout << "Reviewer: " << *it << std::endl;
+	}
 }
 
 void Conference::writeFile(std::ofstream &ofs) const

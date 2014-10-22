@@ -11,7 +11,7 @@ class Conference : public FileIO
 {
     public:
         Conference();
-        
+        Conference(const Conference &);
         
         enum Phase {
             Phase_Submission,

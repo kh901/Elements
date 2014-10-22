@@ -36,6 +36,7 @@ bool readString(std::ifstream &ifs, std::string &strdata)
 	strdata.clear();
 	
 	// read in string data from file
+	// Note: could also make this a dynamic char array since size is given
 	char tmp[MAX_STRING_LEN] = {""};
 	ifs.read(tmp, size * sizeof(char));
 	strdata = tmp;
