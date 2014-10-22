@@ -88,6 +88,11 @@ string handlePickConference(TcpSocket &socket, const std::string &user, Account:
 	// display!
 	// let the user pick a conference
 	// save that conference so we can use it later in the conference menu
+	if (conferenceSize == 0) 
+	{
+		cout << "No conferences!" << endl;
+		return "None";
+	}
 	int pick = 0;
 	do 
 	{
@@ -99,11 +104,6 @@ string handlePickConference(TcpSocket &socket, const std::string &user, Account:
 		cin >> pick;
 		cin.ignore(1, '\n');
 	} while (pick < 1 || pick > conferenceSize);
-	if (conferenceSize == 0) 
-	{
-		cout << "No conferences!" << endl;
-		return "None";
-	}
 	
 	// get the user's access level from the server
 	Packet accessPacket;

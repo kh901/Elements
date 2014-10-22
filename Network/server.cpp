@@ -70,7 +70,7 @@ int main(){
 				TcpSocket* client = new TcpSocket;
 				if (listener.accept(*client) == Socket::Done)
 				{
-					cout << "New connection" << endl;
+					cout << "New connection from " << client->getRemoteAddress().toString() << endl;
 					// Add the new client to the clients list
 					clients.push_back(client);
 					// Add the new client to the selector so that we will
@@ -86,18 +86,33 @@ int main(){
 			else
 			{
 				// The listener socket is not ready, test all other sockets (the clients)
-				for (std::list<sf::TcpSocket*>::iterator it = clients.begin(); it != clients.end(); ++it)
+				std::list<sf::TcpSocket*>::iterator end = clients.end();
+				for (std::list<sf::TcpSocket*>::iterator it = clients.begin(); it != end; ++it)
 				{
 					sf::TcpSocket& client = **it;
 					if (selector.isReady(client))
 					{
 					// The client has sent some data, we can receive it
 						sf::Packet packet;
-						if (client.receive(packet) == sf::Socket::Done)
+						sf::Socket::Status status;
+						status = client.receive(packet);
+						if (status == sf::Socket::Done)
 						{
 							cout << "Processing client" << endl;
 							processClient(packet, client, accounts);
 							packet.clear();
+						}
+						else if (status == sf::Socket::Disconnected)
+						{
+							cout << "Client disconnected" << endl;
+							packet.clear();
+							
+							sf::TcpSocket * del = *it;
+							clients.erase(it);
+							selector.remove(**it);
+							delete del;
+							it = clients.begin();
+							end = clients.end();
 						}			
 					}
 				}
@@ -114,7 +129,7 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 		
 	packet >> protocol;
 		
-	cout << "Protocol " << protocol;
+	cout << "Protocol " << protocol << endl;
 		
 	if(protocol=="LOGIN"){
 		loginAccount(packet, client,accounts);
