@@ -71,6 +71,7 @@ class Menu
 		int doMenu();
 		bool notExited(const int);
 		void clear();
+		void disableBackButton();
 	private:
 		enum DisplayMode { Fixed, Scroll, Paged };
 	
@@ -89,7 +90,7 @@ class Menu
 		int visibleNum;
 		int scrollIndex;
 		bool showControls;
-		
+		bool disableBack;
 		/*
 			Menu themes?
 			

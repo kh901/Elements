@@ -11,7 +11,7 @@ Menu::Menu()
 	displayMode = Menu::Fixed;
 	visibleNum = 1;
 	scrollIndex = 0;
-	showControls = false;
+	showControls = disableBack = false;
 }
 Menu::~Menu()
 {
@@ -180,8 +180,11 @@ bool Menu::processInput(int &option)
 
 			case BACKSPACE:     //Back/Cancel - Goes back up one menu level
             case DELETE:
-            	option = -1;	
-            	return true;
+            	if (!disableBack)
+            	{
+            		option = -1;
+            		return true;	
+            	}
 			break;
 		}
 	}
@@ -338,6 +341,11 @@ void Menu::clear()
 	this->clearLastDisplay();
 	//Reposition the cursor
 	std::cout << "\x1B[" << displayRow << ";1f";
+}
+
+void Menu::disableBackButton()
+{
+	disableBack = true;
 }
 
 /*
