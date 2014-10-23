@@ -61,13 +61,14 @@ int main(){
 		}
 		
 		cout << "Main Menu" << endl;
-		cout << "View Submissions(1)" << endl;
+		cout << "Submit report(1)" <<endl;
+		cout << "View Submissions(2)" << endl;
 		cin >> option;
 		cin.ignore(1, '\n');
 		
 		request.clear();
 		
-		if (option == 1)
+		if (option == 2)
 		{
 			protocol = "VIEW_SUBMISSIONS";
 			request << protocol << loggedInUser;
@@ -81,12 +82,31 @@ int main(){
 void handleSubmissions(TcpSocket &socket, Packet &request)
 {
 	socket.send(request)
-	
 	Packet response;
+	socket.receive(response);		//recieve the submissons + number of submissions
 	
-	socket.receive(response);
+	int amountOfSubmissions = 0;
 	
+	response >> amountOfSubmissions;
 	
+	string temp;
+	
+	if(amountOfSubmissions==0){
+		cout<< "You have not submitted a paper yet!" <<endl; 
+	}
+	else{
+	
+		for(int i=0;i<amountOfSubmissions;i++){
+			response >> temp;
+			cout<<temp<<endl;
+		}	
+	}
+	
+	string anyKey;
+	cout<< "Press any key to go back to Submission Menu" <<endl;
+	cin >> anykey;
+	
+	return;
 }
 
 string handlePickConference(TcpSocket &socket, const std::string &user, Account::AccessLevel &access)

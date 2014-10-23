@@ -22,7 +22,7 @@ bool registerAccount(Packet&, TcpSocket&,vector<Account>&);
 void processClient(Packet&, TcpSocket&, vector<Account>&);
 void getConferences(Packet&, TcpSocket&, vector<Account>&);
 void getAccess(Packet&, TcpSocket&, vector<Account>&);
-void getSubmissions(Packet&, TcpSocket&, vector<Submission>&);
+void getSubmissions(Packet&, TcpSocket&, vector<Submission>&, vector<Account>&);
 
 void loadFalseAccounts(vector<Account> &acc){
 	Account author;
@@ -163,7 +163,7 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 		getAccess(packet, client, accounts);
 	}
 	else if(protocol=="VIEW_SUBMISSIONS"){
-		getSubmissions(packet, client, submissions);
+		getSubmissions(packet, client, submissions, accounts);
 	}
 	else if(protocol=="STUB4"){
 
@@ -175,18 +175,37 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 	}
 }
 
-void getSubmissions(Packet &packet, TcpSocket &client, vector<Submission> &submissions)
+void getSubmissions(Packet &packet, TcpSocket &client, vector<Submission> &submissions, vector<Account> &accounts)
 {
 
 	Packet subs;
 	string username;
 	packet >> username;
+	string tmp = "test", firstname, lastname, fullname;
 	
+	int findIndex = checkAccount(accounts, username, tmp, true);		//get Account index
+	
+	firstname = accounts[findIndex].getFirstName();
+	lastname = accounts[findIndex].getLastName();		//get the fullname for the account
+	
+	fullname = firstname + " " + lastname;
+	
+	vector<string> sub;
+	int count=0;
 	
 	for(int i=0;i<submission.size();i++){
-		if(submission[i].getAuthors()==username)
-			subs << submission[i];
+		if(submission[i].getAuthors()==fullname){		//add all the total submissions. Store themin vector
+			sub.push_back(submission[i].getTitle());
+			count++;
+		}
 	}
+	
+	sub << count;			//add the amount of submissons the author is involved in
+	
+	for(int i=0;i<sub.size();i++){
+		subs<< sub[i];				//pack all the submissions in the packet
+	}
+	
 	
 	client.send(subs);
 }
