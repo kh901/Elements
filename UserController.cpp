@@ -14,7 +14,7 @@ void sendLog(string details)
 
 UserController::UserController()
 {
-    reviewed = false;
+ 
 }
 
 void UserController::account()
