@@ -32,9 +32,9 @@ Submission & Submission::operator=(const Submission &other)
 	comments = other.comments;
 	return *this;
 }
-void Submission::setReviewed(bool reviewed)
+void Submission::setReviewed()
 {
-    this->reviewed = reviewed;
+    reviewed = true;
 }
 
 void Submission::submit()

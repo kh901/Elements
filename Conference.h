@@ -23,9 +23,19 @@ class Conference : public FileIO
         
 		void setName(const std::string &);
 		std::string getName();
+        void setDate(const std::string &);
+        std::string getDate();
+        void setLocation(const std::string &);
+        std::string getLocation();
+        void setCurrentPhase(const Phase &);
+        Phase getCurrentPhase();
+        void setChairman(const std::string &);
+        std::string getChairman();
 
 		void addReviewer(const std::string &);
 		void printReviewers();
+        void addSubchair(const std::string &);
+        void printSubchairs();
 
         // write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;

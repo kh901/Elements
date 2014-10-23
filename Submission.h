@@ -32,7 +32,7 @@ class Submission : public FileIO
         void view();
         void withdraw();
         
-        void setReviewed(bool);
+        void setReviewed();
         
         void addComment(Account account);
         void displayComments();

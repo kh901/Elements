@@ -14,7 +14,67 @@ void sendLog(string details)
 
 UserController::UserController()
 {
- 
+    
+}
+
+void UserController::createConference()
+{
+    std::cout << "Main Menu > Create Conference" << std::endl << std::endl;
+    Conference conference;
+    std::string buffer;
+    
+    std::cout << "Enter conference name: ";
+    getline(std::cin, buffer);
+    conference.setName(buffer);
+    
+    std::cout << "Enter conference date: ";
+    getline(std::cin, buffer);
+    conference.setDate(buffer);
+    
+    std::cout << "Enter conference location: ";
+    getline(std::cin, buffer);
+    conference.setLocation(buffer);
+    
+    conference.Phase phase = Phase_Submission;
+    conference.setCurrentPhase(phase);
+    
+    std::cout << "Enter chairmans name: ";
+    getline(std::cin, buffer);
+    conference.setChairman(buffer);
+    
+    std::cout << "Do you want to add subchairs now? (y/n): ";
+    getline(std::cin, buffer);
+    if(buffer[0] == 'y')
+    {        
+        do
+        {
+            std::cout << "Enter subchair name: ";
+            getline(std::cin, buffer);
+            conference.addSubchair(buffer);
+            
+            std::cout << "Do you want to add another subchair? (y/n): ";
+            getline(std::cin, buffer);
+            
+        }while(buffer[0] != '0');
+    }
+    
+    std::cout << "Do you want to add reviewers now? (y/n): ";
+    std::cin >> buffer;
+    if(buffer[0] '0')
+    {        
+        do
+        {
+            std::cout << "Enter reviewer name: ";
+            getline(std::cin, buffer);
+            conference.addReviewer(buffer);
+            
+            std::cout << "Do you want to add another reviewer? (y/n): ";
+            getline(std::cin, buffer);
+            
+        }while(buffer[0] == '0');
+    }
+    // clear screen
+    std::cout << "\033[2J";  
 }
 
 void UserController::account()
@@ -83,12 +143,14 @@ void UserController::submissions()
 		        std::cout << "\033[2J";
 		    }
 		    break;
-		    // View submissions
+		    
+            // View submissions
 		    case 1:      
 		        // clear screen
 		        std::cout << "\033[2J";
-		    break;
-		    // Withdraw a paper
+            break;
+		    
+            // Withdraw a paper
 		    case 2:
 		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
 		        std::string whichSub;
@@ -96,13 +158,18 @@ void UserController::submissions()
 		        
 		        // clear screen
 		        std::cout << "\033[2J";   
-		    break;
+            break;
+            
             // Add comment
             case 3:
+                
             break;
+            
             // Display discussion
             case 4:
+                
             break:
+            
             // Back
             case 5:
             break;
