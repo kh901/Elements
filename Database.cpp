@@ -72,3 +72,14 @@ bool Database::filesExist()
 	fin.close();
 	return fileStatus;
 }
+
+bool Database::checkFile(const std::string &filename)
+{
+	std::ifstream fin;
+	std::ostringstream fullFilename;
+	fullFilename << DATABASE_PAPERS_DIRECTORY << filename;
+	fin.open(fullFilename.str().c_str(), std::ios::binary);
+	bool status = fin.good();
+	fin.close();
+	return status;
+}
