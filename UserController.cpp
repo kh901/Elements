@@ -132,13 +132,13 @@ void UserController::submissions()
 		    // Submit a paper
 		   	case 0:
 		   	{
+		   		Submission sub;
+		        sub.submit();
             /*
                 pack submission and send
                 sf::Packet submitPacket;
                 submitPacket << sub;
-            */
-		   		Submission sub;
-		        sub.submit();            
+            */                
 		        // clear screen
 		        std::cout << "\033[2J";
 		    }
@@ -150,6 +150,7 @@ void UserController::submissions()
 		        std::cout << "\033[2J";
             break;
 		    
+            /* move inside view submissions
             // Withdraw a paper
 		    case 2:
 		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
@@ -159,17 +160,7 @@ void UserController::submissions()
 		        // clear screen
 		        std::cout << "\033[2J";   
             break;
-            
-            // Add comment
-            case 3:
-                
-            break;
-            
-            // Display discussion
-            case 4:
-                
-            break:
-            
+            */
             // Back
             case 5:
             break;
@@ -231,8 +222,12 @@ void UserController::discussion()
 {
     std::cout << "Main Menu > Discussions" << std::endl << std::endl;
 
-        // TO DO: get comments about submission
-        // query to server getting submissions
+        // send request to server to view submissions
+        // print list of submissions
+        // select submission
+        // print comments about submission
+        // enter comment
+        // pack comment and send to server to add to comments
 }
 
 void UserController::notifications()
