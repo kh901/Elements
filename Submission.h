@@ -36,6 +36,7 @@ class Submission : public FileIO
         
         void addComment(Account account);
         void displayComments();
+        vector<std::string> getAuthors();
         
         Submission & operator=(const Submission &);
 
