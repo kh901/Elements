@@ -32,7 +32,7 @@ Submission & Submission::operator=(const Submission &other)
 
 void Submission::setReviewed()
 
-vector<std::string> getAuthors()
+std::vector<std::string> getAuthors()
 {
 	return authors;
 }
