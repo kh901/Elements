@@ -32,6 +32,12 @@ Submission & Submission::operator=(const Submission &other)
 	comments = other.comments;
 	return *this;
 }
+
+vector<std::string> getAuthors(){
+	return authors;
+}
+
+
 void Submission::setReviewed(bool reviewed)
 {
     this->reviewed = reviewed;

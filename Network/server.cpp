@@ -177,8 +177,18 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 
 void getSubmissions(Packet &packet, TcpSocket &client, vector<Submission> &submissions)
 {
-	Packet 
 
+	Packet subs;
+	string username;
+	packet >> username;
+	
+	
+	for(int i=0;i<submission.size();i++){
+		if(submission[i].getAuthors()==username)
+			subs << submission[i];
+	}
+	
+	client.send(subs);
 }
 
 void getAccess(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
