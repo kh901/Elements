@@ -53,6 +53,11 @@ Conference::Phase Conference::getCurrentPhase()
     return currentPhase;
 }
 
+void Conference::advancePhase()
+{
+
+}
+
 void Conference::setChairman(const std::string &aChairman)
 {
     chairman = aChairman;

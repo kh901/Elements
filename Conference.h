@@ -27,11 +27,13 @@ class Conference : public FileIO
         std::string getDate();
         void setLocation(const std::string &);
         std::string getLocation();
-        void setCurrentPhase(const Phase &);
-        Phase getCurrentPhase();
         void setChairman(const std::string &);
         std::string getChairman();
-
+        
+        void setCurrentPhase(const Phase &);
+        Phase getCurrentPhase();
+        void advancePhase();
+        
 		void addReviewer(const std::string &);
 		void printReviewers();
         void addSubchair(const std::string &);

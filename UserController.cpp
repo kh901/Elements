@@ -115,12 +115,9 @@ void UserController::submissions()
 	std::string subMenuOptions [] = {
 		"Submit a paper",
 		"View submissions",
-		"Withdraw a paper",
-        "Add comment",
-        "Display discussion",
 		"Back"
 	};
-	submissionMenu.setOptions("Main Menu > Submissions", subMenuOptions, 6);
+	submissionMenu.setOptions("Main Menu > Submissions", subMenuOptions, 3);
   
     int option = 0;
     while (submissionMenu.notExited(option))
@@ -146,23 +143,18 @@ void UserController::submissions()
 		    
             // View submissions
 		    case 1:      
-		        // clear screen
+		    /*
+                //Withdraw a paper
+		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
+		        std::string whichSub;
+		        getline(std::cin, whichSub);    
+		    */
+                // clear screen
 		        std::cout << "\033[2J";
             break;
 		    
-            /* move inside view submissions
-            // Withdraw a paper
-		    case 2:
-		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
-		        std::string whichSub;
-		        getline(std::cin, whichSub);
-		        
-		        // clear screen
-		        std::cout << "\033[2J";   
-            break;
-            */
             // Back
-            case 5:
+            case 2:
             break;
         }
     }
@@ -194,7 +186,7 @@ void UserController::configuration()
     Menu configurationMenu;
 	std::string configurationMenuOptions[] = {
 		"Advance to next phase",
-		"Change reviewers",
+		"Add reviewers",
         "Change papers per reviewer limit",
         "Back"
 	};
@@ -233,7 +225,7 @@ void UserController::discussion()
 void UserController::notifications()
 {
     std::cout << "Main Menu > Notifications" << std::endl << std::endl;
-    // send query to server to check if papers have been reviewed
+    // send query to server to check if papers have been reviewed and print to screen
 }
 
 void UserController::viewLogs()
