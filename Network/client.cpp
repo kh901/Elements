@@ -11,6 +11,7 @@ using namespace sf;
 string loginHandler(TcpSocket &, Packet &);
 string handleRegister(TcpSocket &, Packet &);
 string handlePickConference(TcpSocket &, const std::string &, Account::AccessLevel &);
+void handleSubmissions(TcpSocket &,Packet &);
 
 int main(){
 
@@ -58,9 +59,34 @@ int main(){
 			cout << "You're in " << conference << endl;
 			cout << "Your level is: " << level << endl;
 		}
+		
+		cout << "Main Menu" << endl;
+		cout << "View Submissions(1)" << endl;
+		cin >> option;
+		cin.ignore(1, '\n');
+		
+		request.clear();
+		
+		if (option == 1)
+		{
+			protocol = "VIEW_SUBMISSIONS";
+			request << protocol << loggedInUser;
+			handleSubmissions(socket,request);
+		}
 	}
 	
 	return 0;
+}
+
+void handleSubmissions(TcpSocket &socket, Packet &request)
+{
+	socket.send(request)
+	
+	Packet response;
+	
+	socket.receive(response);
+	
+	
 }
 
 string handlePickConference(TcpSocket &socket, const std::string &user, Account::AccessLevel &access)

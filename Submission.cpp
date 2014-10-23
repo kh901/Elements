@@ -2,7 +2,6 @@
 
 Submission::Submission()
 {
-    submitted = false;
     filename = "";
     title = "";
     description = "";
@@ -11,7 +10,6 @@ Submission::Submission()
 
 Submission::Submission(const Submission &other)
 {
-	submitted = other.submitted;
 	filename = other.filename;
 	title = other.title;
 	description = other.description;
@@ -22,7 +20,6 @@ Submission::Submission(const Submission &other)
 }
 Submission & Submission::operator=(const Submission &other)
 {
-	submitted = other.submitted;
 	filename = other.filename;
 	title = other.title;
 	description = other.description;
@@ -32,9 +29,20 @@ Submission & Submission::operator=(const Submission &other)
 	comments = other.comments;
 	return *this;
 }
-void Submission::setReviewed(bool reviewed)
+
+void Submission::setReviewed()
+
+std::vector<std::string> getAuthors()
 {
-    this->reviewed = reviewed;
+	return authors;
+}
+
+std::string getTitle(){
+	return title;
+}
+
+void Submission::setReviewed(){
+    reviewed = true;
 }
 
 void Submission::submit()

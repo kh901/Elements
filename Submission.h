@@ -32,18 +32,18 @@ class Submission : public FileIO
         void view();
         void withdraw();
         
-        void setReviewed(bool);
+        void setReviewed();
         
         void addComment(Account account);
         void displayComments();
-        
+        vector<std::string> getAuthors();
+        string getTitle();
         Submission & operator=(const Submission &);
 
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
 		void readFile(std::ifstream &);
     private:
-        bool submitted;
         bool reviewed;
         std::string filename;
         std::string title;
