@@ -1,3 +1,4 @@
+#include "Account.h"
 #include "Menu.h"
 #include "Submission.h"
 
@@ -6,14 +7,19 @@
 #include <string>
 #include <vector>
 
+#include<SFML/Network.hpp>
+#include<SFML/System/Time.hpp>
+
 #ifndef USER_CONTROLLER
 #define USER_CONTROLLER
+
+#define NETWORK_PORT 60000
 
 class UserController
 {
     public:
         UserController();
-        void createConference();
+        //void createConference();
         void account();
         void submissions();
         void reviews();
@@ -23,11 +29,24 @@ class UserController
         void viewLogs();
         void adminTools();
         void mainMenu();
+        void startMenu();
+       	bool connect();
+        void run();
         
-    private
+    private:
         std::string username;
         std::string conference;
-        //access level
+        Account::AccessLevel level;
+        bool adminStatus;
+        
+        sf::TcpSocket socket;
+        
+        void fillMainMenu(std::vector<std::string> &);
+        
+        void loginAccount();
+        void registerAccount();
+       	bool pickConference();
+        void getConferenceAccess();
 };
 
 #endif

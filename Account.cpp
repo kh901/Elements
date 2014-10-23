@@ -20,6 +20,7 @@ std::string encrypt(const std::string &str)
 
 Account::Account()
 {
+	papersAllocated = 0;
 	accountType = Account_User;
 	loggedIn = false;
 }
@@ -35,11 +36,13 @@ Account::Account(const Account &anAcc)
 	email = anAcc.email;
 	university = anAcc.university;
 	keywords = anAcc.keywords;
+	papersAllocated = anAcc.papersAllocated;
 }
 Account::Account(const AccountType accType, const bool loginStatus)
 {
 	accountType = accType;
 	loggedIn = loginStatus;
+	papersAllocated = 0;
 }
 
 bool Account::matchPassword(const std::string &str, const bool encryptValue)
@@ -201,6 +204,60 @@ void Account::setPassword(const std::string &aPass)
 	password = encrypt(aPass);
 }
 
+// get/set details
+void Account::setFirstName(const std::string &aFirst)
+{
+	firstName = aFirst;
+}
+std::string Account::getFirstName()
+{
+	return firstName;
+}
+void Account::setLastName(const std::string &aLast)
+{
+	lastName = aLast;
+}
+std::string Account::getLastName()
+{
+	return lastName;
+}
+void Account::setEmail (const std::string &anEmail) 
+{ 
+	email = anEmail; 
+}
+std::string Account::getEmail() 
+{ 
+	return email; 
+}
+void Account::setUniversity(const std::string &aUni) 
+{ 
+	university = aUni; 
+}
+std::string Account::getUniversity() 
+{ 
+	return university;
+}
+void Account::addKeyword(const std::string &word) 
+{ 
+	keywords.push_back(word); 
+}
+bool Account::findKeyword(const std::string &word) 
+{ 
+	return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 
+}
+void Account::clearKeywords() 
+{ 
+	keywords.clear(); 
+}
+void Account::displayKeywords()
+{
+	std::vector<std::string>::iterator it;
+	for (it = keywords.begin(); it != keywords.end(); ++it)
+	{
+		std::cout << "Keyword: " << *it << std::endl;
+	}
+}
+
 Account & Account::operator=(const Account &acc)
 {
 	username = acc.username;
@@ -213,6 +270,7 @@ Account & Account::operator=(const Account &acc)
 	email = acc.email;
 	university = acc.university;
 	keywords = acc.keywords;
+	papersAllocated = acc.papersAllocated;
 	return *this;
 }
 
@@ -225,6 +283,7 @@ void Account::writeFile(std::ofstream &ofs) const
 	appendData<std::string>(ofs, this->email);
 	appendData<std::string>(ofs, this->university);
 	appendData<bool>(ofs, this->loggedIn);
+	appendData<int>(ofs, this->papersAllocated);
 	appendData<AccountType>(ofs, this->accountType);
 	appendStringVector(ofs, this->keywords);
 	appendStringKeyMap<AccessLevel>(ofs, this->accessMap);
@@ -238,6 +297,7 @@ void Account::readFile(std::ifstream &ifs)
 	readData<std::string>(ifs, this->email);
 	readData<std::string>(ifs, this->university);
 	readData<bool>(ifs, this->loggedIn);
+	readData<int>(ifs, this->papersAllocated);
 	readData<AccountType>(ifs, this->accountType);
 	readStringVector(ifs, this->keywords);
 	readStringKeyMap<AccessLevel>(ifs, this->accessMap);

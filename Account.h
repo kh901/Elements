@@ -58,58 +58,18 @@ class Account : public FileIO
 		bool matchPassword(const std::string &, const bool encryptValue = true);
 				
 		// get/set details
-		void setFirstName(const std::string &aFirst)
-		{
-			firstName = aFirst;
-		}
-		std::string getFirstName()
-		{
-			return firstName;
-		}
-		void setLastName(const std::string &aLast)
-		{
-			lastName = aLast;
-		}
-		std::string getLastName()
-		{
-			return lastName;
-		}
-		void setEmail (const std::string &anEmail) 
-		{ 
-			email = anEmail; 
-		}
-		std::string getEmail() 
-		{ 
-			return email; 
-		}
-		void setUniversity(const std::string &aUni) 
-		{ 
-			university = aUni; 
-		}
-		std::string getUniversity() 
-		{ 
-			return university;
-	 	}
-		void addKeyword(const std::string &word) 
-		{ 
-			keywords.push_back(word); 
-		}
-		bool findKeyword(const std::string &word) 
-		{ 
-			return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 
-		}
-		void clearKeywords() 
-		{ 
-			keywords.clear(); 
-		}
-		void displayKeywords()
-		{
-			std::vector<std::string>::iterator it;
-			for (it = keywords.begin(); it != keywords.end(); ++it)
-			{
-				std::cout << "Keyword: " << *it << std::endl;
-			}
-		}
+		void setFirstName(const std::string &aFirst);
+		std::string getFirstName();
+		void setLastName(const std::string &aLast);
+		std::string getLastName();
+		void setEmail (const std::string &anEmail);
+		std::string getEmail();
+		void setUniversity(const std::string &aUni);
+		std::string getUniversity();
+		void addKeyword(const std::string &word);
+		bool findKeyword(const std::string &word);
+		void clearKeywords();
+		void displayKeywords();
 		
 		// login session functions
 	 	void startSession();
@@ -135,6 +95,7 @@ class Account : public FileIO
 		std::vector<std::string> keywords;
 		// a map of each conference that this account has a level of access higher than none
 		std::map<std::string, AccessLevel> accessMap;
+		int papersAllocated;
 	private:
 		std::string generateId();
 };

@@ -1,7 +1,6 @@
 #include<iostream>
 #include<vector>
 #include<SFML/Network.hpp>
-#include<cstring>
 #include<SFML/System/Time.hpp>
 #include "../Account.h"
 
