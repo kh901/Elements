@@ -1,17 +1,26 @@
 #include "Conference.h"
 Conference::Conference()
 {
-	currentPhase = Phase_Submission;
+
 }
 Conference::Conference(const Conference &other)
 {
 	name = other.name;
     date = other.date;
     location = other.location;
-    currentPhase = other.currentPhase;
     reviewers = other.reviewers;
 	subchairs = other.subchairs;
 	chairman = other.chairman;
+}
+
+std::string Conference::getCurrentPhase()
+{
+    return phase.getCurrentPhase();
+}
+
+void Conference::advancePhase()
+{
+    phase.advancePhase();
 }
 
 void Conference::setName(const std::string &aName)
@@ -41,21 +50,6 @@ void Conference::setLocation(const std::string &aLocation)
 std::string Conference::getLocation()
 {
     return location;
-}
-
-void Conference::setCurrentPhase(const Phase &aPhase)
-{
-    currentPhase = aPhase;
-}
-
-Conference::Phase Conference::getCurrentPhase()
-{
-    return currentPhase;
-}
-
-void Conference::advancePhase()
-{
-
 }
 
 void Conference::setChairman(const std::string &aChairman)

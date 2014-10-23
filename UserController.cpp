@@ -198,7 +198,7 @@ void UserController::configuration()
     	switch(option)
     	{
     		case 0:
-                // 
+                
                 break;
     		case 1:
                 break;
