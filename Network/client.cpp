@@ -27,7 +27,11 @@ int main(){
 	
 	Time time = seconds(7);
 	
-	Socket::Status status = socket.connect("localhost",60000,time);
+	string serverAddress;
+	cout << "Enter server address: ";
+	getline(cin, serverAddress);
+	
+	Socket::Status status = socket.connect(serverAddress.c_str(),60000,time);
 	
 	if(status == Socket::Done)
 	{
