@@ -30,20 +30,26 @@ Submission & Submission::operator=(const Submission &other)
 	return *this;
 }
 
-void Submission::setReviewed()
-
-std::vector<std::string> getAuthors()
-{
-	return authors;
+void Submission::setReviewed(){
+	reviewed = true;
 }
 
-std::string getTitle(){
+std::string Submission::getTitle(){
 	return title;
 }
 
-void Submission::setReviewed(){
-    reviewed = true;
+bool Submission::isAuthorIncluded(const std::string &aFirst, const std::string &aLast){
+	std::vector<Fullname>::iterator it;
+	for (it = authors.begin(); it != authors.end(); ++it)
+	{
+		if (it->firstname == aFirst && it->surname == aLast) 
+		{
+			return true;
+		}
+	}
+	return false;
 }
+
 
 void Submission::submit()
 {
@@ -55,46 +61,40 @@ void Submission::submit()
     std::cout << "Enter title: ";
     getline(std::cin, title);
     
-    std::string author;
+    Fullname author;
+    std::string cmd;
     do
     {
-        std::cout << "Enter authors name: ";
-        getline(std::cin, author);
+        std::cout << "Enter authors firstname: ";
+        getline(std::cin, author.firstname);
+        std::cout << "Enter authors lastname: ";
+        getline(std::cin, author.surname);
+        
         authors.push_back(author);
       
         do
         {
             std::cout << "Do you want to add another author to this paper? (y/n)";
-            getline(std::cin, author);
-            if(author != "y" && author != "n")
+            getline(std::cin, cmd);
+            if(cmd != "y" && cmd != "n")
                 std::cout << "Invalid option, please try again" << std::endl;
-        }while(author != "y" && author != "n");
-    }while(author != "n");
+        }while(cmd != "y" && cmd != "n");
+    }while(cmd != "n");
     
     std::cout << "Enter description: ";
     getline(std::cin, description);
     
-    std::string keyword, str;
+    std::string keyword;
     std::cout << "Enter keywords (when finished, type 'stop'): " << std::endl;
     
     while (getline(std::cin, keyword), keyword != "stop")
     {
-        keywords.push_back(str);
+        keywords.push_back(keyword);
     }
         
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
     getline(std::cin, option);
-    
-    if(option[0] == 'n')
-    {
-        submitted = false;
-    }
-    else
-    {
-        // send paper through network to server controller
-        submitted = true;
-    }
     
 }
 
@@ -103,7 +103,7 @@ void Submission::view()
     std::cout << "Title: " << title << std::endl;
     std::cout << "Authors: ";
     for(int i = 0; i < authors.size(); i++)
-        std::cout << authors[i] << ", ";
+        std::cout << authors[i].firstname << " " << authors[i].surname << ", ";
     std::cout << std::endl << "Description: " << description << std::endl;
 }
 
@@ -112,7 +112,15 @@ void Submission::withdraw()
     std::cout << "Main Menu < Submissions < Withdraw" << std::endl << std::endl;
     
     // function call to database to delete the file? maybe?
-    submitted = false;
+
+}
+
+void Submission::addAuthor(const std::string &first, const std::string &last)
+{
+	Fullname tmp;
+	tmp.firstname = first;
+	tmp.surname = last;
+	authors.push_back(tmp);
 }
 
 void Submission::addComment(Account account)
@@ -134,23 +142,21 @@ void Submission::displayComments()
 
 void Submission::writeFile(std::ofstream &ofs) const
 {
-	appendData<bool>(ofs, this->submitted);
 	appendData<bool>(ofs, this->reviewed);
 	appendString(ofs, this->filename);
 	appendString(ofs, this->title);
 	appendString(ofs, this->description);
-	appendStringVector(ofs, this->authors);
+	appendClassVector(ofs, this->authors);
 	appendStringVector(ofs, this->keywords);
 	appendClassVector<Comment>(ofs, this->comments);
 }
 void Submission::readFile(std::ifstream &ifs)
 {
-	readData<bool>(ifs, this->submitted);
 	readData<bool>(ifs, this->reviewed);
 	readString(ifs, this->filename);
 	readString(ifs, this->title);
 	readString(ifs, this->description);
-	readStringVector(ifs, this->authors);
+	readClassVector(ifs, this->authors);
 	readStringVector(ifs, this->keywords);
 	readClassVector<Comment>(ifs, this->comments);	
 }
@@ -175,4 +181,26 @@ void Comment::readFile(std::ifstream &ifs)
 {
 	readString(ifs, this->username);
 	readString(ifs, this->comment);	
+}
+
+Fullname::Fullname(const Fullname &other)
+{
+	firstname = other.firstname;
+	surname = other.surname;
+}
+void Fullname::writeFile(std::ofstream &ofs) const
+{
+	appendString(ofs, this->firstname);
+	appendString(ofs, this->surname);
+}
+void Fullname::readFile(std::ifstream &ifs)
+{
+	readString(ifs, this->firstname);
+	readString(ifs, this->surname);	
+}
+Fullname & Fullname::operator=(const Fullname &other)
+{
+	firstname = other.firstname;
+	surname = other.surname;
+	return *this;
 }
