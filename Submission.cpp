@@ -102,7 +102,7 @@ void Submission::view()
 {    
     std::cout << "Title: " << title << std::endl;
     std::cout << "Authors: ";
-    for(int i = 0; i < authors.size(); i++)
+    for(int i = 0; i < (int)authors.size(); i++)
         std::cout << authors[i].firstname << " " << authors[i].surname << ", ";
     std::cout << std::endl << "Description: " << description << std::endl;
 }
@@ -136,7 +136,7 @@ void Submission::addComment(Account account)
 
 void Submission::displayComments()
 {
-    for(int i = 0; i < comments.size(); i++)
+    for(int i = 0; i < (int)comments.size(); i++)
         std::cout << comments[i].username << ": " << comments[i].comment << std::endl;
 }
 

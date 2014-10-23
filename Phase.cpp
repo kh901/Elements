@@ -24,3 +24,12 @@ void Phase::advancePhase()
     phaseID++;
     currentPhase = phases[phaseID];
 }
+
+void Phase::writeFile(std::ofstream &ofs) const
+{
+	appendData<int>(ofs, this->phaseID);	
+}
+void Phase::readFile(std::ifstream &ifs)
+{	
+	readData<int>(ifs, this->phaseID);
+}

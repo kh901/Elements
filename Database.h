@@ -1,27 +1,28 @@
 #ifndef DATABASE_H
 #define DATABASE_H
+
+#include <ctime>
 #include <iostream>
+#include <iterator>
 #include <fstream>
 #include <sstream>
 #include <vector>
+
 #include "Account.h"
 #include "Conference.h"
 #include "File.h"
 #include "Submission.h"
 
-#define DATABASE_ACCOUNTS_FILENAME "/Storage/Data/elements_acc.bin"
-#define DATABASE_CONFERENCES_FILENAME "/Storage/Data/elements_con.bin"
-#define DATABASE_SUBMISSIONS_FILENAME "/Storage/Data/elements_sub.bin"
+#define DATABASE_ACCOUNTS_FILENAME "./Storage/Data/elements_acc.bin"
+#define DATABASE_CONFERENCES_FILENAME "./Storage/Data/elements_con.bin"
+#define DATABASE_SUBMISSIONS_FILENAME "./Storage/Data/elements_sub.bin"
 
-#define DATABASE_PAPERS_DIRECTORY "/Storage/Papers/"
+#define DATABASE_PAPERS_DIRECTORY "./Storage/Papers/"
+#define DATABASE_LOGS_DIRECTORY "./Storage/Logs/"
 
 #define SYSTEM_ADMIN_DEFAULT_USERNAME "cms_admin"
 #define SYSTEM_ADMIN_DEFAULT_PASSWORD "cms_password"
 
-/*
-	A class that manages saving, loading and
-	data manipulation of the other objects.
-*/
 class Database
 {
 	public:
@@ -51,14 +52,22 @@ class Database
 		void editSubmission(const Submission &);
 		
 		bool checkFile(const std::string &);
+		
+		// Logging
+		void addLog(const std::string &);
+		void getRecentLog(std::vector<std::string> &);
 	private:
 		// data structures in memory
 		std::vector<Account> accounts;
 		std::vector<Conference> conferences;
 		std::vector<Submission> submissions;
 		
+		// current log filename - based on the current date
+		std::string logFilename;
+		
+		int countLogFileLines(const std::string &);
 		void setupFiles();
 		bool filesExist();
 };
 
-#endif
+#endif /* DATABASE_H */
