@@ -1,6 +1,7 @@
 #include<iostream>
 #include<SFML/Network.hpp>
 #include"../Account.h"
+#include"../Submission.h"
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
@@ -21,6 +22,8 @@ bool registerAccount(Packet&, TcpSocket&,vector<Account>&);
 void processClient(Packet&, TcpSocket&, vector<Account>&);
 void getConferences(Packet&, TcpSocket&, vector<Account>&);
 void getAccess(Packet&, TcpSocket&, vector<Account>&);
+void getSubmissions(Packet&, TcpSocket&, vector<Submission>&);
+
 void loadFalseAccounts(vector<Account> &acc){
 	Account author;
 	author.setUsername("Adam");
@@ -43,10 +46,25 @@ void loadFalseAccounts(vector<Account> &acc){
 	acc.push_back(admin);
 }
 
+void loadFalseSubmissions(vector<Submission> &sub){
+	Submission temp1,temp2,temp3;
+	temp1.submit();
+	temp2.submit();
+	temp3.submit();
+	
+	sub.push_back(temp1);
+	sub.push_back(temp2);
+	sub.push_back(temp3);
+}
+
+
 int main(){
 	
 	vector<Account> accounts;
+	vector<Submission> submissions;
+	
 	loadFalseAccounts(accounts);
+	loadFalseSubmissions(submissions);
 	
 	TcpListener listener;
 	TcpSocket client;
@@ -144,9 +162,8 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 	else if(protocol=="CONFERENCE_ACCESS"){
 		getAccess(packet, client, accounts);
 	}
-	else if(protocol=="STUB3"){
-
-
+	else if(protocol=="VIEW_SUBMISSIONS"){
+		getSubmissions(packet, client, submissions);
 	}
 	else if(protocol=="STUB4"){
 
@@ -156,6 +173,12 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 		
 
 	}
+}
+
+void getSubmissions(Packet &packet, TcpSocket &client, vector<Submission> &submissions)
+{
+	Packet 
+
 }
 
 void getAccess(Packet &packet, TcpSocket &socket, vector<Account> &accounts)

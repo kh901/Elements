@@ -58,6 +58,20 @@ int main(){
 			cout << "You're in " << conference << endl;
 			cout << "Your level is: " << level << endl;
 		}
+		
+		cout << "Main Menu" << endl;
+		cout << "View Submissions(1)" << endl;
+		cin >> option;
+		cin.ignore(1, '\n');
+		
+		request.clear();
+		
+		if (option == 1)
+		{
+			protocol = "VIEW_SUBMISSIONS";
+			request << protocol;
+			socket.send(request);
+		}
 	}
 	
 	return 0;
