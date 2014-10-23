@@ -29,17 +29,15 @@ Submission & Submission::operator=(const Submission &other)
 	comments = other.comments;
 	return *this;
 }
-<<<<<<< HEAD
-void Submission::setReviewed()
-=======
 
-vector<std::string> getAuthors(){
+void Submission::setReviewed()
+
+vector<std::string> getAuthors()
+{
 	return authors;
 }
 
-
 void Submission::setReviewed()
->>>>>>> 929a63bc8383f7910acc5d5acd59a705985072ff
 {
     reviewed = true;
 }
