@@ -37,8 +37,11 @@ std::vector<std::string> getAuthors()
 	return authors;
 }
 
-void Submission::setReviewed()
-{
+std::string getTitle(){
+	return title;
+}
+
+void Submission::setReviewed(){
     reviewed = true;
 }
 
