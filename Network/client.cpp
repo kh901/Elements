@@ -12,6 +12,7 @@ string loginHandler(TcpSocket &, Packet &);
 string handleRegister(TcpSocket &, Packet &);
 string handlePickConference(TcpSocket &, const std::string &, Account::AccessLevel &);
 void handleSubmissions(TcpSocket &,Packet &);
+void showFirstScreen();
 
 int main(){
 
@@ -29,30 +30,19 @@ int main(){
 	Socket::Status status = socket.connect("localhost",60000,time);
 	
 	if(status == Socket::Done){
+	bool exit = false;
 
-		cout << "Login (1)" << endl;
-		cout << "Register (2)" << endl;
-		cout << "Exit (3)" << endl;
-		cin >> option;
-		cin.ignore(1, '\n');
+	showFirstScreen()
 
-		if (option == 1)
-		{
-			protocol = "LOGIN";
-			request << protocol;
-			loggedInUser = loginHandler(socket, request);
-		}
-		else if (option == 2)
-		{
-			protocol = "REGISTER";
-			request << protocol;
-			loggedInUser = handleRegister(socket, request);
-		}
-		else
-		{
-			cout << "TOPLEL" << endl;
-			return -1;
-		}
+
+	while(exit==false){
+
+
+
+
+
+	}
+		
 		conference = handlePickConference(socket, loggedInUser, level);
 		if (conference != "None")
 		{
@@ -78,6 +68,42 @@ int main(){
 	
 	return 0;
 }
+
+void showFirstScreen(){
+
+
+		cout << "Login (1)" << endl;
+		cout << "Register (2)" << endl;
+		cout << "Exit (3)" << endl;
+		cin >> option;
+		cin.ignore(1, '\n');
+
+		if (option == 1)
+		{
+			protocol = "LOGIN";
+			request << protocol;
+			loggedInUser = loginHandler(socket, request);
+		}
+		else if (option == 2)
+		{
+			protocol = "REGISTER";
+			request << protocol;
+			loggedInUser = handleRegister(socket, request);
+		}
+		else
+		{
+			cout << "TOPLEL" << endl;
+			return -1;
+		}
+
+
+
+
+}
+
+
+
+
 
 void handleSubmissions(TcpSocket &socket, Packet &request)
 {
