@@ -44,7 +44,6 @@ class Submission : public FileIO
 		void writeFile(std::ofstream &) const;
 		void readFile(std::ifstream &);
     private:
-        bool submitted;
         bool reviewed;
         std::string filename;
         std::string title;
