@@ -37,7 +37,7 @@ class Submission : public FileIO
         void addComment(Account account);
         void displayComments();
         vector<std::string> getAuthors();
-        
+        string getTitle();
         Submission & operator=(const Submission &);
 
 		// write and read this class to a binary file stream
