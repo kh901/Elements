@@ -11,15 +11,10 @@
 using namespace std;
 using namespace sf;
 
-void level1();
-void level2();
-void level3();
-void level4();
-void level5();
-int checkAccount(vector<Account> &,string,string, bool usernameOnly = false);
+int checkAccount(vector<Account> &,string, string = "#USERNAMEONLY");
 void loginAccount(Packet&, TcpSocket&,vector<Account>&);
 bool registerAccount(Packet&, TcpSocket&,vector<Account>&);
-void processClient(Packet&, TcpSocket&, vector<Account>&);
+void processClient(Packet&, TcpSocket&, vector<Account>&,vector<Submission>&);
 void getConferences(Packet&, TcpSocket&, vector<Account>&);
 void getAccess(Packet&, TcpSocket&, vector<Account>&);
 void getSubmissions(Packet&, TcpSocket&, vector<Submission>&, vector<Account>&);
@@ -117,7 +112,7 @@ int main(){
 						if (status == sf::Socket::Done)
 						{
 							cout << "Processing client" << endl;
-							processClient(packet, client, accounts);
+							processClient(packet, client, accounts,submissions);
 							packet.clear();
 						}
 						// The client has disconnected, stop listening to them
@@ -142,7 +137,7 @@ int main(){
 	return 0;
 }
 
-void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
+void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts,vector<Submission> &submissions)
 {
 	string protocol;
 		
@@ -177,46 +172,43 @@ void processClient(Packet &packet, TcpSocket &client, vector<Account> &accounts)
 
 void getSubmissions(Packet &packet, TcpSocket &client, vector<Submission> &submissions, vector<Account> &accounts)
 {
-
-	Packet subs;
+	Packet subPacket;
 	string username;
 	packet >> username;
-	string tmp = "test", firstname, lastname, fullname;
+	string firstname, lastname, fullname;
 	
-	int findIndex = checkAccount(accounts, username, tmp, true);		//get Account index
+	int findIndex = checkAccount(accounts, username);		//get Account index
 	
 	firstname = accounts[findIndex].getFirstName();
 	lastname = accounts[findIndex].getLastName();		//get the fullname for the account
 	
-	fullname = firstname + " " + lastname;
-	
 	vector<string> sub;
 	int count=0;
 	
-	for(int i=0;i<submission.size();i++){
-		if(submission[i].getAuthors()==fullname){		//add all the total submissions. Store themin vector
-			sub.push_back(submission[i].getTitle());
+	for(int i=0;i<submissions.size();i++)
+	{
+		if(submissions[i].isAuthorIncluded(firstname, lastname))
+		{
 			count++;
+			sub.push_back(submissions[i].getTitle());
 		}
 	}
 	
-	sub << count;			//add the amount of submissons the author is involved in
+	subPacket << count;			//add the amount of submissons the author is involved in
 	
 	for(int i=0;i<sub.size();i++){
-		subs<< sub[i];				//pack all the submissions in the packet
+		subPacket<< sub[i];				//pack all the submissions in the packet
 	}
-	
-	
-	client.send(subs);
+	client.send(subPacket);
 }
 
 void getAccess(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
 {
 	Packet accessDetails;
-	string user, tmp = "test", conference;
+	string user, conference;
 	packet >> user >> conference;
 	
-	int findIndex = checkAccount(accounts, user, tmp, true);
+	int findIndex = checkAccount(accounts, user);
 	Account::AccessLevel level;
 	if (findIndex != -1)
 	{
@@ -229,10 +221,10 @@ void getAccess(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
 void getConferences(Packet &packet, TcpSocket &socket, vector<Account> &accounts)
 {
 	Packet list;
-	string user, tmp = "test";
+	string user;
 	packet >> user;
 	
-	int findIndex = checkAccount(accounts, user, tmp, true);
+	int findIndex = checkAccount(accounts, user);
 	vector<string> results;
 	if (findIndex != -1)
 	{
@@ -246,11 +238,11 @@ void getConferences(Packet &packet, TcpSocket &socket, vector<Account> &accounts
 	}
 }
 
-int checkAccount(vector<Account> &accounts,string username,string password, bool usernameOnly){
+int checkAccount(vector<Account> &accounts,string username,string password){
 	for(int i=0;i<accounts.size();i++){
 		if(accounts[i].matchUsername(username))
 		{
-			if (usernameOnly || accounts[i].matchPassword(password))
+			if (password=="#USERNAMEONLY" || accounts[i].matchPassword(password))
 			{
 				return i;
 			}
@@ -289,7 +281,7 @@ bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts
 	vector<string> keywords;
 	int keywordSize = 0;
 
-	packet >> username >> password >> email >> university >> keywordSize;
+	packet >> username >> password >> firstname >> lastname >> email >> university >> keywordSize;
 	string tmpkeyword;
 	for (int i = 0; i < keywordSize; ++i)
 	{
@@ -298,7 +290,7 @@ bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts
 	}
 	
 	bool exists = false;
-	int index = checkAccount(accounts, username, password, true);
+	int index = checkAccount(accounts, username);
 	if (index == -1)
 	{
 		cout << "New user registered! Welcome " << username << endl;
@@ -325,27 +317,4 @@ bool registerAccount(Packet &packet, TcpSocket &client,vector<Account> &accounts
 	client.send(existsPacket);
 }
 
-void level1()
-{
-	cout << "The User has account permission level 1" << endl;
-}
 
-void level2()
-{
-	cout << "The User has account permission level 2" << endl;
-}
-
-void level3()
-{
-	cout << "The User has account permission level 3" << endl;
-}
-
-void level4()
-{
-	cout << "The User has account permission level 4" << endl;
-}
-
-void level5()
-{
-	cout << "The User has account permission level 5" << endl;
-}
