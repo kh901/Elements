@@ -398,7 +398,7 @@ void UserController::submitPaper()
 	std::string protocol = "SUBMIT_PAPER";
 	std::string outcome;
 	
-	request << protocol;
+	request << protocol << username;
 	Submission sub;
 	sub.submit();
 	request << sub;
