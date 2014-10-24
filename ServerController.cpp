@@ -16,8 +16,9 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 {
 	sf::Packet response;
 	Submission submission;
-	std::string submit_title;
+	std::string username;
 	
+	packet >> username;
 	packet >> submission;
 	submissions.push_back(submission);
 }
