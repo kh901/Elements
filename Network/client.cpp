@@ -3,6 +3,7 @@
 #include<SFML/Network.hpp>
 #include<SFML/System/Time.hpp>
 #include "../Account.h"
+#include "../Submission.h"
 
 using namespace std;
 using namespace sf;	
@@ -12,6 +13,7 @@ string handleRegister(TcpSocket &, Packet &);
 string handlePickConference(TcpSocket &, const std::string &, Account::AccessLevel &);
 void handleSubmissions(TcpSocket &,Packet &);
 void showFirstScreen(TcpSocket&,string &);
+void submitHandler(TcpSocket &, Packet &);
 
 int main(){
 
@@ -53,7 +55,13 @@ int main(){
 
 		request.clear();
 
-		if (option == 2)
+		if (option == 1)
+		{
+			protocol = "SUBMIT_PAPER";
+			request << protocol;
+			submitHandler(socket, request);
+		}
+		else if (option == 2)
 		{
 			protocol = "VIEW_SUBMISSIONS";
 			request << protocol << loggedInUser;
@@ -61,6 +69,22 @@ int main(){
 		}
 	}
 	return 0;
+}
+
+void submitHandler(TcpSocket &socket, Packet &request)
+{
+	Packet response;
+	Submission submission;
+	string response_title;
+	submission.submit();
+	request << submission;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	response >> response_title;
+	
+	cout << "Is this the paper you submitted? " << response_title << endl;
 }
 
 void showFirstScreen(TcpSocket& socket,string &loggedInUser)

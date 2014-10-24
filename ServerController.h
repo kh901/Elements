@@ -15,7 +15,7 @@ class ServerController
 		ServerController();//
 		void run();//
 		void loadFalseAccounts();//
-		void loadFalseSubmissions();//
+		//void loadFalseSubmissions();//
 		int checkAccount(std::string, std::string = "#USERNAMEONLY");//
 		void loginAccount(sf::Packet&, sf::TcpSocket&);//
 		bool registerAccount(sf::Packet&, sf::TcpSocket&);//
@@ -23,6 +23,7 @@ class ServerController
 		void getConferences(sf::Packet&, sf::TcpSocket&);//
 		void getAccess(sf::Packet&, sf::TcpSocket&);//
 		void getSubmissions(sf::Packet&, sf::TcpSocket&);//
+		void paperSubmission(sf::Packet&, sf::TcpSocket&);
 	private:
 		std::list<sf::TcpSocket*> clients;
 		sf::SocketSelector selector;

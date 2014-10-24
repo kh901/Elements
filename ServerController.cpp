@@ -12,10 +12,25 @@ ServerController::ServerController()
 
 }
 
+void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	Submission submission;
+	std::string submit_title;
+	
+	packet >> submission;
+	submissions.push_back(submission);
+	
+	submit_title = submission.getTitle();
+	
+	response << submit_title;
+	client.send(response);
+}
+
 void ServerController::run()
 {
 	loadFalseAccounts();
-	loadFalseSubmissions();
+	//loadFalseSubmissions();
 	
 	sf::TcpListener listener;
 	
@@ -108,7 +123,7 @@ void ServerController::loadFalseAccounts(){
 	accounts.push_back(admin);
 }
 
-void ServerController::loadFalseSubmissions(){
+/*void ServerController::loadFalseSubmissions(){
 	Submission temp1,temp2,temp3;
 	temp1.submit();
 	temp2.submit();
@@ -117,7 +132,7 @@ void ServerController::loadFalseSubmissions(){
 	submissions.push_back(temp1);
 	submissions.push_back(temp2);
 	submissions.push_back(temp3);
-}
+}*/
 
 int ServerController::checkAccount(std::string username, std::string password){
 	for(int i=0;i<accounts.size();i++){
@@ -221,9 +236,8 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="VIEW_SUBMISSIONS"){
 		getSubmissions(packet, client);
 	}
-	else if(protocol=="STUB4"){
-
-
+	else if(protocol=="SUBMIT_PAPER"){
+		paperSubmission(packet, client);
 	}
 	else if(protocol=="BYE"){
 		
