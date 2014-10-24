@@ -53,8 +53,7 @@ bool Submission::isAuthorIncluded(const std::string &aFirst, const std::string &
 
 void Submission::submit()
 {
-    std::cout << "Main Menu > Submissions > Submit a paper" << std::endl << std::endl;
-    
+    //std::cout << "Main Menu > Submissions > Submit a paper" << std::endl << std::endl;
     std::cout << "Enter paper name: ";
     getline(std::cin, filename);
     
@@ -91,11 +90,11 @@ void Submission::submit()
     {
         keywords.push_back(keyword);
     }
-        
+    /*
     std::cout << "Do you want to submit? (y/n): ";
     std::string option;
     getline(std::cin, option);
-    
+    */
 }
 
 void Submission::view()
@@ -138,6 +137,60 @@ void Submission::displayComments()
 {
     for(int i = 0; i < (int)comments.size(); i++)
         std::cout << comments[i].username << ": " << comments[i].comment << std::endl;
+}
+
+sf::Packet & operator<<(sf::Packet &packet, const Submission &sub)
+{
+	packet << sub.reviewed << sub.filename << sub.title << sub.description;
+	packet << (int)sub.authors.size();
+	for (int i = 0; i < (int)sub.authors.size(); ++i)
+	{
+		packet << sub.authors[i].firstname << sub.authors[i].surname;
+	}
+	packet << (int)sub.keywords.size();
+	for (int j = 0; j < (int)sub.keywords.size(); ++j)
+	{
+		packet << sub.keywords[j];
+	}
+	packet << (int)sub.comments.size();
+	for (int k = 0; k < (int)sub.comments.size(); ++k)
+	{
+		packet << sub.comments[k].username << sub.comments[k].comment;
+	}
+	return packet;
+}
+sf::Packet & operator>>(sf::Packet &packet, Submission &sub)
+{
+	sub.authors.clear();
+	sub.keywords.clear();
+	sub.comments.clear();
+	
+	packet >> sub.reviewed >> sub.filename >> sub.title >> sub.description;
+	int authorSize = 0;
+	packet >> authorSize;
+	for (int a = 0; a < authorSize; ++a)
+	{
+		Fullname tmpAuthor;
+		packet >> tmpAuthor.firstname >> tmpAuthor.surname;
+		sub.authors.push_back(tmpAuthor);
+	}
+	int keywordSize = 0;
+	packet >> keywordSize;
+	for (int b = 0; b < keywordSize; ++b)
+	{
+		std::string tmpWord;
+		packet >> tmpWord;
+		sub.keywords.push_back(tmpWord);
+	}
+	int commentSize = 0;
+	packet >> commentSize;
+	for (int c = 0; c < commentSize; ++c)
+	{
+		Comment tmpComment;
+		packet >> tmpComment.username >> tmpComment.comment;
+		sub.comments.push_back(tmpComment);
+	}
+	return packet;
 }
 
 void Submission::writeFile(std::ofstream &ofs) const
