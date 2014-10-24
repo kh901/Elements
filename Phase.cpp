@@ -32,4 +32,5 @@ void Phase::writeFile(std::ofstream &ofs) const
 void Phase::readFile(std::ifstream &ifs)
 {	
 	readData<int>(ifs, this->phaseID);
+	currentPhase = phases[phaseID];	
 }

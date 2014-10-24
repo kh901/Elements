@@ -1,7 +1,8 @@
 #include "Conference.h"
 Conference::Conference()
 {
-
+	maxReviewersPerPaper = CONFERENCE_DEFAULT_MAX_REVIEWERS_PER_PAPER;
+	maxPapersPerReviewer = CONFERENCE_DEFAULT_MAX_PAPERS_PER_REVIEWER;
 }
 Conference::Conference(const Conference &other)
 {
@@ -11,6 +12,8 @@ Conference::Conference(const Conference &other)
     reviewers = other.reviewers;
 	subchairs = other.subchairs;
 	chairman = other.chairman;
+	maxReviewersPerPaper = other.maxReviewersPerPaper;
+	maxPapersPerReviewer = other.maxPapersPerReviewer;
 }
 
 std::string Conference::getCurrentPhase()
@@ -62,6 +65,21 @@ std::string Conference::getChairman()
     return chairman;
 }
 
+void Conference::setMaxReviewedPapers(const int max)
+{
+	if (max > 0)
+	{
+		maxPapersPerReviewer = max;
+	}
+}
+void Conference::setMaxPaperReviewers(const int max)
+{
+	if (max > 0)
+	{
+		maxReviewersPerPaper = max;
+	}
+}
+
 void Conference::addReviewer(const std::string &aReviewer)
 {
 	reviewers.push_back(aReviewer);
@@ -99,6 +117,8 @@ void Conference::writeFile(std::ofstream &ofs) const
 	appendStringVector(ofs, this->reviewers);
 	appendStringVector(ofs, this->subchairs);
 	appendString(ofs, this->chairman);
+	appendData<int>(ofs, this->maxReviewersPerPaper);
+	appendData<int>(ofs, this->maxPapersPerReviewer);
 }
 
 void Conference::readFile(std::ifstream &ifs)
@@ -110,4 +130,6 @@ void Conference::readFile(std::ifstream &ifs)
 	readStringVector(ifs, this->reviewers);
 	readStringVector(ifs, this->subchairs);
 	readString(ifs, this->chairman);
+	readData<int>(ifs, this->maxReviewersPerPaper);
+	readData<int>(ifs, this->maxPapersPerReviewer);
 }
