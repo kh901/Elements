@@ -392,6 +392,21 @@ void UserController::account()
     } while (accountMenu.notExited(option));
 }
 
+void UserController::submitPaper()
+{
+	sf::Packet request, response;
+	std::string protocol = "SUBMIT_PAPER";
+	std::string outcome;
+	
+	request << protocol;
+	Submission sub;
+	sub.submit();
+	request << sub;
+	
+	socket.send(request);
+	//socket.receive(response);
+}
+
 void UserController::submissions()
 {
 	// set up menu for this part
@@ -413,13 +428,7 @@ void UserController::submissions()
 		    // Submit a paper
 		   	case 0:
 		   	{
-		   		Submission sub;
-		        sub.submit();
-            /*
-                pack submission and send
-                sf::Packet submitPacket;
-                submitPacket << sub;
-            */                
+		   		this->submitPaper(); 
 		        // clear screen
 		        std::cout << "\033[2J";
 		    }
@@ -427,12 +436,7 @@ void UserController::submissions()
 		    
             // View submissions
 		    case 1:      
-		    /*
-                //Withdraw a paper
-		        std::cout << "Which submission would you like to withdraw?" << std::endl;     
-		        std::string whichSub;
-		        getline(std::cin, whichSub);    
-		    */
+		    
                 // clear screen
 		        std::cout << "\033[2J";
             break;

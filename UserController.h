@@ -47,6 +47,7 @@ class UserController
         void registerAccount();
        	bool pickConference();
         void getConferenceAccess();
+        void submitPaper();
 };
 
 #endif
