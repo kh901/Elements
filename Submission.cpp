@@ -146,7 +146,7 @@ void Submission::writeFile(std::ofstream &ofs) const
 	appendString(ofs, this->filename);
 	appendString(ofs, this->title);
 	appendString(ofs, this->description);
-	appendClassVector(ofs, this->authors);
+	appendClassVector<Fullname>(ofs, this->authors);
 	appendStringVector(ofs, this->keywords);
 	appendClassVector<Comment>(ofs, this->comments);
 }
@@ -156,7 +156,7 @@ void Submission::readFile(std::ifstream &ifs)
 	readString(ifs, this->filename);
 	readString(ifs, this->title);
 	readString(ifs, this->description);
-	readClassVector(ifs, this->authors);
+	readClassVector<Fullname>(ifs, this->authors);
 	readStringVector(ifs, this->keywords);
 	readClassVector<Comment>(ifs, this->comments);	
 }

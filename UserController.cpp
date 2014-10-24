@@ -447,11 +447,13 @@ void UserController::submissions()
 void UserController::reviews()
 {
 	Menu reviewMenu;
-	std::string reviewMenuOptions [2] = {
-		"Review a paper",
+	std::string reviewMenuOptions [] = {
+		"Bid for a paper",			// in bidding phase only
+		"Submit a review",			// in review phase only
+		"Discuss a paper"			// in discussion phase (unlocked), finalisation-completion (locked, viewable)
 		"Back"
 	};
-	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, 2);
+	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, 4);
     
     // Need database code for reviews
     // Need to create review form 
@@ -472,9 +474,10 @@ void UserController::configuration()
 		"Advance to next phase",
 		"Add reviewers",
         "Change papers per reviewer limit",
+        "Change reviewers per paper limit",
         "Back"
 	};
-	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 4);
+	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 5);
 	int option;
     do
     {
@@ -490,6 +493,8 @@ void UserController::configuration()
                 break;
             case 3:
                 break;
+            case 4:
+            	break;
     	}
     } while (configurationMenu.notExited(option));
 }

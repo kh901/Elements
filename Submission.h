@@ -13,6 +13,7 @@ class Comment : public FileIO
 	Comment() {}
 	Comment(const Comment &);
 	
+	// also store time / date of comment
     std::string username;
     std::string comment;
 	
