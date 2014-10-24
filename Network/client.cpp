@@ -80,11 +80,6 @@ void submitHandler(TcpSocket &socket, Packet &request)
 	request << submission;
 	
 	socket.send(request);
-	socket.receive(response);
-	
-	response >> response_title;
-	
-	cout << "Is this the paper you submitted? " << response_title << endl;
 }
 
 void showFirstScreen(TcpSocket& socket,string &loggedInUser)

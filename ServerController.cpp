@@ -20,11 +20,6 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	
 	packet >> submission;
 	submissions.push_back(submission);
-	
-	submit_title = submission.getTitle();
-	
-	response << submit_title;
-	client.send(response);
 }
 
 void ServerController::run()
