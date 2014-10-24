@@ -47,6 +47,9 @@ class Account : public FileIO
 		bool hasAccess(const std::string &);
 		void getConferences(std::vector<std::string> &);
 		
+		// functions dealing with bidding and papers allocated to review
+		bool incrementAllocated(const std::string &, const int);
+		
 		bool isSystemAdmin() { return accountType == Account_Admin; }
 		void setSystemAdmin() { accountType = Account_Admin; }			// this must only be done in necessary circumstances
 		
@@ -95,7 +98,8 @@ class Account : public FileIO
 		std::vector<std::string> keywords;
 		// a map of each conference that this account has a level of access higher than none
 		std::map<std::string, AccessLevel> accessMap;
-		int papersAllocated;
+		// a map of each conference with the number of papers allocated to review
+		std::map<std::string, int> allocatedMap;
 	private:
 		std::string generateId();
 };

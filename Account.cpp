@@ -20,7 +20,6 @@ std::string encrypt(const std::string &str)
 
 Account::Account()
 {
-	papersAllocated = 0;
 	accountType = Account_User;
 	loggedIn = false;
 }
@@ -36,13 +35,12 @@ Account::Account(const Account &anAcc)
 	email = anAcc.email;
 	university = anAcc.university;
 	keywords = anAcc.keywords;
-	papersAllocated = anAcc.papersAllocated;
+	allocatedMap = anAcc.allocatedMap;
 }
 Account::Account(const AccountType accType, const bool loginStatus)
 {
 	accountType = accType;
 	loggedIn = loginStatus;
-	papersAllocated = 0;
 }
 
 bool Account::matchPassword(const std::string &str, const bool encryptValue)
@@ -94,6 +92,21 @@ void Account::endSession()
 {
 	loggedIn = false;
 }
+bool Account::incrementAllocated(const std::string &id, const int max)
+{
+	std::map<std::string, int>::iterator it;
+	it = allocatedMap.find(id);
+	if (it == allocatedMap.end())
+	{
+		allocatedMap[id] = 0;
+	}
+	if (allocatedMap[id] < max)
+	{
+		allocatedMap[id] += 1;
+		return true;
+	}
+	return false;
+}
 bool Account::addAccess(const std::string &conferenceId, const AccessLevel permissions)
 {
 	std::pair< std::map<std::string, AccessLevel>::iterator, bool > ret;
@@ -115,30 +128,6 @@ void Account::changeAccess(const std::string &conferenceId, const AccessLevel pe
 			accessMap.erase(it);
 		}
 	}
-	/*
-	// alternatively:
-	//accessMap[conferenceId] = permissions;
-	std::map<std::string, AccessLevel>::iterator it;
-	// update the row in the access map if it exists
-	it = accessMap.find(conferenceId);
-	if (it != accessMap.end())
-	{
-		// modify permissions if not being removed
-		if (permissions != Access_None)
-		{
-			it->second = permissions;
-		}
-		else
-		{
-			accessMap.erase(it);
-		}
-	}
-	// if it does not exist, create one
-	else
-	{
-		addAccess(conferenceId, permissions);
-	}
-	*/
 }
 Account::AccessLevel Account::getAccess(const std::string &conferenceId)
 {
@@ -270,7 +259,7 @@ Account & Account::operator=(const Account &acc)
 	email = acc.email;
 	university = acc.university;
 	keywords = acc.keywords;
-	papersAllocated = acc.papersAllocated;
+	allocatedMap = acc.allocatedMap;
 	return *this;
 }
 
@@ -283,10 +272,10 @@ void Account::writeFile(std::ofstream &ofs) const
 	appendData<std::string>(ofs, this->email);
 	appendData<std::string>(ofs, this->university);
 	appendData<bool>(ofs, this->loggedIn);
-	appendData<int>(ofs, this->papersAllocated);
 	appendData<AccountType>(ofs, this->accountType);
 	appendStringVector(ofs, this->keywords);
 	appendStringKeyMap<AccessLevel>(ofs, this->accessMap);
+	appendStringKeyMap<int>(ofs, this->allocatedMap);
 }
 void Account::readFile(std::ifstream &ifs)
 {
@@ -297,10 +286,10 @@ void Account::readFile(std::ifstream &ifs)
 	readData<std::string>(ifs, this->email);
 	readData<std::string>(ifs, this->university);
 	readData<bool>(ifs, this->loggedIn);
-	readData<int>(ifs, this->papersAllocated);
 	readData<AccountType>(ifs, this->accountType);
 	readStringVector(ifs, this->keywords);
 	readStringKeyMap<AccessLevel>(ifs, this->accessMap);
+	readStringKeyMap<int>(ifs, this->allocatedMap);
 }
 
 sf::Packet & operator<<(sf::Packet &packet, const Account::AccessLevel &level)
