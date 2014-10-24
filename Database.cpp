@@ -15,6 +15,102 @@ Database::Database()
 	load();
 }
 
+void Database::addAccount(const Account &acc)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	acc.writeFile(fout);
+	fout.close();
+}
+
+Account Database::getAccount(const std::string &str)
+{
+	std::vector<Account>::iterator itA;
+	for (itA = accounts.begin(); itA != accounts.end(); itA++)
+	{
+		/**
+		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
+		 * 
+		if (itA[0].username == str)
+		{
+			return itA[0];
+		}
+		**/
+	}
+}
+
+void Database::editAccount(const Account &acc)
+{
+	std::ofstream fin;
+	fin.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::in);
+	/// acc.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
+	fin.close();
+}
+
+void Database::addConference(const Conference &con)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	con.writeFile(fout);
+	fout.close();
+}
+
+Conference Database::getConference(const std::string &str)
+{
+	std::vector<Conference>::iterator itC;
+	for (itC = conferences.begin(); itC != conferences.end(); itC++)
+	{
+		/**
+		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
+		 * 
+		if (itC[0].name == str)
+		{
+			return itC[0];
+		}
+		**/
+	}
+}
+
+void Database::editConference(const Conference &con)
+{
+	std::ofstream fin;
+	fin.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::in);
+	/// con.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
+	fin.close();
+}
+
+void Database::addSubmission(const Submission &sub)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	sub.writeFile(fout);
+	fout.close();
+}
+
+Submission Database::getSubmission(const std::string &str)
+{
+	std::vector<Submission>::iterator itS;
+	for (itS = submissions.begin(); itS != submissions.end(); itS++)
+	{
+		/**
+		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
+		 * 
+		if (itS[0].title == str)
+		{
+			return itS[0];
+		}
+		**/
+	}
+}
+
+void Database::editSubmission(const Submission &sub)
+{
+	std::ofstream fin;
+	fin.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::in);
+	/// sub.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
+	fin.close();
+}
+
 void Database::save()
 {
 	// save accounts
