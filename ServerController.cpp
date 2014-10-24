@@ -18,7 +18,6 @@ void ServerController::run()
 	loadFalseSubmissions();
 	
 	sf::TcpListener listener;
-	sf::TcpSocket client;
 	
 	if(listener.listen(60000)!= sf::Socket::Done)
 		std::cout<<"error"<<std::endl;
