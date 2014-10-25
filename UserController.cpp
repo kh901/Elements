@@ -330,7 +330,7 @@ void UserController::mainMenu()
 	this->logOut();
 }
 
-void UserController:::logOut()
+void UserController::logOut()
 {
 	sf::Packet request;
 	std::string protocol = "BYE";
@@ -443,6 +443,7 @@ void UserController::createConference()
 					// an admin made the conference, so they have admin access
 					level = Account::Access_Admin;		
 					option = -1;
+					conferenceForm.clear();
 				}
 				else
 				{
@@ -578,16 +579,12 @@ void UserController::submissions()
 		   	case 0:
 		   	{
 		   		this->submitPaper(); 
-		        // clear screen
-		        std::cout << "\033[2J";
 		    }
 		    break;
 		    
             // View submissions
 		    case 1:      
 		    	this->viewSubmissions();
-                // clear screen
-		        std::cout << "\033[2J";
             break;
 		    
             // Back

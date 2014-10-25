@@ -261,6 +261,15 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 
 void ServerController::logoutUser(sf::Packet &packet, sf::TcpSocket &client)
 {
+	std::string username;
+	packet >> username;
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	std::cout << username << " logged out" << std::endl;
+	accounts[findIndex].endSession();	// log out found user
 }
 
 void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &client)
