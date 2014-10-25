@@ -21,6 +21,8 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	packet >> username;
 	packet >> submission;
 	submissions.push_back(submission);
+	
+	std::cout << "Submitted paper: " << submission.getTitle() << " by " << username << std::endl;
 }
 
 void ServerController::run()
@@ -101,17 +103,23 @@ void ServerController::loadFalseAccounts(){
 	Account author;
 	author.setUsername("Adam");
 	author.setPassword("pass");
+	author.setFirstName("Adam");
+	author.setLastName("Dahler");
 	author.addAccess("AIDS conference", Account::Access_Author);
 	author.addAccess("Zombie apocalypse conference", Account::Access_Admin);
 	
 	Account reviewer;
 	reviewer.setUsername("Jonathan");
 	reviewer.setPassword("pass");
+	reviewer.setFirstName("Jonathan");
+	reviewer.setLastName("Yip");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
 	
 	Account admin;
 	admin.setUsername("Kieran");
 	admin.setPassword("pass");
+	admin.setFirstName("Kieran");
+	admin.setLastName("Haavisto");
 	admin.addAccess("AIDS conference", Account::Access_Admin);
 		
 	accounts.push_back(author);
