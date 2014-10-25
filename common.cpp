@@ -14,7 +14,9 @@ std::string getTimestamp()
 	int seconds = currentTime->tm_sec;
 	int minutes = currentTime->tm_min;
 	int hours = currentTime->tm_hour;
-	os << hours << ':' << minutes << ':' << seconds;
+	os << std::setfill('0') << std::setw(2) << hours << ':';
+	os << std::setfill('0') << std::setw(2) << minutes << ':';
+	os << std::setfill('0') << std::setw(2) << seconds;
 	return os.str();
 }
 
@@ -26,7 +28,9 @@ std::string getDate()
 	int day = currentTime->tm_mday;
 	int month = 1 + currentTime->tm_mon; 
 	int year = 1900 + currentTime->tm_year; 
-	os << day << '-' << month << '-' << year;
+	os << std::setfill('0') << std::setw(2) << day << '-';
+	os << std::setfill('0') << std::setw(2) << month << '-';
+	os << std::setfill('0') << std::setw(2) << year;
 	return os.str();
 }
 
