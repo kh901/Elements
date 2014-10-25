@@ -7,7 +7,9 @@ class Phase : public FileIO
     public:
         Phase();
         void advancePhase();
-        std::string getCurrentPhase();
+        std::string getCurrentPhase() const;
+        int getCurrentId() const;
+        void setCurrentId(const int);
         
         // write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;

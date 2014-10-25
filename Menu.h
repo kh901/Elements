@@ -72,6 +72,10 @@ class Menu
 		bool notExited(const int);
 		void clear();
 		void disableBackButton();
+		void setLastAsChoice();
+		static void eraseLine(const std::string &);
+        static void eraseLine(int);
+        static void clearDisplay();
 	private:
 		enum DisplayMode { Fixed, Scroll, Paged };
 	
@@ -91,18 +95,7 @@ class Menu
 		int scrollIndex;
 		bool showControls;
 		bool disableBack;
-		/*
-			Menu themes?
-			
-			Should we be able to set themes for their menus?
-			Some pre set themes or even custom ones?
-			Change how the title is displayed, what character is used for the bar,
-			how long the bar width is, what character is used as the cursor,
-			how the highlighted option is displayed (colour, effect, background, extra text),
-			how unhighlighted options are displayed (colour, effect, background, extra text),
-			how the last option is displayed (colour, effect, background, extra text),
-			and more?
-		*/
+		bool doesLastReturn;
 
 		int getCmd();
 		void clearLastDisplay();

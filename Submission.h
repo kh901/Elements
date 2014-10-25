@@ -1,8 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <SFML/Network.hpp>
 #include "Account.h"
 #include "File.h"
+
 
 #ifndef SUBMISSION_H
 #define SUBMISSION_H
@@ -13,6 +15,7 @@ class Comment : public FileIO
 	Comment() {}
 	Comment(const Comment &);
 	
+	// also store time / date of comment
     std::string username;
     std::string comment;
 	
@@ -68,8 +71,9 @@ class Submission : public FileIO
 		std::vector<std::string> keywords;
 		std::vector<Comment> comments;
 		
+		friend sf::Packet & operator<<(sf::Packet &packet, const Submission &);
+		friend sf::Packet & operator>>(sf::Packet &packet, Submission &);	
 };
-
 
 #endif
 
