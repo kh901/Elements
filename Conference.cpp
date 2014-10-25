@@ -45,7 +45,7 @@ void Conference::setName(const std::string &aName)
 {
 	name = aName;	
 }
-std::string Conference::getName()
+std::string Conference::getName() const
 {
 	return name;
 }
@@ -55,7 +55,7 @@ void Conference::setDate(const std::string &aDate)
     date = aDate;
 }
 
-std::string Conference::getDate()
+std::string Conference::getDate() const
 {
     return date;
 }
@@ -65,7 +65,7 @@ void Conference::setLocation(const std::string &aLocation)
     location = aLocation;
 }
 
-std::string Conference::getLocation()
+std::string Conference::getLocation() const
 {
     return location;
 }
@@ -75,7 +75,7 @@ void Conference::setChairman(const std::string &aChairman)
     chairman = aChairman;
 }
 
-std::string Conference::getChairman()
+std::string Conference::getChairman() const
 {
     return chairman;
 }

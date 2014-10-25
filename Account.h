@@ -54,7 +54,7 @@ class Account : public FileIO
 		void setSystemAdmin() { accountType = Account_Admin; }			// this must only be done in necessary circumstances
 		
 		// user and password functions
-		std::string getUsername() { return username; }
+		std::string getUsername() const { return username; }
 		void setUsername(const std::string &);
 		void setPassword(const std::string &);		// encrypts the given string with a one way encryption
 		bool matchUsername(const std::string &aUser) { return username == aUser; }
@@ -62,13 +62,13 @@ class Account : public FileIO
 				
 		// get/set details
 		void setFirstName(const std::string &aFirst);
-		std::string getFirstName();
+		std::string getFirstName() const;
 		void setLastName(const std::string &aLast);
-		std::string getLastName();
+		std::string getLastName() const;
 		void setEmail (const std::string &anEmail);
-		std::string getEmail();
+		std::string getEmail() const;
 		void setUniversity(const std::string &aUni);
-		std::string getUniversity();
+		std::string getUniversity() const;
 		void addKeyword(const std::string &word);
 		bool findKeyword(const std::string &word);
 		void clearKeywords();

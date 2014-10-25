@@ -20,13 +20,13 @@ class Conference : public FileIO
         Conference(const Conference &);
         
 		void setName(const std::string &);
-		std::string getName();
+		std::string getName() const;
         void setDate(const std::string &);
-        std::string getDate();
+        std::string getDate() const;
         void setLocation(const std::string &);
-        std::string getLocation();
+        std::string getLocation() const;
         void setChairman(const std::string &);
-        std::string getChairman();
+        std::string getChairman() const;
         
         std::string getCurrentPhase();
         void advancePhase();

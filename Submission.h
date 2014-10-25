@@ -56,7 +56,7 @@ class Submission : public FileIO
 		void addComment(Account account);
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
-		std::string getTitle();
+		std::string getTitle() const;
 		Submission & operator=(const Submission &);
 		bool isAuthorIncluded(const std::string &, const std::string &);
 		// write and read this class to a binary file stream

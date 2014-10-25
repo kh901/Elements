@@ -198,7 +198,7 @@ void Account::setFirstName(const std::string &aFirst)
 {
 	firstName = aFirst;
 }
-std::string Account::getFirstName()
+std::string Account::getFirstName() const
 {
 	return firstName;
 }
@@ -206,7 +206,7 @@ void Account::setLastName(const std::string &aLast)
 {
 	lastName = aLast;
 }
-std::string Account::getLastName()
+std::string Account::getLastName() const
 {
 	return lastName;
 }
@@ -214,7 +214,7 @@ void Account::setEmail (const std::string &anEmail)
 { 
 	email = anEmail; 
 }
-std::string Account::getEmail() 
+std::string Account::getEmail() const
 { 
 	return email; 
 }
@@ -222,7 +222,7 @@ void Account::setUniversity(const std::string &aUni)
 { 
 	university = aUni; 
 }
-std::string Account::getUniversity() 
+std::string Account::getUniversity() const
 { 
 	return university;
 }

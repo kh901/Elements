@@ -34,7 +34,8 @@ void Submission::setReviewed(){
 	reviewed = true;
 }
 
-std::string Submission::getTitle(){
+std::string Submission::getTitle() const
+{
 	return title;
 }
 
