@@ -120,6 +120,7 @@ void ServerController::loadFalseAccounts(){
 	admin.setPassword("pass");
 	admin.setFirstName("Kieran");
 	admin.setLastName("Haavisto");
+	admin.setSystemAdmin();
 	admin.addAccess("AIDS conference", Account::Access_Admin);
 		
 	accounts.push_back(author);
@@ -170,6 +171,7 @@ void ServerController::loginAccount(sf::Packet &packet, sf::TcpSocket &client){
 	{
 		// set the user as logged in
 		accounts[findIndex].startSession();
+		std::cout << username << " has logged in" << std::endl;
 	}
 	validate << valid;
 	client.send(validate);
@@ -206,7 +208,7 @@ bool ServerController::registerAccount(sf::Packet &packet, sf::TcpSocket &client
 			tmp.addKeyword(keywords[i]);
 		}
 		// registered users start logged in
-		tmp.startSession();			
+		tmp.startSession();	
 		accounts.push_back(tmp);
 	}
 	else
@@ -243,10 +245,88 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="SUBMIT_PAPER"){
 		paperSubmission(packet, client);
 	}
-	else if(protocol=="BYE"){
-		
-
+	else if (protocol=="ADMIN_STATUS"){
+		getAdminStatus(packet, client);
 	}
+	else if (protocol=="CREATE_CONFERENCE"){
+		createConference(packet, client);
+	}
+	else if(protocol=="BYE"){
+		logoutUser(packet, client);
+	}
+	else {
+		std::cout << "Unrecognised protocol" << std::endl;
+	}
+}
+
+void ServerController::logoutUser(sf::Packet &packet, sf::TcpSocket &client)
+{
+}
+
+void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username;
+	Conference addConf;
+	bool exists = false;
+	// check user is an admin
+	packet >> username;
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	bool isAdmin = accounts[findIndex].isSystemAdmin();
+	if (!isAdmin)
+	{
+		return;		// ignore request if user is not an admin
+	}
+	// check conference doesn't already exist before adding
+	packet >> addConf;
+	exists = conferenceExists(addConf.getName());
+	if (!exists)
+	{
+		std::cout << "Admin user " << username;
+		std::cout << " created conference " << addConf.getName() << std::endl;
+		conferences.push_back(addConf);
+		// add conference to user access map
+		accounts[findIndex].addAccess(addConf.getName(), Account::Access_Admin);
+	}
+	// send response
+	response << exists;
+	client.send(response);
+}
+
+bool ServerController::conferenceExists(const std::string &title)
+{
+	std::vector<Conference>::iterator it;
+	for (it = conferences.begin(); it != conferences.end(); ++it)
+	{
+		if (it->getName() == title)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void ServerController::getAdminStatus(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet adminPacket;
+	std::string username;
+	packet >> username;
+	
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		adminPacket << false;
+		client.send(adminPacket);
+		return;
+	}
+	bool isAdmin = accounts[findIndex].isSystemAdmin();
+	std::cout << "User is " << (isAdmin ? "" : "not ") << "an admin" << std::endl;
+	adminPacket << isAdmin;
+	client.send(adminPacket);
 }
 
 void ServerController::getSubmissions(sf::Packet &packet, sf::TcpSocket &client)
@@ -258,6 +338,12 @@ void ServerController::getSubmissions(sf::Packet &packet, sf::TcpSocket &client)
 	
 	int findIndex = checkAccount(username);		//get Account index
 	
+	if (findIndex == -1)
+	{
+		subPacket << 0;
+		client.send(subPacket);
+		return;
+	}
 	firstname = accounts[findIndex].getFirstName();
 	lastname = accounts[findIndex].getLastName();		//get the fullname for the account
 	

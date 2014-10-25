@@ -1,5 +1,6 @@
 #include "Account.h"
 #include "Menu.h"
+#include "Conference.h"
 #include "Submission.h"
 
 #include <ctime>
@@ -19,7 +20,7 @@ class UserController
 {
     public:
         UserController();
-        //void createConference();
+        void createConference();
         void account();
         void submissions();
         void reviews();
@@ -37,7 +38,7 @@ class UserController
         std::string username;
         std::string conference;
         Account::AccessLevel level;
-        bool adminStatus;
+        bool isAdmin;
         
         sf::TcpSocket socket;
         
@@ -48,6 +49,11 @@ class UserController
        	bool pickConference();
         void getConferenceAccess();
         void submitPaper();
+        void viewSubmissions();
+        void changeUsername();
+        void changePassword();
+        void getAdminStatus();
+        void logOut();
 };
 
 #endif

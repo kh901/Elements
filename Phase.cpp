@@ -14,14 +14,30 @@ Phase::Phase()
     phaseID = 0;
 }
 
-std::string Phase::getCurrentPhase()
+std::string Phase::getCurrentPhase() const
 {
     return currentPhase;
 }
 
+int Phase::getCurrentId() const
+{
+	return phaseID;
+}
+
+void Phase::setCurrentId(const int val)
+{
+	if (val >= 0 && val < 5)
+	{
+		phaseID = val;
+	}
+}
+
 void Phase::advancePhase()
 {
-    phaseID++;
+	if (phaseID < 5)
+	{
+    	phaseID++;
+    }
     currentPhase = phases[phaseID];
 }
 

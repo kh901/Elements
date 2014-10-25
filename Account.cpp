@@ -29,7 +29,7 @@ Account::Account(const Account &anAcc)
 	password = anAcc.password;
 	loggedIn = anAcc.loggedIn;
 	accessMap = anAcc.accessMap;
-	accountType = Account_User;
+	accountType = anAcc.accountType;
 	firstName = anAcc.firstName;
 	lastName = anAcc.lastName;
 	email = anAcc.email;

@@ -25,7 +25,7 @@ UserController::UserController()
 
 bool UserController::connect()
 {
-	sf::Time time = sf::seconds(7);
+	sf::Time time = sf::seconds(0);
 	
 	std::string serverAddress;
 	std::cout << "Enter server address: ";
@@ -42,9 +42,7 @@ void UserController::run()
 		std::cout << "Could not connect to server." << std::endl;
 		return;
 	}
-	//Clear and reset cursor
-	std::cout << "\033[2J";
-	std::cout << "\x1B[1;1f";
+	Menu::clearDisplay();
 	this->startMenu();
 }
 void UserController::startMenu()
@@ -80,13 +78,24 @@ void UserController::startMenu()
 		}
 		if (option == 1 || option == 0)
 		{
-			// here: get system admin status
+			this->getAdminStatus();
 			if (this->pickConference())
 			{
 				this->mainMenu();
 			}
 		}
 	} while (start.notExited(option));
+}
+
+void UserController::getAdminStatus()
+{
+	sf::Packet request, response;
+	std::string protocol = "ADMIN_STATUS";
+	request << protocol << username;
+	
+	socket.send(request);
+	socket.receive(response);
+	response >> isAdmin;
 }
 
 bool UserController::pickConference()
@@ -108,10 +117,16 @@ bool UserController::pickConference()
 		response >> tmpconference;
 		conferences.push_back(tmpconference);
 	}
-	if (conferenceSize == 0) 
+	if (isAdmin)	// admins can create conferences 
 	{
-		std::cout << "No conferences!" << std::endl;
-		// admins can create conferences if none exist here
+		conferences.push_back("Admin: Create Conference");
+	}
+	if (conferenceSize == 0 && !isAdmin) 
+	{
+		std::cout << "No conferences!";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("No conferences!");
+		
 		return false;
 	}
 	int pick = 0;
@@ -119,6 +134,12 @@ bool UserController::pickConference()
 	pickMenu.setOptions("Pick a conference:", &conferences[0], conferences.size());
 	pickMenu.disableBackButton();
 	pick = pickMenu.doMenu();
+	
+	if (isAdmin && pick == (int)(conferences.size()-1))
+	{
+		this->createConference();
+		return true;
+	}
 	this->conference = conferences[pick];
 	this->getConferenceAccess();
 	return true;
@@ -154,6 +175,9 @@ void UserController::loginAccount()
 		std::cout<<"Password: ";
 		std::cin>>tmpPass;
 		std::cin.ignore(1, '\n');
+		
+		Menu::eraseLine(tmpPass + "Password: ");
+		Menu::eraseLine(tmpUser + "Username: ");
 	
 		request << tmpUser << tmpPass;
 		socket.send(request);
@@ -161,13 +185,16 @@ void UserController::loginAccount()
 		response >> valid;
 		if (valid == false)
 		{
-			std::cout << "Invalid details" << std::endl;
+			std::cout << "Invalid details";
+			std::cin.ignore(1, '\n');
+			Menu::eraseLine("Invalid details");
 		}
 		request.clear();
 		request << protocol;
 	}
 	this->username = tmpUser;
 	std::cout << "You have logged in." << std::endl;
+	Menu::eraseLine("You have logged in.");
 }
 void UserController::registerAccount()
 {
@@ -229,14 +256,17 @@ void UserController::registerAccount()
 		
 		if (exists)
 		{
-			std::cout << "That account already exists" << std::endl;
+			std::cout << "That account already exists";
+			std::cin.ignore(1, '\n');
 			request.clear();
 			request << protocol;
+			Menu::eraseLine("That account already exists");
 		}
 		keywords.clear();
 	}
 	this->username = tmpUser;
 	std::cout << "You have been registered" << std::endl;
+	Menu::eraseLine("You have been registered");
 }
 
 void UserController::fillMainMenu(std::vector<std::string> &list)
@@ -297,69 +327,134 @@ void UserController::mainMenu()
 			}
 		}
 	} while (accessMenu.notExited(option));
+	this->logOut();
 }
 
-/*
+void UserController:::logOut()
+{
+	sf::Packet request;
+	std::string protocol = "BYE";
+	request << protocol << username;
+	socket.send(request);
+}
+
 void UserController::createConference()
 {
-    std::cout << "Main Menu > Create Conference" << std::endl << std::endl;
-    Conference conference;
-    std::string buffer;
-    
-    std::cout << "Enter conference name: ";
-    getline(std::cin, buffer);
-    conference.setName(buffer);
-    
-    std::cout << "Enter conference date: ";
-    getline(std::cin, buffer);
-    conference.setDate(buffer);
-    
-    std::cout << "Enter conference location: ";
-    getline(std::cin, buffer);
-    conference.setLocation(buffer);
-    
-    conference.Phase phase = Phase_Submission;
-    conference.setCurrentPhase(phase);
-    
-    std::cout << "Enter chairmans name: ";
-    getline(std::cin, buffer);
-    conference.setChairman(buffer);
-    
-    std::cout << "Do you want to add subchairs now? (y/n): ";
-    getline(std::cin, buffer);
-    if(buffer[0] == 'y')
-    {        
-        do
-        {
-            std::cout << "Enter subchair name: ";
-            getline(std::cin, buffer);
-            conference.addSubchair(buffer);
-            
-            std::cout << "Do you want to add another subchair? (y/n): ";
-            getline(std::cin, buffer);
-            
-        }while(buffer[0] != '0');
-    }
-    
-    std::cout << "Do you want to add reviewers now? (y/n): ";
-    std::cin >> buffer;
-    if(buffer[0] '0')
-    {        
-        do
-        {
-            std::cout << "Enter reviewer name: ";
-            getline(std::cin, buffer);
-            conference.addReviewer(buffer);
-            
-            std::cout << "Do you want to add another reviewer? (y/n): ";
-            getline(std::cin, buffer);
-            
-        }while(buffer[0] == '0');
-    }
-    // clear screen
-    std::cout << "\033[2J";  
+	sf::Packet request, response;
+	std::string protocol = "CREATE_CONFERENCE";
+	std::string formOptions[] = {
+		"Name: ",
+		"Date: ",
+		"Location: ",
+		"Chairman: ",
+		"Set Subchairs",
+		"Set Reviewers",
+		"Create this conference",
+		"Cancel"
+	};
+	Conference tmpConf;
+	Menu conferenceForm;
+	conferenceForm.setOptions("Create a Conference", formOptions, 8);
+	conferenceForm.setPaged();
+	conferenceForm.setVisibleNum(4);
+	int option;
+	std::string buffer;
+	do
+	{
+		option = conferenceForm.doMenu();
+		switch(option)
+		{
+			// enter name
+			case 0:
+				std::cout << "Enter conference name: ";
+				getline(std::cin, buffer);
+				Menu::eraseLine(buffer + "Enter conference name: ");
+				formOptions[0] = "Name: " + buffer;
+				tmpConf.setName(buffer);
+			break;
+			// enter date
+			case 1:
+				std::cout << "Enter conference date: ";
+				getline(std::cin, buffer);
+				Menu::eraseLine(buffer + "Enter conference date: ");
+				tmpConf.setDate(buffer);
+				formOptions[1] = "Date: " + buffer;
+			break;
+			// enter location
+			case 2:
+				std::cout << "Enter conference location: ";
+				getline(std::cin, buffer);
+				Menu::eraseLine(buffer + "Enter conference location: ");
+				tmpConf.setLocation(buffer);
+				formOptions[2] = "Location: " + buffer;
+			break;
+			// enter chairman
+			case 3:
+				std::cout << "Enter chairmans name: ";
+				getline(std::cin, buffer);
+				Menu::eraseLine(buffer + "Enter chairmans name: ");
+				tmpConf.setChairman(buffer);
+				formOptions[3] = "Chairman: " + buffer;
+			break;
+			// enter subchairs
+			case 4:
+				do
+				{
+					std::cout << "Enter subchair name: ";
+					getline(std::cin, buffer);
+					tmpConf.addSubchair(buffer);
+					Menu::eraseLine(buffer + "Enter subchair name: ");
+				
+					std::cout << "Do you want to add another subchair? (y/n): ";
+					getline(std::cin, buffer);
+					Menu::eraseLine(buffer + "Do you want to add another subchair? (y/n): ");
+				}while(buffer[0] == 'y');
+			break;
+			// enter reviewers
+			case 5:
+				do
+				{
+				    std::cout << "Enter reviewer name: ";
+				    getline(std::cin, buffer);
+				    tmpConf.addReviewer(buffer);
+				    Menu::eraseLine(buffer + "Enter reviewer name: ");
+				    
+				    std::cout << "Do you want to add another reviewer? (y/n): ";
+				    getline(std::cin, buffer);
+			  		Menu::eraseLine(buffer + "Do you want to add another reviewer? (y/n): ");
+				}while(buffer[0] == 'y');
+			break;
+			// submit this conference to server
+			case 6:
+			{
+				bool exists = false;
+				response.clear();
+				request.clear();
+				request << protocol << username << tmpConf;
+				socket.send(request);
+				socket.receive(response);
+				response >> exists;
+				if (!exists)
+				{
+					std::cout << "Conference created!";
+					std::cin.ignore(1, '\n');
+					Menu::eraseLine("Conference created!");
+					conference = tmpConf.getName();
+					// an admin made the conference, so they have admin access
+					level = Account::Access_Admin;		
+					option = -1;
+				}
+				else
+				{
+					std::cout << "Error: Conference already exists";
+					std::cin.ignore(1, '\n');
+					Menu::eraseLine("Error: Conference already exists");
+				}
+			}
+			break;
+		}
+	} while (conferenceForm.notExited(option));
 }
-*/
 
 void UserController::account()
 {
@@ -378,18 +473,29 @@ void UserController::account()
     	{
     		// changing username
     		case 0:
-    			// to do: add changing username functionality
-		        // clear screen
-		        std::cout << "\033[2J";
+    			this->changeUsername();
     		break;
     		// changing password
-    			// to do: add changing password functionality
     		case 1:
-		        // clear screen
-		        std::cout << "\033[2J";
+		        this->changePassword();
     		break;
     	}
     } while (accountMenu.notExited(option));
+}
+
+void UserController::changeUsername()
+{
+	std::cout << "Change username: ";
+	std::string newUser;
+	getline(std::cin, newUser);
+	Menu::eraseLine(newUser + "Change username: ");
+}
+void UserController::changePassword()
+{
+	std::cout << "Change password: ";
+	std::string newPass;
+	getline(std::cin, newPass);
+	Menu::eraseLine(newPass + "Change password: ");
 }
 
 void UserController::submitPaper()
@@ -405,6 +511,49 @@ void UserController::submitPaper()
 	
 	socket.send(request);
 	//socket.receive(response);
+}
+void UserController::viewSubmissions()
+{
+	sf::Packet request, response;
+	std::string protocol = "VIEW_SUBMISSIONS";
+	request << protocol << username;
+	
+	socket.send(request);			// send a request for a list of submissions
+	socket.receive(response);		// get response
+	
+	std::vector<std::string> subList;
+	int subCount;
+	response >> subCount;
+	if (subCount > 0)
+	{
+		for (int i = 0; i < subCount; ++i)
+		{
+			std::string tmpSub;
+			response >> tmpSub;
+			subList.push_back(tmpSub);
+		}
+		subList.push_back("Back");
+	
+		Menu viewSubMenu;
+		viewSubMenu.setOptions("Submissions > View Submissions", &subList[0], subList.size());
+		int option = 0; 
+		do
+		{
+			option = viewSubMenu.doMenu();
+			if (option != (int)(subList.size()-1) && option != -1)
+			{
+				std::cout << "Viewing sub: " << subList[option];
+				std::cin.ignore(1, '\n');
+				viewSubMenu.eraseLine(subList[option] + "Viewing sub: ");
+			}
+		} while (viewSubMenu.notExited(option));
+	}
+	else
+	{
+		std::cout << "No submissions!";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("No submissions!");
+	}
 }
 
 void UserController::submissions()
@@ -436,7 +585,7 @@ void UserController::submissions()
 		    
             // View submissions
 		    case 1:      
-		    
+		    	this->viewSubmissions();
                 // clear screen
 		        std::cout << "\033[2J";
             break;

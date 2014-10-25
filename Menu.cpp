@@ -12,6 +12,7 @@ Menu::Menu()
 	visibleNum = 1;
 	scrollIndex = 0;
 	showControls = disableBack = false;
+	doesLastReturn = true;
 }
 Menu::~Menu()
 {
@@ -334,7 +335,7 @@ int Menu::getCmd()
 }
 bool Menu::notExited(const int result)
 {
-	return (result != optionNum-1 && result != -1);
+	return (!((result == optionNum-1 && doesLastReturn) || result == -1));
 }
 void Menu::clear()
 {
@@ -346,6 +347,35 @@ void Menu::clear()
 void Menu::disableBackButton()
 {
 	disableBack = true;
+}
+
+void Menu::setLastAsChoice()
+{
+	doesLastReturn = false;
+}
+
+void Menu::eraseLine(const std::string &s)
+{
+	Menu::eraseLine(s.length());
+}
+void Menu::eraseLine(int len)
+{
+	std::cout << "\x1b[A";
+	if (len < 0) { len = 0; }
+	for (int i = 0; i < len; ++i)
+	{
+		std::cout << ' ';
+	}
+	for (int i = 0; i < len; ++i)
+	{
+		std::cout << '\b';
+	}
+}
+void Menu::clearDisplay()
+{
+	//Clear and reset cursor
+	std::cout << "\033[2J";
+	std::cout << "\x1B[1;1f";
 }
 
 /*
@@ -441,47 +471,7 @@ int main ()
 	//mainMenu.setScrolling();
 	mainMenu.setPaged();  
 	mainMenu.setVisibleNum(4);
-	int menuResult = 0;
-	while (mainMenu.notExited(menuResult))
-	{
-		menuResult = mainMenu.doMenu();
-		switch(menuResult)
-		{
-			case 0: break;
-			case 1: break;
-			case 2: 
-				menuResult = 0;
-				while(notifyMenu.notExited(menuResult))
-				{
-					menuResult = notifyMenu.doMenu();
-					switch(menuResult)
-					{
-						case 0: 
-							menuResult = 0;
-							while(viewNotifyMenu.notExited(menuResult))
-							{
-								menuResult = viewNotifyMenu.doMenu();
-								switch(menuResult)
-								{
-									case 19: case -1: break;
-								}
-							}
-							menuResult = -2;
-						break;
-						case 1: case -1: break;
-					}
-				}
-				menuResult = 0;
-			break;
-			case 3: break;
-			case 4: break;
-			case 5: case -1: break;
-		}
-	}
 	
-	delete [] testNotifications;
-	testNotifications = NULL;
-}
 */
 
 std::string text::styleString(const std::string & str, text::Colour col, text::Effect eft, text::Background bkg)

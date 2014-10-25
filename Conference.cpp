@@ -12,8 +12,23 @@ Conference::Conference(const Conference &other)
     reviewers = other.reviewers;
 	subchairs = other.subchairs;
 	chairman = other.chairman;
+	phase.setCurrentId(other.phase.getCurrentId());
 	maxReviewersPerPaper = other.maxReviewersPerPaper;
 	maxPapersPerReviewer = other.maxPapersPerReviewer;
+}
+
+Conference & Conference::operator=(const Conference &other)
+{
+	name = other.name;
+    date = other.date;
+    location = other.location;
+    reviewers = other.reviewers;
+	subchairs = other.subchairs;
+	chairman = other.chairman;
+	phase.setCurrentId(other.phase.getCurrentId());
+	maxReviewersPerPaper = other.maxReviewersPerPaper;
+	maxPapersPerReviewer = other.maxPapersPerReviewer;
+	return *this;
 }
 
 std::string Conference::getCurrentPhase()
@@ -132,4 +147,57 @@ void Conference::readFile(std::ifstream &ifs)
 	readString(ifs, this->chairman);
 	readData<int>(ifs, this->maxReviewersPerPaper);
 	readData<int>(ifs, this->maxPapersPerReviewer);
+}
+
+sf::Packet & operator<<(sf::Packet &packet, const Conference &conf)
+{
+	packet << conf.name << conf.date << conf.location << conf.phase.getCurrentId();
+	// send reviewers
+	packet << (int)conf.reviewers.size();
+	for (int i = 0; i < (int)conf.reviewers.size(); ++i)
+	{
+		packet << conf.reviewers[i];
+	} 
+	// send subchairs
+	packet << (int)conf.subchairs.size();
+	for (int i = 0; i < (int)conf.subchairs.size(); ++i)
+	{
+		packet << conf.subchairs[i];
+	} 
+	packet << conf.chairman;
+	// send allocation parameters
+	packet << conf.maxReviewersPerPaper;
+	packet << conf.maxPapersPerReviewer;
+	return packet;
+}
+sf::Packet & operator>>(sf::Packet &packet, Conference &conf)
+{
+	conf.reviewers.clear();
+	conf.subchairs.clear();
+	int curPhase = 0;
+	packet >> conf.name >> conf.date >> conf.location >> curPhase;
+	conf.phase.setCurrentId(curPhase);
+	// get reviewers
+	int reviewerSize = 0;
+	packet >> reviewerSize;
+	for (int i = 0; i < reviewerSize; ++i)
+	{
+		std::string tmpReview;
+		packet >> tmpReview;
+		conf.reviewers.push_back(tmpReview);
+	} 
+	// get subchairs
+	int subchairSize = 0;
+	packet >> subchairSize;
+	for (int i = 0; i < subchairSize; ++i)
+	{
+		std::string tmpSub;
+		packet >> tmpSub;
+		conf.subchairs.push_back(tmpSub);
+	} 
+	packet >> conf.chairman;
+	// get allocation parameters
+	packet >> conf.maxReviewersPerPaper;
+	packet >> conf.maxPapersPerReviewer;
+	return packet;
 }

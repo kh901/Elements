@@ -5,6 +5,7 @@
 #include "File.h"
 #include "Submission.h"
 #include "Phase.h"
+#include <SFML/Network.hpp>
 
 #ifndef CONFERENCE_H
 #define CONFERENCE_H
@@ -38,6 +39,8 @@ class Conference : public FileIO
         void addSubchair(const std::string &);
         void printSubchairs();
 
+		Conference & operator=(const Conference &);
+
         // write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
 		void readFile(std::ifstream &);
@@ -54,5 +57,8 @@ class Conference : public FileIO
 		// Conference settings
 		int maxReviewersPerPaper;
 		int maxPapersPerReviewer;
+		
+		friend sf::Packet & operator<<(sf::Packet &packet, const Conference &);
+		friend sf::Packet & operator>>(sf::Packet &packet, Conference &);	
 };
 #endif
