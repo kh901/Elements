@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Account.h"
+#include "common.h"
 #include "Conference.h"
 #include "File.h"
 #include "Submission.h"
@@ -30,7 +31,13 @@ class Database
 		
 		// database management
 		void save();
+		void saveAccounts();
+		void saveConferences();
+		void saveSubmissions();
 		void load();
+		void loadAccounts();
+		void loadConferences();
+		void loadSubmissions();
 		
 		// data manipulation
 		// For every kind of data we store
@@ -41,7 +48,7 @@ class Database
 			// OPTIONAL delete an element
 		void addAccount(const Account &);
 		bool getAccount(const std::string &, Account &);
-		void editAccount(Account &);
+		void editAccount(const Account &);
 		
 		void addConference(const Conference &);
 		bool getConference(const std::string &, Conference &);
@@ -54,6 +61,7 @@ class Database
 		bool checkFile(const std::string &);
 		
 		// Logging
+		// automatically adds the timestamp to the front of the log event
 		void addLog(const std::string &);
 		void getRecentLog(std::vector<std::string> &);
 	private:

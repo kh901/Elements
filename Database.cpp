@@ -4,12 +4,7 @@ Database::Database()
 {
 	// set current log file name according to current date
 	std::ostringstream os;
-	time_t timeVal = time(NULL);
-	struct tm * currentTime = localtime(&timeVal);
-	int day = static_cast<int>(currentTime->tm_mday);
-	int month = 1 + static_cast<int>(currentTime->tm_mon); 
-	int year = 1900 + static_cast<int>(currentTime->tm_year); 
-	os << day << '-' << month << '-' << year << ".log";
+	os << getDate() << ".log";
 	logFilename = os.str();
 	std::cout << "log file name today: " << logFilename << std::endl;
 	load();
@@ -18,12 +13,23 @@ Database::Database()
 void Database::save()
 {
 	// save accounts
+	saveAccounts();
+	// save conferences
+	saveConferences();
+	// save submissions
+	saveSubmissions();
+}
+
+void Database::saveAccounts()
+{
 	writeFileClassVector<Account>(DATABASE_ACCOUNTS_FILENAME, accounts);
-	
-	// load conferences
+}
+void Database::saveConferences()
+{
 	writeFileClassVector<Conference>(DATABASE_CONFERENCES_FILENAME, conferences);
-	
-	// load submissions
+}
+void Database::saveSubmissions()
+{
 	writeFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
 }
 
@@ -33,13 +39,13 @@ void Database::load()
 	if (filesExist())
 	{
 		// load accounts
-		readFileClassVector<Account>(DATABASE_ACCOUNTS_FILENAME, accounts);
+		loadAccounts();
 		
 		// load conferences
-		readFileClassVector<Conference>(DATABASE_CONFERENCES_FILENAME, conferences);
+		loadConferences();
 		
 		// load submissions
-		readFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
+		loadSubmissions();
 	}
 	else
 	{
@@ -47,62 +53,75 @@ void Database::load()
 	}
 }
 
+void Database::loadAccounts()
+{
+	readFileClassVector<Account>(DATABASE_ACCOUNTS_FILENAME, accounts);
+}
+void Database::loadConferences()
+{
+	readFileClassVector<Conference>(DATABASE_CONFERENCES_FILENAME, conferences);
+}
+void Database::loadSubmissions()
+{
+	readFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
+}
+
 void Database::addAccount(const Account &acc)
 {
-	std::ofstream fout;
-	fout.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	acc.writeFile(fout);
-	fout.close();
-	save();
+	accounts.push_back(acc);
+	saveAccounts();
+	addLog("Added new account. Username: " + acc.getUsername());
 }
 
 bool Database::getAccount(const std::string &request, Account &acc)
 {
 	std::vector<Account>::iterator itA;
-	for (itA = accounts.begin(); itA != accounts.end(); itA++)
+	for (itA = accounts.begin(); itA != accounts.end(); ++itA)
 	{
-		if (accounts[0].getUsername() == request)
+		if (itA->getUsername() == request)
 		{
-			acc = accounts[0];
-			save();												/// UNSURE
+			acc = *itA;									
 			return true;
 		}
 	}
 	return false;
 }
 
-void Database::editAccount(Account &acc)
+void Database::editAccount(const Account &acc)
 {
+	bool edited = false;
 	std::vector<Account>::iterator itA;
-	for (itA = accounts.begin(); itA != accounts.end(); itA++)
+	for (itA = accounts.begin(); itA != accounts.end(); ++itA)
 	{
-		if (acc.getUsername() == accounts[0].getUsername())
+		if (itA->getUsername() == acc.getUsername())
 		{
-			accounts[0] = acc;
-			save();
+			*itA = acc;
+			edited = true;
 			break;
 		}
+	}
+	if (edited)
+	{
+		saveAccounts();
+		addLog("Edited account. Username: " + acc.getUsername());
 	}
 }
 
 void Database::addConference(const Conference &con)
 {
-	std::ofstream fout;
-	fout.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	con.writeFile(fout);
-	fout.close();
-	save();
+	conferences.push_back(con);
+	saveConferences();
+	addLog("Added new conference. Conference Name: " + con.getName());
 }
 
 bool Database::getConference(const std::string &request, Conference &con)
 {
 	std::vector<Conference>::iterator itC;
-	for (itC = conferences.begin(); itC != conferences.end(); itC++)
+	for (itC = conferences.begin(); itC != conferences.end(); ++itC)
 	{
-		if (itC[0].getName() == request)
+		if (itC->getName() == request)
 		{
-			con = itC[0];
-			save();								/// UNSURE
+			con = *itC;
 			return true;
 		}
 	}
@@ -111,36 +130,39 @@ bool Database::getConference(const std::string &request, Conference &con)
 
 void Database::editConference(Conference &con)
 {
+	bool edited = false;
 	std::vector<Conference>::iterator itC;
-	for (itC = conferences.begin(); itC != conferences.end(); itC++)
+	for (itC = conferences.begin(); itC != conferences.end(); ++itC)
 	{
-		if (con.getName() == conferences[0].getName())
+		if (con.getName() == itC->getName())
 		{
-			conferences[0] = con;
-			save();
+			*itC = con;
+			edited = true;
 			break;
 		}
+	}
+	if (edited)
+	{
+		saveConferences();
+		addLog("Edited conference. Conference Name: " + con.getName());
 	}
 }
 
 void Database::addSubmission(const Submission &sub)
 {
-	std::ofstream fout;
-	fout.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	sub.writeFile(fout);
-	fout.close();
-	save();
+	submissions.push_back(sub);
+	saveSubmissions();
+	addLog("Added new submission. Title: " + sub.getTitle());
 }
 
 bool Database::getSubmission(const std::string &request, Submission &sub)
 {
 	std::vector<Submission>::iterator itS;
-	for (itS = submissions.begin(); itS != submissions.end(); itS++)
+	for (itS = submissions.begin(); itS != submissions.end(); ++itS)
 	{
-		if (itS[0].getTitle() == request)
+		if (itS->getTitle() == request)
 		{
-			sub = itS[0];
-			save();								/// UNSURE
+			sub = *itS;
 			return true;
 		}
 	}
@@ -149,14 +171,21 @@ bool Database::getSubmission(const std::string &request, Submission &sub)
 
 void Database::editSubmission(Submission &sub)
 {
+	bool edited = false;
 	std::vector<Submission>::iterator itS;
-	for (itS = submissions.begin(); itS != submissions.end(); itS++)
+	for (itS = submissions.begin(); itS != submissions.end(); ++itS)
 	{
-		if (sub.getTitle() == itS[0].getTitle())
+		if (sub.getTitle() == itS->getTitle())
 		{
-			itS[0] = sub;
-			save();
+			*itS = sub;
+			edited = true;
+			break;
 		}
+	}
+	if (edited)
+	{
+		saveSubmissions();
+		addLog("Edited submission. Title: " + sub.getTitle());
 	}
 }
 
@@ -212,6 +241,7 @@ void Database::addLog(const std::string &aEvent)
 	std::ofstream fout;
 	std::ostringstream fullFilename;
 	fullFilename << DATABASE_LOGS_DIRECTORY << logFilename;
+	
 	std::cout << "filename: " << fullFilename.str() << std::endl;
 	fout.open(fullFilename.str().c_str(), std::ios::app);
 	// make the file if it doesn't exist
@@ -220,22 +250,11 @@ void Database::addLog(const std::string &aEvent)
 		fout.close();
 		std::cout << "file doesn't exist" << std::endl;
 		std::ofstream create(fullFilename.str().c_str());
-		create << "test" << std::endl;
+		create << "Start Log" << std::endl;
 		create.close();
-		std::ifstream ifs;
-		ifs.open(fullFilename.str().c_str());
-		if (ifs.good())
-		{
-			std::cout << "worked" << std::endl;
-		}
-		else
-		{
-			std::cout << "didn't work" << std::endl;
-		}
-		ifs.close();
 		fout.open(fullFilename.str().c_str(), std::ios::app);
 	}
-	fout << aEvent << std::endl;
+	fout << getTimestamp() << ": " << aEvent << std::endl;
 	fout.close();
 }
 void Database::getRecentLog(std::vector<std::string> &list)
