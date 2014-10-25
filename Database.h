@@ -40,16 +40,16 @@ class Database
 			// edit an existing element based on a search
 			// OPTIONAL delete an element
 		void addAccount(const Account &);
-		Account getAccount(const std::string &);
-		void editAccount(const Account &);
+		bool getAccount(const std::string &, Account &);
+		void editAccount(Account &);
 		
 		void addConference(const Conference &);
-		Conference getConference(const std::string &);
-		void editConference(const Conference &);
+		bool getConference(const std::string &, Conference &);
+		void editConference(Conference &);
 		
 		void addSubmission(const Submission &);
-		Submission getSubmission(const std::string &);
-		void editSubmission(const Submission &);
+		bool getSubmission(const std::string &, Submission &);
+		void editSubmission(Submission &);
 		
 		bool checkFile(const std::string &);
 		

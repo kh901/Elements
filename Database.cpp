@@ -15,102 +15,6 @@ Database::Database()
 	load();
 }
 
-void Database::addAccount(const Account &acc)
-{
-	std::ofstream fout;
-	fout.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	acc.writeFile(fout);
-	fout.close();
-}
-
-Account Database::getAccount(const std::string &str)
-{
-	std::vector<Account>::iterator itA;
-	for (itA = accounts.begin(); itA != accounts.end(); itA++)
-	{
-		/**
-		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
-		 * 
-		if (itA[0].username == str)
-		{
-			return itA[0];
-		}
-		**/
-	}
-}
-
-void Database::editAccount(const Account &acc)
-{
-	std::ofstream fin;
-	fin.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::in);
-	/// acc.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
-	fin.close();
-}
-
-void Database::addConference(const Conference &con)
-{
-	std::ofstream fout;
-	fout.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	con.writeFile(fout);
-	fout.close();
-}
-
-Conference Database::getConference(const std::string &str)
-{
-	std::vector<Conference>::iterator itC;
-	for (itC = conferences.begin(); itC != conferences.end(); itC++)
-	{
-		/**
-		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
-		 * 
-		if (itC[0].name == str)
-		{
-			return itC[0];
-		}
-		**/
-	}
-}
-
-void Database::editConference(const Conference &con)
-{
-	std::ofstream fin;
-	fin.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::in);
-	/// con.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
-	fin.close();
-}
-
-void Database::addSubmission(const Submission &sub)
-{
-	std::ofstream fout;
-	fout.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
-	sub.writeFile(fout);
-	fout.close();
-}
-
-Submission Database::getSubmission(const std::string &str)
-{
-	std::vector<Submission>::iterator itS;
-	for (itS = submissions.begin(); itS != submissions.end(); itS++)
-	{
-		/**
-		 * 		DATA IS PROTECTED; CANNOT ACCESS CONVENTIONALLY
-		 * 
-		if (itS[0].title == str)
-		{
-			return itS[0];
-		}
-		**/
-	}
-}
-
-void Database::editSubmission(const Submission &sub)
-{
-	std::ofstream fin;
-	fin.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::in);
-	/// sub.editFile(fin); 	/// PERHAPS A FUNCTION SIMILAR TO THIS IN ORDER TO EDIT IN ACCOUNT
-	fin.close();
-}
-
 void Database::save()
 {
 	// save accounts
@@ -140,6 +44,119 @@ void Database::load()
 	else
 	{
 		setupFiles();
+	}
+}
+
+void Database::addAccount(const Account &acc)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_ACCOUNTS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	acc.writeFile(fout);
+	fout.close();
+	save();
+}
+
+bool Database::getAccount(const std::string &request, Account &acc)
+{
+	std::vector<Account>::iterator itA;
+	for (itA = accounts.begin(); itA != accounts.end(); itA++)
+	{
+		if (accounts[0].getUsername() == request)
+		{
+			acc = accounts[0];
+			save();												/// UNSURE
+			return true;
+		}
+	}
+	return false;
+}
+
+void Database::editAccount(Account &acc)
+{
+	std::vector<Account>::iterator itA;
+	for (itA = accounts.begin(); itA != accounts.end(); itA++)
+	{
+		if (acc.getUsername() == accounts[0].getUsername())
+		{
+			accounts[0] = acc;
+			save();
+			break;
+		}
+	}
+}
+
+void Database::addConference(const Conference &con)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_CONFERENCES_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	con.writeFile(fout);
+	fout.close();
+	save();
+}
+
+bool Database::getConference(const std::string &request, Conference &con)
+{
+	std::vector<Conference>::iterator itC;
+	for (itC = conferences.begin(); itC != conferences.end(); itC++)
+	{
+		if (itC[0].getName() == request)
+		{
+			con = itC[0];
+			save();								/// UNSURE
+			return true;
+		}
+	}
+	return false;
+}
+
+void Database::editConference(Conference &con)
+{
+	std::vector<Conference>::iterator itC;
+	for (itC = conferences.begin(); itC != conferences.end(); itC++)
+	{
+		if (con.getName() == conferences[0].getName())
+		{
+			conferences[0] = con;
+			save();
+			break;
+		}
+	}
+}
+
+void Database::addSubmission(const Submission &sub)
+{
+	std::ofstream fout;
+	fout.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary | std::ios::out | std::ios::app);
+	sub.writeFile(fout);
+	fout.close();
+	save();
+}
+
+bool Database::getSubmission(const std::string &request, Submission &sub)
+{
+	std::vector<Submission>::iterator itS;
+	for (itS = submissions.begin(); itS != submissions.end(); itS++)
+	{
+		if (itS[0].getTitle() == request)
+		{
+			sub = itS[0];
+			save();								/// UNSURE
+			return true;
+		}
+	}
+	return false;
+}
+
+void Database::editSubmission(Submission &sub)
+{
+	std::vector<Submission>::iterator itS;
+	for (itS = submissions.begin(); itS != submissions.end(); itS++)
+	{
+		if (sub.getTitle() == itS[0].getTitle())
+		{
+			itS[0] = sub;
+			save();
+		}
 	}
 }
 
