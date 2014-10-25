@@ -55,6 +55,7 @@ class UserController
         void changePassword();
         void getAdminStatus();
         void logOut();
+        bool sendCreatedConference(const Conference &);
 };
 
 #endif

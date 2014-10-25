@@ -25,7 +25,7 @@ UserController::UserController()
 
 bool UserController::connect()
 {
-	sf::Time time = sf::seconds(0);
+	sf::Time time = sf::seconds(3);
 	
 	std::string serverAddress;
 	std::cout << "Enter server address: ";
@@ -271,6 +271,7 @@ void UserController::registerAccount()
 
 void UserController::fillMainMenu(std::vector<std::string> &list)
 {
+	// setup main menu options according to user's access level in conference
 	std::string options [] = {
 		"Manage Account",
 		"Check Notifications",
@@ -303,7 +304,7 @@ void UserController::mainMenu()
 	do
 	{
 		option = accessMenu.doMenu();
-		if (option != -1 && option != (int)fullOptions.size())
+		if (option != -1 && option != (int)(fullOptions.size() - 1))
 		{
 			if (fullOptions[option].find("Account") != std::string::npos)
 			{
@@ -340,8 +341,6 @@ void UserController::logOut()
 
 void UserController::createConference()
 {
-	sf::Packet request, response;
-	std::string protocol = "CREATE_CONFERENCE";
 	std::string formOptions[] = {
 		"Name: ",
 		"Date: ",
@@ -426,35 +425,49 @@ void UserController::createConference()
 			break;
 			// submit this conference to server
 			case 6:
-			{
-				bool exists = false;
-				response.clear();
-				request.clear();
-				request << protocol << username << tmpConf;
-				socket.send(request);
-				socket.receive(response);
-				response >> exists;
-				if (!exists)
+				if (tmpConf.getName().length() == 0)
 				{
-					std::cout << "Conference created!";
+					std::cout << "Error: Conferences require a name.";
 					std::cin.ignore(1, '\n');
-					Menu::eraseLine("Conference created!");
-					conference = tmpConf.getName();
-					// an admin made the conference, so they have admin access
-					level = Account::Access_Admin;		
+					Menu::eraseLine("Error: Conferences require a name.");
+				}
+				else if(sendCreatedConference(tmpConf))
+				{
 					option = -1;
 					conferenceForm.clear();
 				}
-				else
-				{
-					std::cout << "Error: Conference already exists";
-					std::cin.ignore(1, '\n');
-					Menu::eraseLine("Error: Conference already exists");
-				}
-			}
 			break;
 		}
 	} while (conferenceForm.notExited(option));
+}
+
+bool UserController::sendCreatedConference(const Conference &conf)
+{
+	sf::Packet request, response;
+	std::string protocol = "CREATE_CONFERENCE";
+	bool exists = false;
+	response.clear();
+	request.clear();
+	request << protocol << username << conf;
+	socket.send(request);
+	socket.receive(response);
+	response >> exists;
+	if (!exists)
+	{
+		std::cout << "Conference created!";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Conference created!");
+		conference = conf.getName();
+		// an admin made the conference, so they have admin access
+		level = Account::Access_Admin;		
+	}
+	else
+	{
+		std::cout << "Error: Conference already exists";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Error: Conference already exists");
+	}
+	return !exists;
 }
 
 void UserController::account()
