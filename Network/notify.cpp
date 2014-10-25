@@ -1,13 +1,15 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <queue>
+#include <vector>
+#include <deque>
 
-typedef std::map< std::string, std::queue<std::string> > NotifyMap;
+typedef std::map< std::string, std::deque<std::string> > NotifyMap;
 
 void displayNotifications(NotifyMap &map, const std::string &user);
 void addNotification(NotifyMap &map, const std::string &user, const std::string &str);
 void getNotifications(NotifyMap &map, const std::string &user, std::vector<std::string> &list);
+void clearNotifications(NotifyMap &map, const std::string &user);
 
 void displayNotifications(NotifyMap &map, const std::string &user)
 {
@@ -17,12 +19,10 @@ void displayNotifications(NotifyMap &map, const std::string &user)
 	if (it != map.end() && !map[user].empty())
 	{
 		// show all queued notifications
-		while (!map[user].empty())
+		std::deque<std::string>::iterator it;
+		for (it = map[user].begin(); it != map[user].end(); ++it)
 		{
-			// get the front most notification
-			std::string get = map[user].front();
-			map[user].pop();
-			std::cout << get << std::endl;
+			std::cout << *it << std::endl;
 		} 
 	}
 	else
@@ -37,17 +37,25 @@ void getNotifications(NotifyMap &map, const std::string &user, std::vector<std::
 	list.reserve(size);
 	if (!map[user].empty())
 	{
-		while (!map[user].empty())
+		std::deque<std::string>::iterator it;
+		for (it = map[user].begin(); it != map[user].end(); ++it)
 		{
-			list.push_back(map[user].front());
-			map[user].pop();
+			list.push_back(*it);
 		} 
 	}
 }
 
+void clearNotifications(NotifyMap &map, const std::string &user)
+{
+	while (!map[user].empty())
+	{
+		map[user].pop_front();
+	} 
+}
+
 void addNotification(NotifyMap &map, const std::string &user, const std::string &str)
 {
-	map[user].push(str);
+	map[user].push_back(str);
 }
 
 typedef std::map<std::string, int> AllocMap;

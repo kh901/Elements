@@ -600,7 +600,7 @@ void UserController::reviews()
 	std::string reviewMenuOptions [] = {
 		"Bid for a paper",			// in bidding phase only
 		"Submit a review",			// in review phase only
-		"Discuss a paper"			// in discussion phase (unlocked), finalisation-completion (locked, viewable)
+		"Discuss a paper",			// in discussion phase (unlocked), finalisation-completion (locked, viewable)
 		"Back"
 	};
 	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, 4);
@@ -617,8 +617,6 @@ void UserController::reviews()
 
 void UserController::configuration()
 {
-    std::cout << "Main Menu > Configuration" << std::endl << std::endl;
-    
     Menu configurationMenu;
 	std::string configurationMenuOptions[] = {
 		"Advance to next phase",
@@ -663,8 +661,34 @@ void UserController::discussion()
 
 void UserController::notifications()
 {
-    std::cout << "Main Menu > Notifications" << std::endl << std::endl;
-    // send query to server to check if papers have been reviewed and print to screen
+	// send query to server to check if papers have been reviewed and print to screen
+	sf::Packet request, response;
+	std::string protocol = "GET_NOTIFICATIONS";
+	request << protocol << username;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	std::vector<std::string> notifyList;
+	int count = 0;
+	response >> count;
+	for (int i = 0; i < count; ++i)
+	{
+		std::string event;
+		response >> event;
+		notifyList.push_back(event);
+	}
+	notifyList.push_back("Clear and go back");
+	
+	Menu notifyMenu;
+	notifyMenu.setOptions("Main Menu > Notifications", &notifyList[0], notifyList.size());
+	notifyMenu.setScrolling();
+	notifyMenu.setVisibleNum(5);
+	int option;
+	do
+	{
+		option = notifyMenu.doMenu();
+	} while(notifyMenu.notExited(option));
 }
 
 void UserController::viewLogs()

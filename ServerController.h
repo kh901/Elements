@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <list>
 #include "SFML/Network.hpp"
 #include "Account.h"
@@ -9,6 +10,8 @@
 
 #ifndef SERVER_CONTROLLER
 #define SERVER_CONTROLLER
+
+typedef std::map< std::string, std::deque<std::string> > NotifyMap;
 
 class ServerController
 {
@@ -21,6 +24,7 @@ class ServerController
 		std::vector<Account> accounts;
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
+		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
 		//void loadFalseSubmissions();//
@@ -34,6 +38,11 @@ class ServerController
 		void getAdminStatus(sf::Packet&, sf::TcpSocket&);
 		void createConference(sf::Packet&, sf::TcpSocket&);
 		void logoutUser(sf::Packet&, sf::TcpSocket&);
+		void getNotifications(sf::Packet&, sf::TcpSocket&);
+		
+		void addNotification(const std::string &user, const std::string &str);
+		void clearNotifications(const std::string &user);
+		
 		int checkAccount(std::string, std::string = "#USERNAMEONLY");//
 		bool conferenceExists(const std::string &);
 };

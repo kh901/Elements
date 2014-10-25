@@ -15,6 +15,7 @@
 #define USER_CONTROLLER
 
 #define NETWORK_PORT 60000
+#define MAX_INVALID_LOGINS 3
 
 class UserController
 {

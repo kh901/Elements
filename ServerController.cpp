@@ -114,6 +114,10 @@ void ServerController::loadFalseAccounts(){
 	reviewer.setFirstName("Jonathan");
 	reviewer.setLastName("Yip");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
+	addNotification("Jonathan", "Hai, u da one");
+	addNotification("Jonathan", "oh no, you get the second?");
+	addNotification("Jonathan", "aww, now you have 3. :{D");
+	addNotification("Jonathan", "spam");
 	
 	Account admin;
 	admin.setUsername("Kieran");
@@ -251,12 +255,53 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="CREATE_CONFERENCE"){
 		createConference(packet, client);
 	}
+	else if (protocol=="GET_NOTIFICATIONS"){
+		getNotifications(packet, client);
+	}
 	else if(protocol=="BYE"){
 		logoutUser(packet, client);
 	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::getNotifications(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username;
+	packet >> username;
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	
+	int size = notifications[username].size();
+	response << size;
+	if (!notifications[username].empty())
+	{
+		std::deque<std::string>::iterator it;
+		for (it = notifications[username].begin(); it != notifications[username].end(); ++it)
+		{
+			response << *it;
+		} 
+	}
+	client.send(response);
+	clearNotifications(username);
+}
+
+void ServerController::addNotification(const std::string &username, const std::string &str)
+{
+	notifications[username].push_back(str);
+}
+
+void ServerController::clearNotifications(const std::string &username)
+{
+	while (!notifications[username].empty())
+	{
+		notifications[username].pop_front();
+	} 
 }
 
 void ServerController::logoutUser(sf::Packet &packet, sf::TcpSocket &client)
