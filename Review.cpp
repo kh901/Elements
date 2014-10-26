@@ -2,18 +2,6 @@
 
 Review::Review()
 {
-	reviewID = "";
-	title = "";
-	pcMember = "";
-	reviewerFirstName = "";
-	reviewerLastName = "";
-	reviewerEmail = ""
-	strengths = "";
-	weaknesses = "";
-	suggestions = "";
-	shortPaper = "";
-	bestPaper = "";
-	remarks = "";
 	overallEvaluation = 0;
 	reviewerConfidence = 0;
 	relevance = 0;
@@ -22,6 +10,36 @@ Review::Review()
 	presentation = 0;
 	technicalQuality = 0;
 	evaluation = 0;
+}
+
+Review::Review(const Review &other)
+{
+	this->operator=(other);
+}
+
+Review & Review::operator=(const Review &other)
+{
+	reviewID = other.reviewID;
+	title = other.title;
+	pcMember = other.pcMember;
+	reviewerFirstName = other.reviewerFirstName;
+	reviewerLastName = other.reviewerLastName;
+	reviewerEmail = other.reviewerEmail;
+	strengths = other.strengths;
+	weaknesses = other.weaknesses;
+	suggestions = other.suggestions;
+	shortPaper = other.shortPaper;
+	bestPaper = other.bestPaper;
+	remarks = other.remarks;
+	overallEvaluation = other.overallEvaluation;
+	reviewerConfidence = other.reviewerConfidence;
+	relevance = other.relevance;
+	originality = other.originality;
+	significance = other.significance;
+	presentation = other.presentation;
+	technicalQuality = other.technicalQuality;
+	evaluation = other.evaluation;
+	return *this;
 }
 
 void Review::setReviewID(const std::string &aReviewID)
@@ -43,7 +61,7 @@ void Review::setReviewer(const std::string &firstname, const std::string &lastna
 {
 	reviewerFirstName = firstname;
 	reviewerLastName = lastname;
-	reviewer.Email = email;
+	reviewerEmail = email;
 }
 
 void Review::setStrengths(const std::string &aStrengths)
@@ -76,7 +94,7 @@ void Review::setRemarks(const std::string &aRemarks)
 	remarks = aRemarks;
 }
 
-void Review::setOverallEvalutaion(int &aOverall)
+void Review::setOverallEvaluation(int &aOverall)
 {
 	overallEvaluation = aOverall;
 }
@@ -106,7 +124,7 @@ void Review::setPresentation(int &aPresent)
 	presentation = aPresent;
 }
 
-void Review::setTechnicalQulaity(int &aTech)
+void Review::setTechnicalQuality(int &aTech)
 {
 	technicalQuality = aTech;
 }
@@ -124,11 +142,6 @@ std::string Review::getReviewID()
 std::string Review::getTitle()
 {
 	return title;
-}
-
-std::string Review::getReviewer()
-{
-	return reviewer;
 }
 
 std::string Review::getStrengths()
@@ -156,14 +169,14 @@ std::string Review::getBestPaper()
 	return bestPaper;
 }
 
-std::string Review::remarks()
+std::string Review::getRemarks()
 {
 	return remarks;
 }
 
 int Review::getOverallEvaluation()
 {
-	return overallEvalution;
+	return overallEvaluation;
 }
 
 int Review::getReviewerConfidence()
@@ -234,9 +247,9 @@ void Review::writeFile(std::ofstream &ofs) const
 	appendData<int>(ofs, this->reviewerConfidence);
 	appendData<int>(ofs, this->relevance);
 	appendData<int>(ofs, this->originality);
-	appendData<int>(ofs, this ->significance);
-	appendData<int>(ofs, this-> presentation);
-	appedData<int>(ofs, this->technicalQuality);
+	appendData<int>(ofs, this->significance);
+	appendData<int>(ofs, this->presentation);
+	appendData<int>(ofs, this->technicalQuality);
 	appendData<int>(ofs, this->evaluation);
 }
 void Review::readFile(std::ifstream &ifs)
@@ -246,20 +259,43 @@ void Review::readFile(std::ifstream &ifs)
 	readString(ifs, this->pcMember);
 	readString(ifs, this->reviewerFirstName);
 	readString(ifs, this->reviewerLastName);
-	readstring(ifs, this->reviewerEmail);
-	readstring(ifs, this->strengths);
-	readstring(ifs, this->weaknesses);
-	readstring(ifs, this->suggestions);
-	readstring(ifs, this->shortPaper);
-	readstring(ifs, this->bestPaper);
-	readstring(ifs, this->remarks);
+	readString(ifs, this->reviewerEmail);
+	readString(ifs, this->strengths);
+	readString(ifs, this->weaknesses);
+	readString(ifs, this->suggestions);
+	readString(ifs, this->shortPaper);
+	readString(ifs, this->bestPaper);
+	readString(ifs, this->remarks);
 	readData<int>(ifs, this->overallEvaluation);
 	readData<int>(ifs, this->reviewerConfidence);
 	readData<int>(ifs, this->relevance);
 	readData<int>(ifs, this->originality);
 	readData<int>(ifs, this->significance);
 	readData<int>(ifs, this->presentation);
-	readData<int>(ifs, this->technicalQuality)
+	readData<int>(ifs, this->technicalQuality);
 	readData<int>(ifs, this->evaluation);
 }
-
+sf::Packet & operator<<(sf::Packet &packet, const Review &rev)
+{
+	packet << rev.reviewID << rev.title << rev.pcMember << rev.strengths;
+	packet << rev.weaknesses << rev.suggestions << rev.shortPaper;
+	packet << rev.bestPaper << rev.remarks << rev.reviewerFirstName;	
+	packet << rev.reviewerLastName << rev.reviewerEmail;
+	packet << rev.overallEvaluation << rev.reviewerConfidence;
+	packet << rev.relevance << rev.originality;
+	packet << rev.significance << rev.presentation;
+	packet << rev.technicalQuality << rev.evaluation;
+	return packet;
+}
+sf::Packet & operator>>(sf::Packet &packet, Review &rev)
+{
+	packet >> rev.reviewID >> rev.title >> rev.pcMember >> rev.strengths;
+	packet >> rev.weaknesses >> rev.suggestions >> rev.shortPaper;
+	packet >> rev.bestPaper >> rev.remarks >> rev.reviewerFirstName;	
+	packet >> rev.reviewerLastName >> rev.reviewerEmail;
+	packet >> rev.overallEvaluation >> rev.reviewerConfidence;
+	packet >> rev.relevance >> rev.originality;
+	packet >> rev.significance >> rev.presentation;
+	packet >> rev.technicalQuality >> rev.evaluation;
+	return packet;
+}

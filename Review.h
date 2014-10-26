@@ -1,18 +1,23 @@
 #include <iostream>
 #include <string>
+#include "File.h"
+#include <SFML/Network.hpp>
 
 class Review : public FileIO
 {
 	public:
 		Review();
+		Review(const Review &);
+		Review & operator=(const Review &);
+		
 		void setReviewID(const std::string&);
 		std::string getReviewID();
 		void setTitle(const std::string&);
 		std::string getTitle();
 		void setPCMember(const std::string&);
 		void setReviewer(const std::string&, const std::string&, const std::string&);
-		std::string std();
-		getReviewerFirst::string getReviewerLast();
+		std::string getReviewerFirst();
+		std::string getReviewerLast();
 		std::string getReviewerEmail();
 		void setStrengths(const std::string&);
 		std::string getStrengths();
@@ -24,7 +29,7 @@ class Review : public FileIO
 		std::string getShortPaper();
 		void setBestPaper(const std::string&);
 		std::string getBestPaper();
-		void setRemarks(const std::string);
+		void setRemarks(const std::string&);
 		std::string getRemarks();
 
 		void setOverallEvaluation(int&);
@@ -68,4 +73,7 @@ class Review : public FileIO
 		int presentation;
 		int technicalQuality;
 		int evaluation;
+		
+		friend sf::Packet & operator<<(sf::Packet &packet, const Review &);
+		friend sf::Packet & operator>>(sf::Packet &packet, Review &);
 };
