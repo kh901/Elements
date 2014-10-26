@@ -109,7 +109,7 @@ void Conference::adjustDeadlineDays(const int num)
 {
 	if (num > 0)
 	{
-		deadline = getDaysAhead(deadline, num);
+		deadline = getDaysAhead(getTimeValue(), num);
 	}
 }
 bool Conference::hasDeadlinePassed(const time_t cur)

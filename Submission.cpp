@@ -81,7 +81,7 @@ void Submission::adjustDeadlineDays(const int num)
 {
 	if (num > 0)
 	{
-		deadline = getDaysAhead(deadline, num);
+		deadline = getDaysAhead(getTimeValue(), num);
 	}
 }
 bool Submission::hasDeadlinePassed(const time_t cur)
