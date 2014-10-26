@@ -8,6 +8,7 @@
 #include "Conference.h"
 #include "Submission.h"
 #include "common.h"
+#include "Review.h"
 
 #ifndef SERVER_CONTROLLER
 #define SERVER_CONTROLLER
@@ -26,6 +27,8 @@ class ServerController
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
 		std::vector<std::string> deadlineSubmissions;
+		std::vector<std::string> reviewIDs;
+		std::vector<Review> reviews;
 		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
@@ -61,6 +64,7 @@ class ServerController
 		void autoAllocate();
 		void allocate(const std::string &);
 		void getAllocations(sf::Packet&, sf::TcpSocket&);
+		void submitReview(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif
