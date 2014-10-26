@@ -13,6 +13,7 @@
 #include <SFML/Network.hpp>
 #include "Menu.h"
 #include "File.h"
+#include "Submission.h"
 
 #define ACCOUNT_MAX_ID_LEN 9
 
@@ -73,6 +74,9 @@ class Account : public FileIO
 		bool findKeyword(const std::string &word);
 		void clearKeywords();
 		void displayKeywords();
+		
+		// matching keywords
+		bool matchKeywordsForSubmission(const Submission &);
 		
 		// login session functions
 	 	void startSession();

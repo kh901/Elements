@@ -1,13 +1,13 @@
+#ifndef SUBMISSION_H
+#define SUBMISSION_H
+
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include <SFML/Network.hpp>
-#include "Account.h"
 #include "File.h"
 #include "Menu.h"
-
-#ifndef SUBMISSION_H
-#define SUBMISSION_H
 
 class Comment : public FileIO
 {
@@ -64,8 +64,9 @@ class Submission : public FileIO
 		void addReviewer(const std::string &);
 		bool hasReviewer(const std::string &);
 		int getReviewerCount() const;
+		bool hasKeyword(const std::string &) const;
 
-		void addComment(Account account);
+		void addComment(const std::string &, const std::string &);
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
 		Submission & operator=(const Submission &);

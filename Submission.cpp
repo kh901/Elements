@@ -182,6 +182,10 @@ bool Submission::hasReviewer(const std::string &user)
 	}
 	return false;
 }
+bool Submission::hasKeyword(const std::string &word) const
+{
+	return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 
+}
 
 void Submission::addAuthor(const std::string &first, const std::string &last)
 {
@@ -191,15 +195,12 @@ void Submission::addAuthor(const std::string &first, const std::string &last)
 	authors.push_back(tmp);
 }
 
-void Submission::addComment(Account account)
+void Submission::addComment(const std::string &user, const std::string &msg)
 {
     Comment com;
-    std::cout << "Add comment about this paper: ";
-    getline(std::cin, com.comment);
-    com.username = account.getUsername();
+    com.comment = msg;
+    com.username = user;
     comments.push_back(com);
-    
-    // send submission back to server controller
 }
 
 void Submission::displayComments()

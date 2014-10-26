@@ -234,6 +234,18 @@ bool Account::findKeyword(const std::string &word)
 { 
 	return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 
 }
+bool Account::matchKeywordsForSubmission(const Submission &sub)
+{
+	std::vector<std::string>::iterator it;
+	for (it = keywords.begin(); it != keywords.end(); ++it)
+	{
+		if (sub.hasKeyword(*it))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 void Account::clearKeywords() 
 { 
 	keywords.clear(); 
