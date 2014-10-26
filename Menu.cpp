@@ -286,8 +286,11 @@ int Menu::doMenu()
 {	
 	bool selected = false;
 	//int option = 0;
+	if (displayMode == Menu::Fixed)
+	{
+		scrollIndex = 0;
+	}
 	std::string tmpbuf;
-	scrollIndex = 0;
 	
 	while (!selected)
 	{
