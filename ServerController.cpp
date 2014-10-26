@@ -194,9 +194,9 @@ void ServerController::loadFalseConferences(){
 	con2.setChairman("Someone who'll probably die");
 	con3.setChairman("An alcoholic, how ironic");
 	
-	con.addSubChair("Kieran");
-	con2.addSubChair("Jonathan");
-	con3.addSubChair("Adam");
+	con.addSubchair("Kieran");
+	con2.addSubchair("Jonathan");
+	con3.addSubchair("Adam");
 	
 	conferences.push_back(con);
 	conferences.push_back(con2);
