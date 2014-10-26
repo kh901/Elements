@@ -33,7 +33,6 @@ class UserController
         sf::TcpSocket socket;
         
         void fillMainMenu(std::vector<std::string> &);
-        
         bool confirmMenu(const std::string &);
         
         void account();
@@ -47,13 +46,17 @@ class UserController
         void mainMenu();
         void startMenu();
        	bool connect();
+       	void finalise();
         
+        void prepareFinalReview(const std::string &);
+        bool addReviewer(const std::string &);
+        void getAllocations(std::vector<std::string> &);
         void getBidList(std::vector<std::string> &);
         void bidPaper();
         void submitReview();
         void getPhase();
         void advancePhase();
-        void loginAccount();
+        bool loginAccount();
         void registerAccount();
        	bool pickConference();
        	bool createConference();

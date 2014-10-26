@@ -380,7 +380,7 @@ void UserController::finalise()
 {
 	sf::Packet request, response;
 	std::vector<std::string> subs;
-	std::string protocol = "GET_SUBMISSIONS";
+	std::string protocol = "CONFERENCE_SUBMISSIONS";
 	request << protocol << conference;
 	
 	socket.send(request);

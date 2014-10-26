@@ -118,7 +118,6 @@ void ServerController::run()
 	loadFalseAccounts();
 	//loadFalseSubmissions();
 	loadFalseConferences();
-	deadlineSet = false;
 	
 	sf::TcpListener listener;
 	
@@ -444,10 +443,46 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="GET_ALLOCATIONS"){
 		getAllocations(packet, client);
 	}
+	else if(protocol=="CONFERENCE_SUBMISSIONS"){
+		getConferenceSubs(packet, client);
+	}
+	else if(protocol=="REVIEW_LIST"){
+		getReviewList(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
 }
+
+void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conf;
+	packet >> conf;
+	
+	// add all matching submissions with this conference name
+	std::vector<std::string> results;
+	std::vector<Submission>::iterator it;
+	for (it = submissions.begin(); it != submissions.end(); ++it)
+	{
+		if (it->getConference() == conf)
+		{
+			results.push_back(it->getTitle());
+		}
+	}
+	
+	// pack into the response packet
+	response << (int)results.size();
+	for (int i = 0; i < (int)results.size(); ++i)
+	{
+		response << results[i];
+	}	
+	client.send(response);
+}
+void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client)
+{
+	
+}		
 
 void ServerController::getAllocations(sf::Packet &packet, sf::TcpSocket &client)
 {
