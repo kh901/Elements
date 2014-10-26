@@ -776,12 +776,13 @@ void UserController::configuration()
 		"Current Phase: " + phase,
 		"Advance to next phase",
 		"Add reviewers",
+		"Add authors",
         "Change papers per reviewer limit",
         "Change reviewers per paper limit",
         "Back"
 	};
 	// alter the first option to display the current phase
-	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 6);
+	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 7);
 	int option;
     do
     {
@@ -806,6 +807,8 @@ void UserController::configuration()
             case 4:
             	break;
             case 5:
+            	break;
+            case 6:
             	break;
     	}
     } while (configurationMenu.notExited(option));
