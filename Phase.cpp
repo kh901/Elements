@@ -4,6 +4,7 @@ std::string const  Phase::phases[] = {
     "Submission",
     "Allocation",
     "Reviewing",
+    "Discussing",
     "Finalising",
     "Completed"
 };
@@ -26,7 +27,7 @@ int Phase::getCurrentId() const
 
 void Phase::setCurrentId(const int val)
 {
-	if (val >= 0 && val < 5)
+	if (val >= 0 && val < MAX_PHASE_NUM)
 	{
 		phaseID = val;
 	}
@@ -34,7 +35,7 @@ void Phase::setCurrentId(const int val)
 
 void Phase::advancePhase()
 {
-	if (phaseID < 5)
+	if (phaseID < MAX_PHASE_NUM)
 	{
     	phaseID++;
     }

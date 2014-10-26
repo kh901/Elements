@@ -58,9 +58,12 @@ class Submission : public FileIO
 		std::string getTitle() const;
 		void setConference(const std::string &);
 		std::string getConference() const;
+		void setUniversity(const std::string &);
+		std::string getUniversity() const;
 
 		void addReviewer(const std::string &);
-		int getReviewerCount();
+		bool hasReviewer(const std::string &);
+		int getReviewerCount() const;
 
 		void addComment(Account account);
 		void displayComments();
@@ -77,6 +80,7 @@ class Submission : public FileIO
 		std::string title;
 		std::string description;
 		std::string conference;
+		std::string uni;
 		std::vector<std::string> reviewers;
 		std::vector<Fullname> authors;
 		std::vector<std::string> keywords;

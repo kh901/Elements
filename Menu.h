@@ -94,6 +94,7 @@ class Menu
 		int displayRow;
 		std::string * descriptions;
 		int * values;
+		int option;
 		 
 		bool disableBack;
 		bool doesLastReturn;

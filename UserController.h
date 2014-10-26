@@ -34,6 +34,8 @@ class UserController
         
         void fillMainMenu(std::vector<std::string> &);
         
+        bool confirmMenu(const std::string &);
+        
         void account();
         void submissions();
         void reviews();
@@ -46,6 +48,11 @@ class UserController
         void startMenu();
        	bool connect();
         
+        void getBidList(std::vector<std::string> &);
+        void bidPaper();
+        void submitReview();
+        void getPhase();
+        void advancePhase();
         void loginAccount();
         void registerAccount();
        	bool pickConference();

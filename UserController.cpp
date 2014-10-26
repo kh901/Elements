@@ -75,6 +75,7 @@ void UserController::startMenu()
 		}
 		if (option == 1 || option == 0)
 		{
+			this->getPhase();
 			this->getAdminStatus();
 			if (this->pickConference())
 			{
@@ -551,7 +552,7 @@ void UserController::submitPaper()
 {
 	sf::Packet request, response;
 	std::string protocol = "SUBMIT_PAPER";
-	std::string outcome;
+	bool exists;
 	
 	request << protocol << username;
 	Submission sub;
@@ -560,7 +561,14 @@ void UserController::submitPaper()
 	request << sub;
 	
 	socket.send(request);
-	//socket.receive(response);
+	socket.receive(response);
+	response >> exists;
+	if (exists)
+	{
+		std::cout << "Error: That submission exists already.";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Error: That submission exists already.");
+	}
 }
 void UserController::viewSubmissions()
 {
@@ -652,39 +660,144 @@ void UserController::reviews()
 		"Discuss a paper",			// in discussion phase (unlocked), finalisation-completion (locked, viewable)
 		"Back"
 	};
-	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, 4);
-    
-    // Need database code for reviews
-    // Need to create review form 
+	std::vector<std::string> optionList;
+	
+	if (phase == "Allocation")
+	{
+		optionList.push_back(reviewMenuOptions[0]);
+	}
+	else if (phase == "Reviewing")
+	{
+		optionList.push_back(reviewMenuOptions[1]);
+	}
+	else if (phase == "Discussing")
+	{
+		optionList.push_back(reviewMenuOptions[2]);
+	}
+	optionList.push_back(reviewMenuOptions[3]);
+	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, optionList.size());
     int option;
     do
     {
     	option = reviewMenu.doMenu();
-    	// put code to handle choices here
+    	// as long as user hasn't tried to exit this menu
+    	if (option != -1 && option != (int)(optionList.size()-1))
+    	{
+    		// interpret choice
+    		if (optionList[option].find("Bid") != std::string::npos)
+			{
+				this->bidPaper();
+			}
+			else if (optionList[option].find("Submit") != std::string::npos)
+			{
+				this->submitReview();
+			}
+			else if (optionList[option].find("Discuss") != std::string::npos)
+			{
+				this->discussion();
+			}
+    	}
     } while(reviewMenu.notExited(option));
+}
+
+void UserController::getBidList(std::vector<std::string> &list)
+{
+	sf::Packet request, response;
+	std::string protocol = "BID_LIST";
+	request << protocol << username << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	int responseSize = 0;
+	response >> responseSize;
+	for (int i = 0; i < responseSize; ++i)
+	{
+		std::string tmpSub;
+		response >> tmpSub;
+		list.push_back(tmpSub);
+	}
+}
+
+void UserController::bidPaper()
+{
+	// display a list of biddable submissions
+	std::vector<std::string> subList;
+	getBidList(subList);
+	subList.push_back("Back");
+
+	Menu bidMenu;
+	bidMenu.setOptions("Reviews > Bid", &subList[0], subList.size());
+	int pick = 0, bidIndex = -1;
+	do 
+	{
+		pick = bidMenu.doMenu();
+		// as long as the user isn't exiting the menu
+		if (pick != -1 && pick != (int)(subList.size()-1))
+		{
+			if (confirmMenu("Bid for this paper? (Final decision)"))
+			{
+				bidIndex = pick;
+				pick = -1;
+			}
+		}
+	} while (bidMenu.notExited(pick));
+
+	if (bidIndex != -1)
+	{
+		sf::Packet request;
+		std::string protocol = "BID_PAPER";
+		request << protocol << username << conference << subList[bidIndex];
+		socket.send(request);
+	}
+}
+void UserController::submitReview()
+{
+	sf::Packet request;
+	// FILL IN CODE
+}
+
+bool UserController::confirmMenu(const std::string &msg)
+{
+	static std::string choices[2] = {
+		"Yes",
+		"No"
+	};
+	Menu confirm;
+	confirm.setOptions(msg, choices, 2);
+	int choice = confirm.doMenu();
+	return (choice == 0);
 }
 
 void UserController::configuration()
 {
     Menu configurationMenu;
 	std::string configurationMenuOptions[] = {
+		"Current Phase:\n  " + phase,
 		"Advance to next phase",
 		"Add reviewers",
         "Change papers per reviewer limit",
         "Change reviewers per paper limit",
         "Back"
 	};
-	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 5);
+	// alter the first option to display the current phase
+	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 6);
 	int option;
     do
     {
     	option = configurationMenu.doMenu();
     	switch(option)
     	{
-    		case 0:
-                
-                break;
+    		// advance to next phase
     		case 1:
+    			// confirm choice with user
+    			if (confirmMenu("Are you sure?"))
+    			{
+    				this->advancePhase();
+    				// get next phase by request
+					this->getPhase();
+					configurationMenuOptions[0] = "Current Phase:\n  " + phase;
+    			}
                 break;
             case 2:
                 break;
@@ -692,8 +805,28 @@ void UserController::configuration()
                 break;
             case 4:
             	break;
+            case 5:
+            	break;
     	}
     } while (configurationMenu.notExited(option));
+}
+
+void UserController::getPhase()
+{
+	sf::Packet request, response;
+	std::string protocol = "CHECK_PHASE";
+	request << protocol << conference;
+	socket.send(request);
+	socket.receive(response);
+	response >> phase;
+}
+
+void UserController::advancePhase()
+{
+	sf::Packet request;
+	std::string protocol = "ADVANCE_PHASE";
+	request << protocol << username << conference;
+	socket.send(request);
 }
 
 void UserController::discussion()

@@ -6,6 +6,7 @@ int Menu::bufferSize;
 Menu::Menu()
 {
 	options = NULL;
+	option = 0;
 	descriptions = NULL;
 	values = NULL;
 	displayMode = Menu::Fixed;
@@ -284,7 +285,7 @@ void Menu::displayControls()
 int Menu::doMenu()
 {	
 	bool selected = false;
-	int option = 0;
+	//int option = 0;
 	std::string tmpbuf;
 	scrollIndex = 0;
 	

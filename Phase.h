@@ -2,6 +2,8 @@
 #include <string>
 #include "File.h"
 
+#define MAX_PHASE_NUM 6
+
 class Phase : public FileIO
 {
     public:

@@ -18,6 +18,7 @@ Submission::Submission(const Submission &other)
 	conference = other.conference;
 	status = other.status;
 	reviewers = other.reviewers;
+	uni = other.uni;
 }
 Submission & Submission::operator=(const Submission &other)
 {
@@ -31,6 +32,7 @@ Submission & Submission::operator=(const Submission &other)
 	conference = other.conference;
 	status = other.status;
 	reviewers = other.reviewers;
+	uni = other.uni;
 	return *this;
 }
 
@@ -51,7 +53,6 @@ std::string Submission::getStatus() const
 {
 	return status;
 }
-
 void Submission::setConference(const std::string &aConf)
 {
 	conference = aConf;
@@ -60,10 +61,17 @@ std::string Submission::getConference() const
 {
 	return conference;
 }
-
 std::string Submission::getTitle() const
 {
 	return title;
+}
+void Submission::setUniversity(const std::string &aUni)
+{
+	uni = aUni;
+}
+std::string Submission::getUniversity() const
+{
+	return uni;
 }
 
 bool Submission::isAuthorIncluded(const std::string &aFirst, const std::string &aLast){
@@ -140,10 +148,21 @@ void Submission::addReviewer(const std::string &user)
 {
 	reviewers.push_back(user);
 }
-int Submission::getReviewerCount()
+int Submission::getReviewerCount() const
 {
 	return reviewers.size();
 }		
+bool Submission::hasReviewer(const std::string &user)
+{
+	for (int i = 0; i < (int)reviewers.size(); ++i)
+	{
+		if (reviewers[i] == user)
+		{
+			return true;
+		}
+	}
+	return true;
+}
 
 void Submission::addAuthor(const std::string &first, const std::string &last)
 {
@@ -173,7 +192,7 @@ void Submission::displayComments()
 sf::Packet & operator<<(sf::Packet &packet, const Submission &sub)
 {
 	packet << sub.reviewed << sub.filename << sub.title << sub.description;
-	packet << sub.conference << sub.status;
+	packet << sub.conference << sub.status << sub.uni;
 	packet << (int)sub.authors.size();
 	for (int i = 0; i < (int)sub.authors.size(); ++i)
 	{
@@ -203,7 +222,7 @@ sf::Packet & operator>>(sf::Packet &packet, Submission &sub)
 	sub.comments.clear();
 	
 	packet >> sub.reviewed >> sub.filename >> sub.title >> sub.description;
-	packet >> sub.conference >> sub.status;
+	packet >> sub.conference >> sub.status >> sub.uni;
 	int authorSize = 0;
 	packet >> authorSize;
 	for (int a = 0; a < authorSize; ++a)
@@ -247,6 +266,7 @@ void Submission::writeFile(std::ofstream &ofs) const
 	appendString(ofs, this->description);
 	appendString(ofs, this->conference);
 	appendString(ofs, this->status);
+	appendString(ofs, this->uni);
 	appendClassVector<Fullname>(ofs, this->authors);
 	appendStringVector(ofs, this->keywords);
 	appendClassVector<Comment>(ofs, this->comments);
@@ -260,6 +280,7 @@ void Submission::readFile(std::ifstream &ifs)
 	readString(ifs, this->description);
 	readString(ifs, this->conference);
 	readString(ifs, this->status);
+	readString(ifs, this->uni);
 	readClassVector<Fullname>(ifs, this->authors);
 	readStringVector(ifs, this->keywords);
 	readClassVector<Comment>(ifs, this->comments);	

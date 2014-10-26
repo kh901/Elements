@@ -15,14 +15,44 @@ ServerController::ServerController()
 void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client)
 {
 	sf::Packet response;
-	Submission submission;
-	std::string username;
+	Submission sub;
+	bool exists = false;
+	std::string username, conference, title;
 	
 	packet >> username;
-	packet >> submission;
-	submissions.push_back(submission);
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	packet >> sub;
+	conference = sub.getConference();
+	title = sub.getTitle();
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return; 	// ignore request if conference is not found
+	}
+	if (accounts[findIndex].getAccess(conference) <= Account::Access_Author)
+	{
+		return;		// ignore request if user is not at least an author of that conference
+	}
 	
-	std::cout << "Submitted paper: " << submission.getTitle() << " by " << username << std::endl;
+	// check that the paper does not already exist
+	if (checkSubmission(title, conference) != -1)
+	{
+		// set the papers university to the submitting author
+		sub.setUniversity(accounts[findIndex].getUniversity());
+		submissions.push_back(sub);
+		std::cout << "Submitted paper: " << title << " by " << username << std::endl;
+		
+	}
+	else
+	{
+		exists = true;
+	}
+	response << exists;
+	client.send(response);
 }
 
 void ServerController::run()
@@ -143,11 +173,23 @@ void ServerController::loadFalseAccounts(){
 	submissions.push_back(temp3);
 }*/
 
+int ServerController::checkSubmission(const std::string &title, const std::string &conf)
+{
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getTitle() == title && submissions[i].getConference() == conf)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 int ServerController::checkConference(std::string conference)
 {
 	for (int i = 0; i < (int)conferences.size(); i++)
 	{
-		if (conferences[i].getName == conference)
+		if (conferences[i].getName() == conference)
 		{
 			return i;
 		}
@@ -273,14 +315,99 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="CHECK_PHASE"){
 		checkPhase(packet, client);
 	}
+	else if (protocol=="BID_LIST"){
+		bidList(packet, client);
+	}
 	else if (protocol=="BID_PAPER"){
 		bidPaper(packet, client);
+	}
+	else if (protocol=="ADVANCE_PHASE"){
+		advancePhase(packet, client);
 	}
 	else if(protocol=="BYE"){
 		logoutUser(packet, client);
 	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
+	}
+}
+
+void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	// generate a list of submissions that:
+	// have reviewer slots left
+	// are not already bid on by the reviewer
+	// do not create a conflict of interest
+	std::string username, conf;
+	packet >> username >> conf;
+	
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	int confIndex = checkConference(conf);
+	if (confIndex == -1)
+	{
+		return; 	// ignore request if conference is not found
+	}
+	if (accounts[findIndex].getAccess(conf) <= Account::Access_Reviewer)
+	{
+		return;		// ignore request if user is not at least a reviewer of that conference
+	}
+	
+	std::vector<std::string> results;
+	for (int a = 0; a < (int)submissions.size(); ++a)
+	{
+		// match conference
+		if (submissions[a].getConference() == conf)
+		{
+			// check not already bid for paper and avoid conflicts of interest
+			if (!(submissions[a].hasReviewer(username)) && submissions[a].getUniversity() != accounts[findIndex].getUniversity())
+			{
+				int numReviewers = submissions[a].getReviewerCount();
+				int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
+				// check reviewer slots are free
+				if (numReviewers < maxPaperReviewers)
+				{
+					results.push_back(submissions[a].getTitle());
+				}
+			}
+		}
+	}
+	
+	// send the results
+	response << (int)results.size();
+	for (int i = 0; i < (int)results.size(); ++i)
+	{	
+		response << results[i];
+	}
+	client.send(response);
+}
+
+void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username, conference;
+	bool valid = false;
+	packet >> username >> conference;
+	
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return; 	// ignore request if conference is not found
+	}
+	
+	// check that they have admin rights to the conference
+	Account::AccessLevel access = accounts[findIndex].getAccess(conference);
+	if (access == Account::Access_Admin)
+	{
+		conferences[confIndex].advancePhase();
 	}
 }
 
@@ -477,23 +604,25 @@ void ServerController::getConferences(sf::Packet &packet, sf::TcpSocket &socket)
 
 void ServerController::checkPhase(sf::Packet &packet, sf::TcpSocket &client)
 {
-	std::string username;
+	//std::string username;
 	std::string conference;
 	std::string currentPhase;
 	sf::Packet response;
-	Account::AccessLevel level;
+	//Account::AccessLevel level;
 	
-	packet >> username >> conference;
+	//packet >> username >> conference;
+	packet >> conference;
 	
-	int findIndex = checkAccount(username);
+	//int findIndex = checkAccount(username);
 	int confIndex = checkConference(conference);
 	
 	if (confIndex != -1)
 	{
-		level = accounts[findIndex].getAccess(conference);
+		//level = accounts[findIndex].getAccess(conference);
 		currentPhase = conferences[confIndex].getCurrentPhase();
 	
-		response << level << currentPhase;
+		//response << level << currentPhase;
+		response << currentPhase;
 		client.send(response);
 	}
 }
@@ -501,25 +630,28 @@ void ServerController::checkPhase(sf::Packet &packet, sf::TcpSocket &client)
 void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
 {
 	std::string username;
-	std::string conference;
+	std::string conf;
 	std::string subTitle;
 	
-	packet >> username >> conference >> subTitle;
+	packet >> username >> conf >> subTitle;
 	
 	int findIndex = checkAccount(username);
-	int confIndex = checkConference(conference);
+	int confIndex = checkConference(conf);
 	
 	if (confIndex != -1)
 	{
-		if (conference[confIndex].getCurrentPhase == "Allocation")
+		if (conferences[confIndex].getCurrentPhase() == "Allocation")
 		{
 			for (int i = 0; i < (int)submissions.size(); i++)
 			{
-				if (conference == submissions[i].getConference())
+				if (conf == submissions[i].getConference() && subTitle == submissions[i].getTitle())
 				{
-					if (subTitle == submissions[i].getTitle())
+					int reviewerCount = submissions[i].getReviewerCount();
+					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
+					if (reviewerCount < maxPaperReviewers)
 					{
 						submissions[i].addReviewer(username);
+						break;
 					}
 				}
 			}

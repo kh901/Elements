@@ -39,10 +39,13 @@ class ServerController
 		void createConference(sf::Packet&, sf::TcpSocket&);
 		void logoutUser(sf::Packet&, sf::TcpSocket&);
 		void getNotifications(sf::Packet&, sf::TcpSocket&);
+		void advancePhase(sf::Packet&, sf::TcpSocket&);
+		void bidList(sf::Packet&, sf::TcpSocket&);
 		
 		void addNotification(const std::string &user, const std::string &str);
 		void clearNotifications(const std::string &user);
 		
+		int checkSubmission(const std::string &, const std::string &);
 		int checkAccount(std::string, std::string = "#USERNAMEONLY");//
 		bool conferenceExists(const std::string &);
 		void checkPhase(sf::Packet&, sf::TcpSocket&);
