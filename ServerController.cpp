@@ -452,8 +452,41 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="SUB_DETAIL"){
 		sendSubDetail(packet, client);
 	}
+	else if (protocol=="SUBMIT_REVIEW"){
+		submitReview(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
+	}
+}
+
+void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username, conference, paperTitle;
+	Review review;
+	std::string firstname, lastname;
+	
+	packet >> username >> conference >> paperTitle;
+	packet >> review;
+	
+	int findIndex = checkAccount(username);
+	firstname = accounts[findIndex].getFirstName();
+	lastname = accounts[findIndex].getLastName();
+	
+	review.setPCMember(firstname + " " + lastname);
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if (submissions[i].getTitle() == paperTitle)
+			{
+				if (submissions[i].hasReviewer(username))
+				{
+					submissions[i].setReviewed();
+				}
+			}
+		}
 	}
 }
 
@@ -507,8 +540,29 @@ void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &clie
 }
 void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client)
 {
+	sf::Packet response;
+	std::string conference, paperTitle;
+	packet >> conference >> paperTitle;
 	
-}		
+	for (int i = 0; i < (int)reviews.size(); i++)
+	{
+		if (reviews[i].getConference() == conference)
+		{
+			if (reviews[i].getTitle() == paperTitle)
+			{
+				reviewIDs.push_back(reviews[i].getReviewID());
+			}
+		}
+	}
+	
+	response << (int)reviewIDs.size();
+	for (int i = 0; i < (int)reviewIDs.size(); i++)
+	{
+		response << reviewIDs[i];
+	}
+	
+	client.send(response);
+}
 
 void ServerController::getAllocations(sf::Packet &packet, sf::TcpSocket &client)
 {
