@@ -21,6 +21,19 @@ class UserController
 {
     public:
         UserController();
+        void run();
+        
+    private:
+        std::string username;
+        std::string conference;
+        Account::AccessLevel level;
+        bool isAdmin;
+        std::string phase;
+        
+        sf::TcpSocket socket;
+        
+        void fillMainMenu(std::vector<std::string> &);
+        
         void account();
         void submissions();
         void reviews();
@@ -32,17 +45,6 @@ class UserController
         void mainMenu();
         void startMenu();
        	bool connect();
-        void run();
-        
-    private:
-        std::string username;
-        std::string conference;
-        Account::AccessLevel level;
-        bool isAdmin;
-        
-        sf::TcpSocket socket;
-        
-        void fillMainMenu(std::vector<std::string> &);
         
         void loginAccount();
         void registerAccount();

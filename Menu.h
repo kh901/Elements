@@ -55,6 +55,8 @@ namespace text
 		 Effect eft = Effect_None, Background bkg = Bkg_None);
 };
 
+#define MENU_BAR_DEFAULT_WIDTH 36
+
 class Menu
 {
 	public:
@@ -73,6 +75,8 @@ class Menu
 		void clear();
 		void disableBackButton();
 		void setLastAsChoice();
+		void setSelectColour(const text::Colour);
+		void setBarWidth(const int);
 		static void eraseLine(const std::string &);
         static void eraseLine(int);
         static void clearDisplay();
@@ -90,15 +94,22 @@ class Menu
 		int displayRow;
 		std::string * descriptions;
 		int * values;
-		DisplayMode displayMode; 
-		int visibleNum;
-		int scrollIndex;
-		bool showControls;
+		 
 		bool disableBack;
 		bool doesLastReturn;
-
+		
+		// menu appearance
+		DisplayMode displayMode;
+		bool showControls;
+		int visibleNum;
+		int scrollIndex;
+		text::Colour selectColour;
+		int barWidth;
+		std::string BAR;
+		
 		int getCmd();
 		void clearLastDisplay();
+		void fillBar();
 	protected:
 		void displayOption(const int);
 		void displayValue(const int);

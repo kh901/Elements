@@ -25,7 +25,9 @@ bool UserController::connect()
 	std::cout << "Enter server address: ";
 	getline(std::cin, serverAddress);
 	
+	std::cout << "Connecting..." << std::endl;
 	sf::Socket::Status status = socket.connect(serverAddress.c_str(), NETWORK_PORT, time);
+	Menu::eraseLine("Connecting...");
 	
 	return (status == sf::Socket::Done);
 }
@@ -54,6 +56,7 @@ void UserController::startMenu()
 	Menu start;
 	start.setOptions("Start Menu", options, 3);
 	start.setDescriptions(descriptions);
+	start.setSelectColour(text::Colour_Blue);
 	int option;
 	do
 	{
@@ -115,26 +118,29 @@ bool UserController::pickConference()
 	{
 		conferences.push_back("Admin: Create Conference");
 	}
+	conferences.push_back("Log out");
 	if (conferenceSize == 0 && !isAdmin) 
 	{
 		std::cout << "No conferences!";
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("No conferences!");
-		
+		logOut();
 		return false;
 	}
 	int pick = 0;
+	int createOption = (conferences.size()-2);
 	int lastOption = (conferences.size()-1);
 	Menu pickMenu;
 	pickMenu.setOptions("Pick a conference:", &conferences[0], conferences.size());
-	pickMenu.disableBackButton();
+	pickMenu.setSelectColour(text::Colour_Cyan);
+	//pickMenu.disableBackButton();
 	bool created = false;
 	
 	do
 	{
 		// if the user picked to create conference but then cancelled, they should end up back here
 		pick = pickMenu.doMenu();
-		if (isAdmin && pick == lastOption)
+		if (isAdmin && pick == createOption)
 		{
 			created = this->createConference();
 			if (created)
@@ -142,7 +148,12 @@ bool UserController::pickConference()
 				return created;		
 			}
 		}
-	} while (isAdmin && pick == lastOption);
+		// user pressed back button or wants to log out
+		else if (pick == -1 || pick == lastOption)
+		{
+			return false;
+		}
+	} while (isAdmin && pick == createOption);
 	this->conference = conferences[pick];
 	this->getConferenceAccess();
 	return true;
@@ -217,32 +228,44 @@ void UserController::registerAccount()
 		std::cout << "Username: ";
 		std::cin >> tmpUser;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Username: " + tmpUser);
 		
 		std::cout << "Password: ";
 		std::cin >> tmpPass;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Password: " + tmpPass);
 		
 		std::cout << "Firstname: ";
 		std::cin >> firstname;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Firstname: " + firstname);
 		
 		std::cout << "Lastname: ";
 		std::cin >> lastname;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Lastname: " + lastname);
 		
 		std::cout << "Email: ";
 		std::cin >> email;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Email: " + email);
 		
-		std::cout << "Uni: ";
+		std::cout << "Univerisity: ";
 		std::cin >> uni;
 		std::cin.ignore(1, '\n');
+		Menu::eraseLine("University: " + uni);
 		
 		std::cout << "Keywords (when finished, type 'stop'): " << std::endl;
 		while(std::getline(std::cin, tmp), tmp != "stop")
 		{
 			keywords.push_back(tmp);
 		}
+		Menu::eraseLine("stop");
+		for (int i = (int)(keywords.size()-1); i >= 0; i--)
+		{
+			Menu::eraseLine(keywords[i]);
+		} 
+		Menu::eraseLine("Keywords (when finished, type 'stop'): ");
 		
 		request << tmpUser << tmpPass;
 		request << firstname << lastname;
@@ -301,8 +324,10 @@ void UserController::mainMenu()
 	if (conference.length() <= 0) { return; }
 	std::vector<std::string> fullOptions;
 	fillMainMenu(fullOptions);
+	std::ostringstream menuTitle;
+	menuTitle << "Main Menu - " << conference;
 	Menu accessMenu;
-	accessMenu.setOptions("Main Menu", &fullOptions[0], fullOptions.size());
+	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
 	int option = 0;
 	do
 	{
@@ -531,6 +556,7 @@ void UserController::submitPaper()
 	request << protocol << username;
 	Submission sub;
 	sub.submit();
+	sub.setConference(conference);
 	request << sub;
 	
 	socket.send(request);

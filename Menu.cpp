@@ -13,6 +13,9 @@ Menu::Menu()
 	scrollIndex = 0;
 	showControls = disableBack = false;
 	doesLastReturn = true;
+	selectColour = text::Colour_Green;
+	barWidth = MENU_BAR_DEFAULT_WIDTH;
+	fillBar();
 }
 Menu::~Menu()
 {
@@ -51,6 +54,23 @@ void Menu::setVisibleNum(const int num)
 void Menu::setShowControls() 
 {
 	showControls = true;
+}
+void Menu::setSelectColour(const text::Colour col)
+{
+	selectColour = col;
+}
+void Menu::setBarWidth(const int width)
+{
+	if (width >= 0)
+	{
+		barWidth = width;
+		fillBar();
+	}
+}
+void Menu::fillBar()
+{
+	BAR.clear();
+	BAR.append(barWidth, '*');
 }
 void Menu::clearLastDisplay()
 {
@@ -203,7 +223,7 @@ void Menu::display(const int start, const int end, const int option)
 		if(option == i)
 		{
 			Menu::buffer << "> ";
-			Menu::buffer << text::styleString(options[i], text::Colour_Green, text::Effect_Bold);
+			Menu::buffer << text::styleString(options[i], selectColour, text::Effect_Bold);
 		}
 		else
 		{
@@ -262,9 +282,7 @@ void Menu::displayControls()
 	}
 }
 int Menu::doMenu()
-{
-	static char BAR [] = "********************************";
-	
+{	
 	bool selected = false;
 	int option = 0;
 	std::string tmpbuf;
@@ -360,12 +378,15 @@ void Menu::eraseLine(const std::string &s)
 }
 void Menu::eraseLine(int len)
 {
+	// move cursor up a line
 	std::cout << "\x1b[A";
 	if (len < 0) { len = 0; }
+	// overwrite the line with spaces
 	for (int i = 0; i < len; ++i)
 	{
 		std::cout << ' ';
 	}
+	// reset cursor to start of line
 	for (int i = 0; i < len; ++i)
 	{
 		std::cout << '\b';
