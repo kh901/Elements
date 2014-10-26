@@ -59,6 +59,7 @@ class ServerController
 		void notifyConference(const std::string &, const std::string &);
 		void autoAllocate();
 		void allocate(const std::string &);
+		void getAllocations(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif

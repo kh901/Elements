@@ -437,9 +437,45 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="BYE"){
 		logoutUser(packet, client);
 	}
+	else if(protocol=="GET_ALLOCATIONS"){
+		getAllocations(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::getAllocations(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username, conference;
+	int allocatedSize = 0;
+	std::vector<std::string> allocatedPapers;
+	std::string temp;
+	
+	packet >> username >> conference;
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if (submissions[i].hasReviewer(username))
+			{
+				allocatedPapers.push_back(submissions[i].getTitle());
+				allocatedSize++;
+			}
+		}
+	}
+	
+	response << allocatedSize;
+	
+	for (int i = 0; i < allocatedSize; i++)
+	{
+		temp = allocatedPapers[i];
+		response << temp;
+	}
+	
+	client.send(response);
 }
 
 void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
