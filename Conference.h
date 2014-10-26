@@ -32,7 +32,9 @@ class Conference : public FileIO
         void advancePhase();
         
         void setMaxReviewedPapers(const int);
+        int getMaxReviewedPapers();
         void setMaxPaperReviewers(const int);
+        int getMaxPaperReviewers();
         
 		void addReviewer(const std::string &);
 		void printReviewers();

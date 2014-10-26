@@ -94,6 +94,14 @@ void Conference::setMaxPaperReviewers(const int max)
 		maxReviewersPerPaper = max;
 	}
 }
+int Conference::getMaxReviewedPapers()
+{
+	return maxPapersPerReviewer;
+}
+int Conference::getMaxPaperReviewers()
+{
+	return maxReviewersPerPaper;
+}
 
 void Conference::addReviewer(const std::string &aReviewer)
 {
