@@ -256,7 +256,7 @@ void UserController::registerAccount()
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("University: " + uni);
 		
-		std::cout << "Keywords (when finished, type 'stop'): " << std::endl;
+		std::cout << "Enter keywords (when finished, type 'stop'): " << std::endl;
 		while(std::getline(std::cin, tmp), tmp != "stop")
 		{
 			keywords.push_back(tmp);
@@ -266,7 +266,7 @@ void UserController::registerAccount()
 		{
 			Menu::eraseLine(keywords[i]);
 		} 
-		Menu::eraseLine("Keywords (when finished, type 'stop'): ");
+		Menu::eraseLine("Enter keywords (when finished, type 'stop'): ");
 		
 		request << tmpUser << tmpPass;
 		request << firstname << lastname;
@@ -675,7 +675,7 @@ void UserController::reviews()
 		optionList.push_back(reviewMenuOptions[2]);
 	}
 	optionList.push_back(reviewMenuOptions[3]);
-	reviewMenu.setOptions("Main Menu > Reviews", reviewMenuOptions, optionList.size());
+	reviewMenu.setOptions("Main Menu > Reviews", &optionList[0], optionList.size());
     int option;
     do
     {

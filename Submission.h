@@ -4,7 +4,7 @@
 #include <SFML/Network.hpp>
 #include "Account.h"
 #include "File.h"
-
+#include "Menu.h"
 
 #ifndef SUBMISSION_H
 #define SUBMISSION_H

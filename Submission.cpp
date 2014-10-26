@@ -91,32 +91,45 @@ void Submission::submit()
 {
     std::cout << "Enter paper name: ";
     getline(std::cin, filename);
+    Menu::eraseLine("Enter paper name: " + filename);
     
     std::cout << "Enter title: ";
     getline(std::cin, title);
+    Menu::eraseLine("Enter title: " + title);
     
     Fullname author;
     std::string cmd;
     do
     {
-        std::cout << "Enter authors firstname: ";
-        getline(std::cin, author.firstname);
-        std::cout << "Enter authors lastname: ";
-        getline(std::cin, author.surname);
-        
-        authors.push_back(author);
-      
         do
         {
-            std::cout << "Do you want to add another author to this paper? (y/n)";
+            std::cout << "Do you want to add another author to this paper? (y/n): ";
             getline(std::cin, cmd);
+            Menu::eraseLine("Do you want to add another author to this paper? (y/n): " + cmd);
             if(cmd != "y" && cmd != "n")
-                std::cout << "Invalid option, please try again" << std::endl;
+            {
+                std::cout << "Invalid option, please try again.";
+                std::cin.ignore(1, '\n');
+                Menu::eraseLine("Invalid option, please try again.");
+            }
         }while(cmd != "y" && cmd != "n");
+        if (cmd == "y")
+        {
+		    std::cout << "Enter authors firstname: ";
+		    getline(std::cin, author.firstname);
+		    Menu::eraseLine("Enter authors firstname: " + author.firstname);
+		    
+		    std::cout << "Enter authors lastname: ";
+		    getline(std::cin, author.surname);
+		    Menu::eraseLine("Enter authors lastname: " + author.surname);
+		    
+		    authors.push_back(author);
+		}
     }while(cmd != "n");
     
     std::cout << "Enter description: ";
     getline(std::cin, description);
+    Menu::eraseLine("Enter description: " + description);
     
     std::string keyword;
     std::cout << "Enter keywords (when finished, type 'stop'): " << std::endl;
@@ -125,6 +138,12 @@ void Submission::submit()
     {
         keywords.push_back(keyword);
     }
+    Menu::eraseLine("stop");
+	for (int i = (int)(keywords.size()-1); i >= 0; i--)
+	{
+		Menu::eraseLine(keywords[i]);
+	} 
+	Menu::eraseLine("Enter keywords (when finished, type 'stop'): ");
 }
 
 void Submission::view()
@@ -161,7 +180,7 @@ bool Submission::hasReviewer(const std::string &user)
 			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 void Submission::addAuthor(const std::string &first, const std::string &last)

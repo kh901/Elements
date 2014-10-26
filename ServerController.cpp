@@ -45,6 +45,10 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	{
 		// set the papers university to the submitting author
 		sub.setUniversity(accounts[findIndex].getUniversity());
+		// add the submitting author as an author
+		std::string firstname = accounts[findIndex].getFirstName();
+		std::string lastname = accounts[findIndex].getLastName();
+		sub.addAuthor(firstname, lastname);
 		submissions.push_back(sub);
 		std::cout << "Submitted paper: " << title << " by " << username << std::endl;
 	}
@@ -137,6 +141,7 @@ void ServerController::loadFalseAccounts(){
 	author.setPassword("pass");
 	author.setFirstName("Adam");
 	author.setLastName("Dahler");
+	author.setUniversity("You oh dubs");
 	author.addAccess("AIDS conference", Account::Access_Author);
 	author.addAccess("Zombie apocalypse conference", Account::Access_Admin);
 	
@@ -145,6 +150,7 @@ void ServerController::loadFalseAccounts(){
 	reviewer.setPassword("pass");
 	reviewer.setFirstName("Jonathan");
 	reviewer.setLastName("Yip");
+	reviewer.setUniversity("Yuh ooh dibs");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
 	addNotification("Jonathan", "Hai, u da one");
 	addNotification("Jonathan", "oh no, you get the second?");
@@ -157,6 +163,7 @@ void ServerController::loadFalseAccounts(){
 	admin.setFirstName("Kieran");
 	admin.setLastName("Haavisto");
 	admin.setSystemAdmin();
+	admin.setUniversity("Yah or debs");
 	admin.addAccess("AIDS conference", Account::Access_Admin);
 		
 	accounts.push_back(author);
@@ -399,25 +406,49 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 		return;		// ignore request if user is not at least a reviewer of that conference
 	}
 	
+	std::cout << "Bid list for Reviewer " << username << " in Conference " << conf << std::endl;
+	
 	std::vector<std::string> results;
 	for (int a = 0; a < (int)submissions.size(); ++a)
 	{
+		std::cout << "Considering sub: " << submissions[a].getTitle() << " conf: " << submissions[a].getConference() << std::endl;
 		// match conference
 		if (submissions[a].getConference() == conf)
 		{
 			// check not already bid for paper and avoid conflicts of interest
-			if (!(submissions[a].hasReviewer(username)) && submissions[a].getUniversity() != accounts[findIndex].getUniversity())
+			if (!(submissions[a].hasReviewer(username)))
 			{
-				int numReviewers = submissions[a].getReviewerCount();
-				int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
-				// check reviewer slots are free
-				if (numReviewers < maxPaperReviewers)
+				if (submissions[a].getUniversity() != accounts[findIndex].getUniversity())
 				{
-					results.push_back(submissions[a].getTitle());
+					int numReviewers = submissions[a].getReviewerCount();
+					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
+					// check reviewer slots are free
+					if (numReviewers < maxPaperReviewers)
+					{
+						results.push_back(submissions[a].getTitle());
+					}
+					else
+					{
+						std::cout << "Not enough reviewer slots left: " << numReviewers << " / " << maxPaperReviewers << std::endl;
+					}
+				}
+				else
+				{
+					std::cout << "Reviewer has a conflict of interest with this submission" << std::endl;
 				}
 			}
+			else
+			{
+				std::cout << "Reviewer already bid for this submission" << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Wrong conference" << std::endl;
 		}
 	}
+	
+	std::cout << "Generated bid list of size: " << results.size() << std::endl;
 	
 	// send the results
 	response << (int)results.size();
