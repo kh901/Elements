@@ -27,6 +27,7 @@ class ServerController
 		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
+		void loadFalseConferences();
 		//void loadFalseSubmissions();//
 		void loginAccount(sf::Packet&, sf::TcpSocket&);//
 		bool registerAccount(sf::Packet&, sf::TcpSocket&);//

@@ -59,6 +59,7 @@ void ServerController::run()
 {
 	loadFalseAccounts();
 	//loadFalseSubmissions();
+	loadFalseConferences();
 	
 	sf::TcpListener listener;
 	
@@ -160,6 +161,46 @@ void ServerController::loadFalseAccounts(){
 	accounts.push_back(author);
 	accounts.push_back(reviewer);
 	accounts.push_back(admin);
+}
+
+void ServerController::loadFalseConferences(){
+	Conference con, con2, con3;
+	
+	con.setName("AIDS conference");
+	con2.setName("Zombie Apocalypse preppers united");
+	con3.setName("Alcoholics Anonymous");
+	
+	con.setDate("30/10/2014");
+	con2.setDate("4/11/2014");
+	con3.setDate("28/11/2014");
+	
+	con.setLocation("A place where everyone has low self esteem");
+	con2.setLocation("A dusty old shack with all weaponry");
+	con3.setLocation("A local pharmacy cause why not");
+	
+	con.setMaxReviewedPapers(5);
+	con2.setMaxReviewedPapers(5);
+	con3.setMaxReviewedPapers(3);
+	
+	con.setMaxPaperReviewers(4);
+	con2.setMaxPaperReviewers(3);
+	con3.setMaxPaperReviewers(2);
+	
+	con.addReviewer("Kieran");
+	con2.addReviewer("Jonathan");
+	con3.addReviewer("Adam");
+	
+	con.setChairman("Some old guy with a weird eye");
+	con2.setChairman("Someone who'll probably die");
+	con3.setChairman("An alcoholic, how ironic");
+	
+	con.addSubChair("Kieran");
+	con2.addSubChair("Jonathan");
+	con3.addSubChair("Adam");
+	
+	conferences.push_back(con);
+	conferences.push_back(con2);
+	conferences.push_back(con3);
 }
 
 /*void ServerController::loadFalseSubmissions(){
