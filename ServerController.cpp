@@ -33,19 +33,20 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	{
 		return; 	// ignore request if conference is not found
 	}
-	if (accounts[findIndex].getAccess(conference) <= Account::Access_Author)
+	std::cout << "Conference found" << std::endl;
+	if (accounts[findIndex].getAccess(conference) < Account::Access_Author)
 	{
 		return;		// ignore request if user is not at least an author of that conference
 	}
+	std::cout << "User is at least an author" << std::endl;
 	
 	// check that the paper does not already exist
-	if (checkSubmission(title, conference) != -1)
+	if (checkSubmission(title, conference) == -1)
 	{
 		// set the papers university to the submitting author
 		sub.setUniversity(accounts[findIndex].getUniversity());
 		submissions.push_back(sub);
 		std::cout << "Submitted paper: " << title << " by " << username << std::endl;
-		
 	}
 	else
 	{
@@ -393,7 +394,7 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 	{
 		return; 	// ignore request if conference is not found
 	}
-	if (accounts[findIndex].getAccess(conf) <= Account::Access_Reviewer)
+	if (accounts[findIndex].getAccess(conf) < Account::Access_Reviewer)
 	{
 		return;		// ignore request if user is not at least a reviewer of that conference
 	}

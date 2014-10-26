@@ -773,7 +773,7 @@ void UserController::configuration()
 {
     Menu configurationMenu;
 	std::string configurationMenuOptions[] = {
-		"Current Phase:\n    " + phase,
+		"Current Phase: " + phase,
 		"Advance to next phase",
 		"Add reviewers",
         "Change papers per reviewer limit",
@@ -796,7 +796,7 @@ void UserController::configuration()
     				this->advancePhase();
     				// get next phase by request
 					this->getPhase();
-					configurationMenuOptions[0] = "Current Phase:\n    " + phase;
+					configurationMenuOptions[0] = "Current Phase: " + phase;
     			}
                 break;
             case 2:
