@@ -58,13 +58,14 @@ void UserController::startMenu()
 	start.setDescriptions(descriptions);
 	start.setSelectColour(text::Colour_Blue);
 	int option;
+	bool loggedIn = false;
 	do
 	{
 		option = start.doMenu();
 		switch(option)
 		{
 			// Login in
-			case 0: this->loginAccount();
+			case 0: loggedIn = this->loginAccount();
 			break;
 			// Register
 			case 1: this->registerAccount();
@@ -73,7 +74,7 @@ void UserController::startMenu()
 			case 2: case -1:
 			break;
 		}
-		if (option == 1 || option == 0)
+		if (option == 1 || (option == 0 && loggedIn))
 		{
 			this->getAdminStatus();
 			if (this->pickConference())
@@ -173,16 +174,17 @@ void UserController::getConferenceAccess()
 	this->level = access;
 }
 
-void UserController::loginAccount()
+bool UserController::loginAccount()
 {
 	sf::Packet request, response;
 	bool valid = false;
+	int invalidCount = 0;
 	
 	std::string tmpUser, tmpPass;
 	std::string protocol = "LOGIN";
 	request << protocol;
 	
-	while(valid==false){
+	while(valid==false && invalidCount < MAX_INVALID_LOGINS){
 		std::cout<<"Username: ";
 		std::cin>>tmpUser;
 		std::cin.ignore(1, '\n');
@@ -203,13 +205,22 @@ void UserController::loginAccount()
 			std::cout << "Invalid details";
 			std::cin.ignore(1, '\n');
 			Menu::eraseLine("Invalid details");
+			invalidCount++;
 		}
 		request.clear();
 		request << protocol;
 	}
-	this->username = tmpUser;
-	std::cout << "You have logged in." << std::endl;
-	Menu::eraseLine("You have logged in.");
+	if (valid)
+	{
+		this->username = tmpUser;
+		std::cout << "You have logged in." << std::endl;
+		Menu::eraseLine("You have logged in.");
+		return true;
+	}
+	std::cout << "Maximum number of invalid logins reached.";
+	std::cin.ignore(1, '\n');
+	Menu::eraseLine("Maximum number of invalid logins reached.");
+	return false;
 }
 void UserController::registerAccount()
 {
@@ -305,14 +316,15 @@ void UserController::fillMainMenu(std::vector<std::string> &list)
 		"Log out"
 	};
 	std::string accessOptions [] = {
-		"Manage Submissions", 			// 1 (#0) - author 
-		"Manage Reviews",				// 2 (#1) - reviewer
-		"Configuration"					// 3 (#2) - chairman
+		"Manage Submissions", 				// 1 (#0) - author 
+		"Manage Reviews",					// 2 (#1) - reviewer
+		"Finalise Papers",					// 3 (#2) - chairman
+		"Configuration"						// 4 (#3) - chairman / admin
 	};
 	list.push_back(options[0]);
 	list.push_back(options[1]);
 	int end = level;
-	if (end > 3) { end = 3; }
+	if (end >= 3) { end = 4; }
 	for (int i = 0; i < end; ++i)
 	{
 		list.push_back(accessOptions[i]);
@@ -326,7 +338,7 @@ void UserController::mainMenu()
 	std::vector<std::string> fullOptions;
 	fillMainMenu(fullOptions);
 	std::ostringstream menuTitle;
-	menuTitle << "Main Menu - " << conference;
+	menuTitle << "Main Menu - " << conference << " (" << phase << ")\nWelcome " << username;
 	Menu accessMenu;
 	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
 	int option = 0;
@@ -351,6 +363,10 @@ void UserController::mainMenu()
 			{
 				this->reviews();
 			}
+			else if (fullOptions[option].find("Final") != std::string::npos)
+			{
+				this->finalise();
+			}
 			else if (fullOptions[option].find("Config") != std::string::npos)
 			{
 				this->configuration();
@@ -358,6 +374,51 @@ void UserController::mainMenu()
 		}
 	} while (accessMenu.notExited(option));
 	this->logOut();
+}
+
+void UserController::finalise()
+{
+	sf::Packet request, response;
+	std::vector<std::string> subs;
+	std::string protocol = "GET_SUBMISSIONS";
+	request << protocol << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	int listSize = 0;
+	response >> listSize;
+	
+	for (int i = 0; i < listSize; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		subs.push_back(tmp);
+	}
+	subs.push_back("Back");
+	
+	Menu finaliseMenu;
+	finaliseMenu.setOptions("Main Menu > Finalise submissions", &subs[0], subs.size());
+	int option, backOption = (int)(subs.size()-1);
+	do
+	{
+		option = finaliseMenu.doMenu();
+		if (option != -1 && option != backOption)
+		{
+			prepareFinalReview(subs[option]);	
+		}
+	} while (finaliseMenu.notExited(option));
+}
+
+void UserController::prepareFinalReview(const std::string &paper)
+{
+	sf::Packet request, response;
+	std::string protocol = "REVIEW_LIST";
+	request << protocol << conference << paper;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	std::vector<std::string> list;
 }
 
 void UserController::logOut()
@@ -443,10 +504,10 @@ bool UserController::createConference()
 			case 5:
 				do
 				{
-				    std::cout << "Enter reviewer name: ";
+				    std::cout << "Enter reviewer username: ";
 				    getline(std::cin, buffer);
 				    tmpConf.addReviewer(buffer);
-				    Menu::eraseLine(buffer + "Enter reviewer name: ");
+				    Menu::eraseLine(buffer + "Enter reviewer username: ");
 				    
 				    std::cout << "Do you want to add another reviewer? (y/n): ";
 				    getline(std::cin, buffer);
@@ -550,6 +611,13 @@ void UserController::changePassword()
 
 void UserController::submitPaper()
 {
+	if (phase != "Submission") 
+	{
+		std::cout << "Error: Submissions are closed";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Error: Submissions are closed");
+		return;
+	}
 	sf::Packet request, response;
 	std::string protocol = "SUBMIT_PAPER";
 	bool exists;
@@ -751,10 +819,44 @@ void UserController::bidPaper()
 		socket.send(request);
 	}
 }
+void UserController::getAllocations(std::vector<std::string> &list)
+{
+	// send request to server to view submissions
+	sf::Packet request, response;
+	std::string protocol = "GET_ALLOCATIONS";
+	request << protocol << username << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	int subSize = 0;
+	list.clear();
+	list.reserve(subSize);
+	response >> subSize;
+	for (int i = 0; i < subSize; ++i)
+	{
+		std::string tmpTitle;
+		response >> tmpTitle;
+		list.push_back(tmpTitle);
+	}
+}
 void UserController::submitReview()
 {
-	sf::Packet request;
-	// FILL IN CODE
+	// send request to server to view submissions
+	sf::Packet request, response;
+	std::vector<std::string> subs;
+	getAllocations(subs);
+	subs.push_back("Cancel");
+
+	// select submission	
+	Menu submit;
+	submit.setOptions("Reviews > Submit review", &subs[0], subs.size());
+	int option, cancelOption = (int)(subs.size()-1);
+	option = submit.doMenu();
+	if (option != -1 && option != cancelOption)
+	{
+		// use a form to enter in a review about this paper
+	}
 }
 
 bool UserController::confirmMenu(const std::string &msg)
@@ -792,7 +894,7 @@ void UserController::configuration()
     		// advance to next phase
     		case 1:
     			// confirm choice with user
-    			if (confirmMenu("Are you sure?"))
+    			if (confirmMenu("Advance to next phase?"))
     			{
     				this->advancePhase();
     				// get next phase by request
@@ -800,7 +902,22 @@ void UserController::configuration()
 					configurationMenuOptions[0] = "Current Phase: " + phase;
     			}
                 break;
+            // add reviewers
             case 2:
+            	do
+            	{
+            		std::string tmpReviewer;
+            		std::cout << "Enter reviewer name: ";
+            		getline(std::cin, tmpReviewer);
+            		Menu::eraseLine("Enter reviewer name: " + tmpReviewer);
+            		
+            		if (!addReviewer(tmpReviewer))
+            		{
+            			std::cout << "Error: Could not add reviewer to conference.";
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine("Error: Could not add reviewer to conference.");
+            		}
+            	} while (confirmMenu("Add more reviewers?"));
                 break;
             case 3:
                 break;
@@ -812,6 +929,18 @@ void UserController::configuration()
             	break;
     	}
     } while (configurationMenu.notExited(option));
+}
+
+bool UserController::addReviewer(const std::string &reviewer)
+{
+	sf::Packet request, response;
+	std::string protocol = "ADD_REVIEWER";
+	bool result = false;
+	request << protocol << username << conference << reviewer;
+	socket.send(request);
+	socket.receive(response);
+	response >> result;
+	return result;
 }
 
 void UserController::getPhase()
@@ -834,14 +963,27 @@ void UserController::advancePhase()
 
 void UserController::discussion()
 {
-    std::cout << "Main Menu > Discussions" << std::endl << std::endl;
+	// send request to server to view submissions
+	std::vector<std::string> subs;
+	getAllocations(subs);
+	subs.push_back("Back");
 
-        // send request to server to view submissions
-        // print list of submissions
-        // select submission
-        // print comments about submission
-        // enter comment
-        // pack comment and send to server to add to comments
+	// select submission	
+	Menu discuss;
+	discuss.setOptions("Reviews > Discussions", &subs[0], subs.size());
+	int option, backOption = subs.size()-1;
+	std::string subTitle;
+	option = discuss.doMenu();
+	if (option != -1 && option != backOption)
+	{
+		subTitle = subs[option];
+		
+		// print comments about submission
+		
+		// enter comment
+		
+		// pack comment and send to server to add to comments
+	}
 }
 
 void UserController::notifications()

@@ -55,7 +55,7 @@ namespace text
 		 Effect eft = Effect_None, Background bkg = Bkg_None);
 };
 
-#define MENU_BAR_DEFAULT_WIDTH 36
+#define MENU_BAR_DEFAULT_WIDTH 52
 
 class Menu
 {
