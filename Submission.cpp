@@ -164,10 +164,20 @@ void Submission::submit()
 void Submission::view()
 {    
     std::cout << "Title: " << title << std::endl;
-    std::cout << "Authors: ";
+    std::cout << "Authors: " << std::endl;
     for(int i = 0; i < (int)authors.size(); i++)
-        std::cout << authors[i].firstname << " " << authors[i].surname << ", ";
-    std::cout << std::endl << "Description: " << description << std::endl;
+        std::cout << authors[i].firstname << " " << authors[i].surname << std::endl;
+    std::cout << "Description: " << description;
+    std::cin.ignore(1, '\n');
+    
+    // erase display
+    Menu::eraseLine("Description: " + description);
+    for (int e = (int)(authors.size()-1); e >= 0; e--)
+    {
+    	Menu::eraseLine(authors[e].firstname + " " + authors[e].surname);
+    }
+    Menu::eraseLine("Authors: ");
+    Menu::eraseLine("Title: " + title);
 }
 
 void Submission::withdraw()
