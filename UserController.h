@@ -21,7 +21,6 @@ class UserController
 {
     public:
         UserController();
-        void createConference();
         void account();
         void submissions();
         void reviews();
@@ -48,6 +47,7 @@ class UserController
         void loginAccount();
         void registerAccount();
        	bool pickConference();
+       	bool createConference();
         void getConferenceAccess();
         void submitPaper();
         void viewSubmissions();

@@ -12,12 +12,6 @@ void sendLog(string details)
 
 #include "UserController.h"
 
-int main ()
-{
-	UserController uc;
-	uc.run();
-}
-
 UserController::UserController()
 {
     
@@ -130,16 +124,25 @@ bool UserController::pickConference()
 		return false;
 	}
 	int pick = 0;
+	int lastOption = (conferences.size()-1);
 	Menu pickMenu;
 	pickMenu.setOptions("Pick a conference:", &conferences[0], conferences.size());
 	pickMenu.disableBackButton();
-	pick = pickMenu.doMenu();
+	bool created = false;
 	
-	if (isAdmin && pick == (int)(conferences.size()-1))
+	do
 	{
-		this->createConference();
-		return true;
-	}
+		// if the user picked to create conference but then cancelled, they should end up back here
+		pick = pickMenu.doMenu();
+		if (isAdmin && pick == lastOption)
+		{
+			created = this->createConference();
+			if (created)
+			{
+				return created;		
+			}
+		}
+	} while (isAdmin && pick == lastOption);
 	this->conference = conferences[pick];
 	this->getConferenceAccess();
 	return true;
@@ -339,8 +342,9 @@ void UserController::logOut()
 	socket.send(request);
 }
 
-void UserController::createConference()
+bool UserController::createConference()
 {
+	bool created = false;
 	std::string formOptions[] = {
 		"Name: ",
 		"Date: ",
@@ -434,11 +438,17 @@ void UserController::createConference()
 				else if(sendCreatedConference(tmpConf))
 				{
 					option = -1;
+					created = true;
 					conferenceForm.clear();
 				}
 			break;
+			// cancel conference creation
+			case 7:
+				created = false;
+			break;
 		}
 	} while (conferenceForm.notExited(option));
+	return created;
 }
 
 bool UserController::sendCreatedConference(const Conference &conf)
