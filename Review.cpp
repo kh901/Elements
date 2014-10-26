@@ -39,7 +39,27 @@ Review & Review::operator=(const Review &other)
 	presentation = other.presentation;
 	technicalQuality = other.technicalQuality;
 	evaluation = other.evaluation;
+	conference = other.conference;
 	return *this;
+}
+
+void Review::generateReviewID()
+{
+	std::ostringstream os;
+	srand(time(NULL));
+	for (int i = 0; i < REVIEW_MAX_ID_LEN; ++i)
+	{
+		if (i != 4 && i != 5)
+		{
+			// random digits
+			os << rand()%10;
+		}
+		else
+		{
+			os << ':';
+		}
+	}
+	reviewID = os.str();
 }
 
 void Review::setReviewID(const std::string &aReviewID)
@@ -134,6 +154,15 @@ void Review::setEvaluation(int &aEval)
 	evaluation = aEval;
 }
 
+void Review::setConference(const std::string &conf)
+{
+	conference = conf;
+}
+std::string Review::getConference()
+{
+	return conference;
+}
+
 std::string Review::getReviewID()
 {
 	return reviewID;
@@ -172,6 +201,10 @@ std::string Review::getBestPaper()
 std::string Review::getRemarks()
 {
 	return remarks;
+}
+std::string Review::getPCMember()
+{
+	return pcMember;
 }
 
 int Review::getOverallEvaluation()
@@ -243,6 +276,7 @@ void Review::writeFile(std::ofstream &ofs) const
 	appendString(ofs, this->shortPaper);
 	appendString(ofs, this->bestPaper);
 	appendString(ofs, this->remarks);
+	appendString(ofs, this->conference);
 	appendData<int>(ofs, this->overallEvaluation);
 	appendData<int>(ofs, this->reviewerConfidence);
 	appendData<int>(ofs, this->relevance);
@@ -266,6 +300,7 @@ void Review::readFile(std::ifstream &ifs)
 	readString(ifs, this->shortPaper);
 	readString(ifs, this->bestPaper);
 	readString(ifs, this->remarks);
+	readString(ifs, this->conference);
 	readData<int>(ifs, this->overallEvaluation);
 	readData<int>(ifs, this->reviewerConfidence);
 	readData<int>(ifs, this->relevance);
@@ -285,6 +320,7 @@ sf::Packet & operator<<(sf::Packet &packet, const Review &rev)
 	packet << rev.relevance << rev.originality;
 	packet << rev.significance << rev.presentation;
 	packet << rev.technicalQuality << rev.evaluation;
+	packet << rev.conference;
 	return packet;
 }
 sf::Packet & operator>>(sf::Packet &packet, Review &rev)
@@ -297,5 +333,6 @@ sf::Packet & operator>>(sf::Packet &packet, Review &rev)
 	packet >> rev.relevance >> rev.originality;
 	packet >> rev.significance >> rev.presentation;
 	packet >> rev.technicalQuality >> rev.evaluation;
+	packet >> rev.conference;
 	return packet;
 }

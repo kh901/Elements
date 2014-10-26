@@ -1,7 +1,14 @@
+#ifndef REVIEW_H
+#define REVIEW_H
+
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include <string>
 #include "File.h"
 #include <SFML/Network.hpp>
+
+#define REVIEW_MAX_ID_LEN 10
 
 class Review : public FileIO
 {
@@ -10,11 +17,13 @@ class Review : public FileIO
 		Review(const Review &);
 		Review & operator=(const Review &);
 		
+		void generateReviewID();
 		void setReviewID(const std::string&);
 		std::string getReviewID();
 		void setTitle(const std::string&);
 		std::string getTitle();
 		void setPCMember(const std::string&);
+		std::string getPCMember();
 		void setReviewer(const std::string&, const std::string&, const std::string&);
 		std::string getReviewerFirst();
 		std::string getReviewerLast();
@@ -31,6 +40,8 @@ class Review : public FileIO
 		std::string getBestPaper();
 		void setRemarks(const std::string&);
 		std::string getRemarks();
+		void setConference(const std::string &);
+		std::string getConference();
 
 		void setOverallEvaluation(int&);
 		int getOverallEvaluation();
@@ -54,6 +65,7 @@ class Review : public FileIO
 		void readFile(std::ifstream &);
 	private:
 		std::string reviewID;
+		std::string conference;
 		std::string title;
 		std::string pcMember;
 		std::string strengths;
@@ -77,3 +89,4 @@ class Review : public FileIO
 		friend sf::Packet & operator<<(sf::Packet &packet, const Review &);
 		friend sf::Packet & operator>>(sf::Packet &packet, Review &);
 };
+#endif
