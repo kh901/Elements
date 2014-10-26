@@ -8,7 +8,6 @@
 #include <string>
 #include "File.h"
 #include <SFML/Network.hpp>
-#include <sstream>
 
 #define REVIEW_MAX_ID_LEN 10
 
