@@ -147,7 +147,7 @@ int ServerController::checkConference(std::string conference)
 {
 	for (int i = 0; i < (int)conferences.size(); i++)
 	{
-		if (conferences[i].getName == conference)
+		if (conferences[i].getName() == conference)
 		{
 			return i;
 		}
@@ -511,7 +511,7 @@ void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (confIndex != -1)
 	{
-		if (conference[confIndex].getCurrentPhase == "Allocation")
+		if (conferences[confIndex].getCurrentPhase() == "Allocation")
 		{
 			for (int i = 0; i < (int)submissions.size(); i++)
 			{
