@@ -2,6 +2,7 @@
 #define REVIEW_H
 
 #include <iostream>
+#include <sstream>
 #include <cstdlib>
 #include <ctime>
 #include <string>
