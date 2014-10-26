@@ -81,7 +81,6 @@ std::string Account::generateId()
 			os << ':';
 		}
 	}
-	std::cout << "Gen id:" << os.str() << std::endl;
 	return os.str();
 }
 void Account::startSession()
