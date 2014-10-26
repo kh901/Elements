@@ -17,6 +17,8 @@ Menu::Menu()
 	selectColour = text::Colour_Green;
 	barWidth = MENU_BAR_DEFAULT_WIDTH;
 	fillBar();
+	minVal = MENU_VALUES_MIN;
+	maxVal = MENU_VALUES_MAX;
 }
 Menu::~Menu()
 {
@@ -187,7 +189,7 @@ bool Menu::processInput(int &option)
 			case LEFTKEY:	//Reduce value
 				if (values)
 				{
-					if (values[option] > 0)
+					if (values[option] > minVal)
 					{ values[option]--; }
 				}
 			break;
@@ -195,7 +197,7 @@ bool Menu::processInput(int &option)
 			case RIGHTKEY:	//Increase value
 				if (values)
 				{
-					if (values[option] < 10)		// Todo: change to actual max value 
+					if (values[option] < maxVal)		// Todo: change to actual max value 
 					{ values[option]++; }
 				}
 			break;
@@ -211,6 +213,11 @@ bool Menu::processInput(int &option)
 		}
 	}
 	return false;
+}
+void Menu::setValueBounds(const int aMin, const int aMax)
+{
+	minVal = aMin;
+	maxVal = aMax;
 }
 void Menu::displayOption(const int i)
 {
@@ -431,32 +438,7 @@ void Menu::clearDisplay()
 	*/
 
 /*
-using namespace std;
 
-int main ()
-{
-	ostringstream buf;
-	int bufSize = 0;
-
-	//string title = "Title";
-	//string opts[3] = {"Option 1", "Option 2", "Option 3"};
-	//string desc[3] = {"Describe 1", "Describe 2", "Describe 3"};
-	//int val[3] = {1, 2, 3};
-
-	//Clear and reset cursor
-	cout << "\033[2J";
-	cout << "\x1B[1;1f";
-
-	
-	
-	string menuOptions[6] = {
-		"MY ACCOUNT",
-		"PAPER SUBMISSIONS",
-		"NOTIFICATIONS", 
-		"OPTIONS",
-		"REVIEW PAPERS",
-		"LOG OUT"
-	};
 	string menuDesc[6] = {
 		"View information about your account.", 
 		"Manage paper submissions.", 
@@ -465,38 +447,7 @@ int main ()
 		"Manage reviews for assigned papers.",
 		"Log out of the system."
 	};
-	
-	string notifyOpts [2] = {
-		"VIEW NOTIFICATIONS",
-		"BACK"
-	};
-	
-	string * testNotifications = NULL;
-	testNotifications = new string[20];
-	ostringstream os;
-	for (int i = 0; i < 20; ++i)
-	{
-		os.str("");
-		os << "Test " << i+1;
-		testNotifications[i] = os.str();
-	}
-	
-	Menu viewNotifyMenu;
-	viewNotifyMenu.setOptions("Notifications > View", testNotifications, 20);
-	viewNotifyMenu.setScrolling();
-	viewNotifyMenu.setVisibleNum(5);
-	
-	Menu notifyMenu;
-	notifyMenu.setOptions("Main Menu > Notifications", notifyOpts, 2);
-	notifyMenu.setScrolling();
-	
-	Menu mainMenu;
-	mainMenu.setOptions("Main Menu", menuOptions, 6);
-	mainMenu.setDescriptions(menuDesc);
-	//mainMenu.setScrolling();
-	mainMenu.setPaged();  
-	mainMenu.setVisibleNum(4);
-	
+
 */
 
 std::string text::styleString(const std::string & str, text::Colour col, text::Effect eft, text::Background bkg)

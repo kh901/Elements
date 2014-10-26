@@ -56,6 +56,8 @@ namespace text
 };
 
 #define MENU_BAR_DEFAULT_WIDTH 52
+#define MENU_VALUES_MAX 10
+#define MENU_VALUES_MIN 0
 
 class Menu
 {
@@ -77,6 +79,7 @@ class Menu
 		void setLastAsChoice();
 		void setSelectColour(const text::Colour);
 		void setBarWidth(const int);
+		void setValueBounds(const int, const int);
 		static void eraseLine(const std::string &);
         static void eraseLine(int);
         static void clearDisplay();
@@ -95,6 +98,9 @@ class Menu
 		std::string * descriptions;
 		int * values;
 		int option;
+		
+		int minVal;
+		int maxVal;
 		 
 		bool disableBack;
 		bool doesLastReturn;
