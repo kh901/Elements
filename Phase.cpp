@@ -39,8 +39,8 @@ void Phase::advancePhase()
 	if (phaseID < MAX_PHASE_NUM)
 	{
     	phaseID++;
+    	currentPhase = phases[phaseID];
     }
-    currentPhase = phases[phaseID];
 }
 
 void Phase::writeFile(std::ofstream &ofs) const
