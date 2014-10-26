@@ -30,6 +30,7 @@ void Phase::setCurrentId(const int val)
 	if (val >= 0 && val < MAX_PHASE_NUM)
 	{
 		phaseID = val;
+		currentPhase = phases[phaseID];
 	}
 }
 
