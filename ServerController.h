@@ -26,8 +26,6 @@ class ServerController
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
 		std::vector<std::string> deadlineSubmissions;
-		bool deadlineSet;
-		time_t deadline;
 		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
@@ -46,6 +44,8 @@ class ServerController
 		void getNotifications(sf::Packet&, sf::TcpSocket&);
 		void advancePhase(sf::Packet&, sf::TcpSocket&);
 		void bidList(sf::Packet&, sf::TcpSocket&);
+		void getConferenceSubs(sf::Packet&, sf::TcpSocket&);
+		void getReviewList(sf::Packet&, sf::TcpSocket&);
 		
 		void addNotification(const std::string &user, const std::string &str);
 		void clearNotifications(const std::string &user);

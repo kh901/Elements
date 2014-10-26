@@ -7,4 +7,5 @@ g++ Phase.cpp -c
 g++ Database.cpp -c
 g++ common.cpp -c
 g++ Menu.cpp -c
-g++ -o servercontroller ServerController.o Menu.o Account.o Submission.o Phase.o File.o Database.o common.o Conference.o -lsfml-network -lsfml-system -Wall
+g++ server_main.cpp -c
+g++ -o servercontroller server_main.o ServerController.o Menu.o Account.o Submission.o Phase.o File.o Database.o common.o Conference.o -lsfml-network -lsfml-system -Wall

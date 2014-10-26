@@ -1,12 +1,5 @@
 #include "ServerController.h"
 
-int main()
-{
-	ServerController servercontroller;
-	servercontroller.run();
-	return 0;
-}
-
 ServerController::ServerController()
 {
 
@@ -94,6 +87,12 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	}
 	std::cout << "User is at least an author" << std::endl;
 	
+	// check conference is in submission phase
+	if (conferences[confIndex].getCurrentPhase() != "Submission")
+	{
+		return;		// ignore request if conference is not accepting submissions
+	}
+	
 	// check that the paper does not already exist
 	if (checkSubmission(title, conference) == -1)
 	{
@@ -119,7 +118,6 @@ void ServerController::run()
 	loadFalseAccounts();
 	//loadFalseSubmissions();
 	loadFalseConferences();
-	deadlineSet = false;
 	
 	sf::TcpListener listener;
 	
@@ -129,12 +127,14 @@ void ServerController::run()
 	selector.add(listener);
 	
 	for(;;){
+		/*
 		time_t current = getTimeValue();
 		//check if current time is past deadline
 		if (current > deadline)
 		{
 			autoAllocate();
 		}
+		*/
 		
 		if (selector.wait()){
 			// Test the listener
@@ -212,6 +212,8 @@ void ServerController::loadFalseAccounts(){
 	reviewer.setFirstName("Jonathan");
 	reviewer.setLastName("Yip");
 	reviewer.setUniversity("Yuh ooh dibs");
+	reviewer.addKeyword("lel");
+	reviewer.addKeyword("top");
 	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
 	addNotification("Jonathan", "Hai, u da one");
 	addNotification("Jonathan", "oh no, you get the second?");
@@ -225,6 +227,7 @@ void ServerController::loadFalseAccounts(){
 	admin.setLastName("Haavisto");
 	admin.setSystemAdmin();
 	admin.setUniversity("Yah or debs");
+	admin.addKeyword("boop");
 	admin.addAccess("AIDS conference", Account::Access_Admin);
 		
 	accounts.push_back(author);
@@ -440,10 +443,46 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="GET_ALLOCATIONS"){
 		getAllocations(packet, client);
 	}
+	else if(protocol=="CONFERENCE_SUBMISSIONS"){
+		getConferenceSubs(packet, client);
+	}
+	else if(protocol=="REVIEW_LIST"){
+		getReviewList(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
 }
+
+void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conf;
+	packet >> conf;
+	
+	// add all matching submissions with this conference name
+	std::vector<std::string> results;
+	std::vector<Submission>::iterator it;
+	for (it = submissions.begin(); it != submissions.end(); ++it)
+	{
+		if (it->getConference() == conf)
+		{
+			results.push_back(it->getTitle());
+		}
+	}
+	
+	// pack into the response packet
+	response << (int)results.size();
+	for (int i = 0; i < (int)results.size(); ++i)
+	{
+		response << results[i];
+	}	
+	client.send(response);
+}
+void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client)
+{
+	
+}		
 
 void ServerController::getAllocations(sf::Packet &packet, sf::TcpSocket &client)
 {
@@ -576,9 +615,11 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	// check that they have admin rights to the conference
 	Account::AccessLevel access = accounts[findIndex].getAccess(conference);
 	
-	if (conferences[confIndex].getCurrentPhase() == "Submission")
+	if (conferences[confIndex].getCurrentPhase() == "Allocation")
 	{
+		std::cout << "Semi auto allocation for conference " << conference << std::endl;
 		allocate(conference);
+		std::cout << "Finished allocation" << std::endl;
 	}
 	
 	if (access == Account::Access_Admin)
@@ -598,6 +639,10 @@ void ServerController::allocate(const std::string &conference)
 	bool verdict = false;
 	
 	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
 	
 	for (int i = 0; i < (int)submissions.size(); i++)
 	{
@@ -608,18 +653,15 @@ void ServerController::allocate(const std::string &conference)
 			spotsLeft = maxReviewer - reviewerCount;
 			if (spotsLeft != 0)
 			{
-				for (int j = 0; j < (int)accounts.size() || verdict == true || spotsLeft > 0; j++)
+				for (int j = 0; j < (int)accounts.size(); j++)
 				{
 					verdict = accounts[j].matchKeywordsForSubmission(submissions[i]);
-					if (verdict == true)
+					if (verdict == true && spotsLeft > 0)
 					{
 						username = accounts[j].getUsername();
-						if (submissions[i].hasReviewer(username))
+						if (!submissions[i].hasReviewer(username))
 						{
-							verdict = false;
-						}
-						else
-						{
+							std::cout << "Allocated Reviewer " << username << " to Paper " << submissions[i].getTitle() << std::endl;
 							submissions[i].addReviewer(username);
 							spotsLeft--;
 						}

@@ -252,14 +252,14 @@ void Menu::displayScrollBar(const int option)
 {
 	Menu::buffer << "  ";
 	std::string scrollBar;
-	int barWidth = 24;
-	int barOptionPos = ((option+1) * barWidth)/optionNum;
+	int sBarWidth = barWidth - 4;
+	int barOptionPos = ((option+1) * sBarWidth)/optionNum;
     for(int i = 0; i < barOptionPos-2; ++i)
     {
         scrollBar += "-";
     }
     scrollBar += "||";
-    int barOptionFill = ((optionNum-(option+1)) * barWidth)/optionNum;
+    int barOptionFill = ((optionNum-(option+1)) * sBarWidth)/optionNum;
     for(int j = 0; j < barOptionFill; ++j)
     {
         scrollBar += "-";
