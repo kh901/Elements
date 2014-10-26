@@ -87,8 +87,6 @@ class Account : public FileIO
 	protected:
 		std::string username;
 		std::string password;			// user's "password" encrypted with our oneway encryption
-										// 8 character with colon separator - Theoretical maximum ids of 218340105584896
-										// a-z, A-Z, 0-9 as characters 
 		std::string firstName;
 		std::string lastName;
 		std::string email;

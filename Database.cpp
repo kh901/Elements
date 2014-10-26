@@ -55,15 +55,21 @@ void Database::load()
 
 void Database::loadAccounts()
 {
+	std::cout << "Loading accounts...";
 	readFileClassVector<Account>(DATABASE_ACCOUNTS_FILENAME, accounts);
+	std::cout << "Done" << std::endl;
 }
 void Database::loadConferences()
 {
+	std::cout << "Loading conferences...";
 	readFileClassVector<Conference>(DATABASE_CONFERENCES_FILENAME, conferences);
+	std::cout << "Done" << std::endl;
 }
 void Database::loadSubmissions()
 {
+	std::cout << "Loading submissions...";
 	readFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
+	std::cout << "Done" << std::endl;
 }
 
 void Database::addAccount(const Account &acc)
@@ -191,12 +197,15 @@ void Database::editSubmission(Submission &sub)
 
 void Database::setupFiles()
 {
+	// log set up
+	addLog("Initialised database.");
+	std::cout << "First time set up." << std::endl;
 	// create default admin account
 	Account admin;
 	admin.setUsername(SYSTEM_ADMIN_DEFAULT_USERNAME);
 	admin.setPassword(SYSTEM_ADMIN_DEFAULT_PASSWORD);
 	admin.setSystemAdmin();
-	accounts.push_back(admin);
+	addAccount(admin);
 	
 	// create the files
 	save();
@@ -238,6 +247,8 @@ bool Database::checkFile(const std::string &filename)
 
 void Database::addLog(const std::string &aEvent)
 {
+	std::string timestamp = getTimestamp();
+	std::cout << "Logging event - " << timestamp << ": " << aEvent << std::endl;
 	std::ofstream fout;
 	std::ostringstream fullFilename;
 	fullFilename << DATABASE_LOGS_DIRECTORY << logFilename;
@@ -254,7 +265,7 @@ void Database::addLog(const std::string &aEvent)
 		create.close();
 		fout.open(fullFilename.str().c_str(), std::ios::app);
 	}
-	fout << getTimestamp() << ": " << aEvent << std::endl;
+	fout << timestamp << ": " << aEvent << std::endl;
 	fout.close();
 }
 void Database::getRecentLog(std::vector<std::string> &list)

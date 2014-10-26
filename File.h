@@ -32,16 +32,16 @@ void appendStringKeyMap(std::ofstream &ofs, const std::map<std::string, U> &mapd
 	int size = mapdata.size();
 	ofs.write((char*)&size, sizeof(int));
 	
-	std::cout << "Size of map: " << size << std::endl;
+	//std::cout << "Size of map: " << size << std::endl;
 	
 	// write map data
 	typename std::map<std::string, U>::const_iterator it;
 	for (it = mapdata.begin(); it != mapdata.end(); ++it)
 	{
-		std::cout << "Write key: " << it->first << std::endl;
+		//std::cout << "Write key: " << it->first << std::endl;
 		// write the key
 		appendString(ofs, it->first);
-		std::cout << "Write value: " << it->second << std::endl;
+		//std::cout << "Write value: " << it->second << std::endl;
 		// write the value
 		ofs.write((char*)&(it->second), sizeof(U));
 	}
@@ -54,16 +54,16 @@ void appendMap(std::ofstream &ofs, const std::map<H, J> &mapdata)
 	int size = mapdata.size();
 	ofs.write((char*)&size, sizeof(int));
 	
-	std::cout << "Size of map: " << size << std::endl;
+	//std::cout << "Size of map: " << size << std::endl;
 	
 	// write map data
 	typename std::map<H, J>::const_iterator it;
 	for (it = mapdata.begin(); it != mapdata.end(); ++it)
 	{
-		std::cout << "Write key: " << it->first << std::endl;
+		//std::cout << "Write key: " << it->first << std::endl;
 		// write the key
 		ofs.write((char*)&(it->first), sizeof(H));
-		std::cout << "Write value: " << it->second << std::endl;
+		//std::cout << "Write value: " << it->second << std::endl;
 		// write the value
 		ofs.write((char*)&(it->second), sizeof(J));
 	}

@@ -265,12 +265,12 @@ Account & Account::operator=(const Account &acc)
 
 void Account::writeFile(std::ofstream &ofs) const
 {
-	appendData<std::string>(ofs, this->username);
-	appendData<std::string>(ofs, this->password);
-	appendData<std::string>(ofs, this->firstName);
-	appendData<std::string>(ofs, this->lastName);
-	appendData<std::string>(ofs, this->email);
-	appendData<std::string>(ofs, this->university);
+	appendString(ofs, this->username);
+	appendString(ofs, this->password);
+	appendString(ofs, this->firstName);
+	appendString(ofs, this->lastName);
+	appendString(ofs, this->email);
+	appendString(ofs, this->university);
 	appendData<bool>(ofs, this->loggedIn);
 	appendData<AccountType>(ofs, this->accountType);
 	appendStringVector(ofs, this->keywords);
@@ -279,12 +279,12 @@ void Account::writeFile(std::ofstream &ofs) const
 }
 void Account::readFile(std::ifstream &ifs)
 {
-	readData<std::string>(ifs, this->username);
-	readData<std::string>(ifs, this->password);
-	readData<std::string>(ifs, this->firstName);
-	readData<std::string>(ifs, this->lastName);
-	readData<std::string>(ifs, this->email);
-	readData<std::string>(ifs, this->university);
+	readString(ifs, this->username);
+	readString(ifs, this->password);
+	readString(ifs, this->firstName);
+	readString(ifs, this->lastName);
+	readString(ifs, this->email);
+	readString(ifs, this->university);
 	readData<bool>(ifs, this->loggedIn);
 	readData<AccountType>(ifs, this->accountType);
 	readStringVector(ifs, this->keywords);
@@ -304,119 +304,4 @@ sf::Packet & operator>>(sf::Packet &packet, Account::AccessLevel &level)
 	level = static_cast<Account::AccessLevel>(tmp);
 	return packet;
 }
-
-/*
-using namespace std;
-
-int main ()
-{
-	//Clear and reset cursor
-	cout << "\033[2J";
-	cout << "\x1B[1;1f";
-
-	Account myAccount;
-	myAccount.setUsername("lol");
-	myAccount.setPassword("3server5me");
-	
-	//Clear and reset cursor
-	cout << "\033[2J";
-	
-	string accOpt[3] = {
-		"Login",
-		"Register",
-		"Exit"
-	}; 
-	
-	Menu accMenu;
-	accMenu.setOptions("Welcome", accOpt, 3);
-	accMenu.setShowControls();
-	
-	string loginOpt[4] = {
-		"Username: ",
-		"Password: ",
-		"Sign in",
-		"Cancel"
-	};
-	
-	Menu loginMenu;
-	loginMenu.setOptions("Welcome > Login", loginOpt, 4);
-	
-	int accRes = -2, loginRes = -2;
-	string tmpUser, tmpPass;
-	while (accMenu.notExited(accRes))
-	{
-		accRes = accMenu.doMenu();
-		switch(accRes)
-		{
-			// Logging in
-			case 0:
-				loginRes = -2;
-				while (loginMenu.notExited(loginRes))
-				{
-					loginRes = loginMenu.doMenu();
-					switch(loginRes)
-					{
-						// Enter username
-						case 0:
-							cout << "Enter username: ";
-							getline(cin, tmpUser);
-							loginOpt[0] = string("Username: ") + tmpUser;
-							cout << "\033[2J";
-						break;
-						// Enter password
-						case 1:
-						{
-							cout << "Enter password: ";
-							getline(cin, tmpPass);
-							string hidePass;
-							hidePass.append(tmpPass.length(), '*');
-							loginOpt[1] = string("Password: ") + hidePass;
-							cout << "\033[2J";
-						}
-						break;
-						case 2:
-							cout << "Signing you in...";
-							cin.ignore(1,'\n');
-							if (myAccount.matchUsername(tmpUser) && myAccount.matchPassword(tmpPass, true))
-							{
-								cout << "Success!" << endl;
-								cout << "Welcome, " << myAccount.getUsername() << endl;
-								cin.ignore(1,'\n');
-								loginRes = accRes = -1;
-							}
-							else
-							{
-								cout << "Failure!" << endl;
-								cin.ignore(1, '\n');
-							}
-							cout << "\033[2J";
-						break; 
-						case 3: case -1:
-						break;
-					}
-				}
-			break;
-			
-			// Registering a new account
-			case 1:
-			{
-				// put register menu here 
-				Account newAccount;
-				cin.ignore(1,'\n');
-				cout << "\033[2J";
-			}
-			break;
-			
-			// Exiting
-			case 2: case -1:
-			break;
-		}
-	}
-	
-	//Clear and reset cursor
-	cout << "\033[2J";
-	cout << "\x1B[1;1f";
-	
-}
-*/
 
