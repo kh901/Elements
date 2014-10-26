@@ -378,6 +378,14 @@ void UserController::mainMenu()
 
 void UserController::finalise()
 {
+	if (phase != "Finalising")
+	{
+		std::cout << "Error: The conference has not yet required finalising yet.";
+		std::cin.ignore(1, '\n');
+		Menu::eraseLine("Error: The conference has not yet required finalising yet.");
+		return;
+	}
+
 	sf::Packet request, response;
 	std::vector<std::string> subs;
 	std::string protocol = "CONFERENCE_SUBMISSIONS";
@@ -668,9 +676,12 @@ void UserController::viewSubmissions()
 			option = viewSubMenu.doMenu();
 			if (option != (int)(subList.size()-1) && option != -1)
 			{
+				/*
 				std::cout << "Viewing sub: " << subList[option];
 				std::cin.ignore(1, '\n');
 				viewSubMenu.eraseLine(subList[option] + "Viewing sub: ");
+				*/
+				detailSub(subList[option]);
 			}
 		} while (viewSubMenu.notExited(option));
 	}
@@ -680,6 +691,21 @@ void UserController::viewSubmissions()
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("No submissions!");
 	}
+}
+
+void UserController::detailSub(const std::string &title)
+{
+	sf::Packet request, response;
+	std::string protocol = "SUB_DETAIL";
+	request << protocol << conference << title;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	Submission aSub;
+	response >> aSub;
+	
+	aSub.view();
 }
 
 void UserController::submissions()

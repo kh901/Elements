@@ -449,9 +449,35 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if(protocol=="REVIEW_LIST"){
 		getReviewList(packet, client);
 	}
+	else if (protocol=="SUB_DETAIL"){
+		sendSubDetail(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::sendSubDetail(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conf, paperTitle;
+	packet >> conf >> paperTitle;
+	
+	int confIndex = checkConference(conf);
+	if (confIndex == -1)
+	{
+		return; 	// ignore request if conference is not found
+	}
+	
+	int subIndex = checkSubmission(paperTitle, conf);
+	if (subIndex == -1)
+	{
+		return;		// ignore request if paper is not found
+	}
+	
+	Submission result = submissions[subIndex]; 
+	response << result;
+	client.send(response);
 }
 
 void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &client)
@@ -544,6 +570,9 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 	
 	std::cout << "Bid list for Reviewer " << username << " in Conference " << conf << std::endl;
 	
+	std::string firstname = accounts[findIndex].getFirstName();
+	std::string lastname = accounts[findIndex].getLastName();
+	
 	std::vector<std::string> results;
 	for (int a = 0; a < (int)submissions.size(); ++a)
 	{
@@ -554,7 +583,8 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 			// check not already bid for paper and avoid conflicts of interest
 			if (!(submissions[a].hasReviewer(username)))
 			{
-				if (submissions[a].getUniversity() != accounts[findIndex].getUniversity())
+				if (submissions[a].getUniversity() != accounts[findIndex].getUniversity() && 
+						!submissions[a].isAuthorIncluded(firstname, lastname))
 				{
 					int numReviewers = submissions[a].getReviewerCount();
 					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
@@ -635,7 +665,7 @@ void ServerController::allocate(const std::string &conference)
 	int reviewerCount = 0;
 	int maxReviewer = 0;
 	int spotsLeft = 0;
-	std::string username;
+	std::string username, firstname, lastname;
 	bool verdict = false;
 	
 	int confIndex = checkConference(conference);
@@ -655,11 +685,13 @@ void ServerController::allocate(const std::string &conference)
 			{
 				for (int j = 0; j < (int)accounts.size(); j++)
 				{
+					firstname = accounts[j].getFirstName();
+					lastname = accounts[j].getLastName();
 					verdict = accounts[j].matchKeywordsForSubmission(submissions[i]);
 					if (verdict == true && spotsLeft > 0)
 					{
 						username = accounts[j].getUsername();
-						if (!submissions[i].hasReviewer(username))
+						if (!submissions[i].hasReviewer(username) && !submissions[i].isAuthorIncluded(firstname, lastname))
 						{
 							std::cout << "Allocated Reviewer " << username << " to Paper " << submissions[i].getTitle() << std::endl;
 							submissions[i].addReviewer(username);

@@ -48,6 +48,7 @@ class UserController
        	bool connect();
        	void finalise();
         
+        void detailSub(const std::string &);
         void prepareFinalReview(const std::string &);
         bool addReviewer(const std::string &);
         void getAllocations(std::vector<std::string> &);
