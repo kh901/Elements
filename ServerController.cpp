@@ -167,7 +167,7 @@ void ServerController::loadFalseConferences(){
 	Conference con, con2, con3;
 	
 	con.setName("AIDS conference");
-	con2.setName("Zombie Apocalypse preppers united");
+	con2.setName("Zombie apocalypse conference");
 	con3.setName("Alcoholics Anonymous");
 	
 	con.setDate("30/10/2014");
