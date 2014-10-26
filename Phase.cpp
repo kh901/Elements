@@ -1,6 +1,6 @@
 #include "Phase.h"
 
-std::string const  Phase::phases[] = {
+const std::string Phase::phases[] = {
     "Submission",
     "Allocation",
     "Reviewing",
@@ -36,7 +36,7 @@ void Phase::setCurrentId(const int val)
 
 void Phase::advancePhase()
 {
-	if (phaseID < MAX_PHASE_NUM)
+	if (phaseID < MAX_PHASE_NUM-1)
 	{
     	phaseID++;
     	currentPhase = phases[phaseID];
