@@ -108,7 +108,7 @@ class Menu
 		int barWidth;
 		std::string BAR;
 		
-		int getCmd();
+		static int getCmd();
 		void clearLastDisplay();
 		void fillBar();
 	protected:

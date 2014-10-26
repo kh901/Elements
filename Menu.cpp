@@ -119,8 +119,8 @@ void Menu::displayDescription(const int option)
 }
 bool Menu::processInput(int &option)
 {
-	static const int ENTERKEY = 10, UPKEY = 65, DOWNKEY = 66;
-	static const int LEFTKEY = 68, RIGHTKEY = 67;
+	static const int ENTERKEY = 10, UPKEY = 65 + 128, DOWNKEY = 66 + 128;
+	static const int LEFTKEY = 68 + 128, RIGHTKEY = 67 + 128;
 	static const int BACKSPACE = 8, DELETE = 127;
 	
 	int key = getCmd();
@@ -346,7 +346,7 @@ int Menu::getCmd()
   	if (ch == 27)	//If the character is a '^[', it's probably an arrow key
 	{
 		ch = getchar();
-		ch = getchar();
+		ch = getchar() + 128;
 	}	
 
 	//Reset terminal settings to old ones
