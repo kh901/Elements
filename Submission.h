@@ -57,6 +57,8 @@ class Submission : public FileIO
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
 		std::string getTitle() const;
+		void setConference(const std::string &);
+		std::string getConference() const;
 		Submission & operator=(const Submission &);
 		bool isAuthorIncluded(const std::string &, const std::string &);
 		// write and read this class to a binary file stream
@@ -67,6 +69,7 @@ class Submission : public FileIO
 		std::string filename;
 		std::string title;
 		std::string description;
+		std::string conference;
 		std::vector<Fullname> authors;
 		std::vector<std::string> keywords;
 		std::vector<Comment> comments;
