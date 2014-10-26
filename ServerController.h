@@ -52,6 +52,7 @@ class ServerController
 		void checkPhase(sf::Packet&, sf::TcpSocket&);
 		int checkConference(std::string);
 		void bidPaper(sf::Packet&, sf::TcpSocket&);
+		void notifyConference(const std::string &, const std::string &);
 };
 
 #endif

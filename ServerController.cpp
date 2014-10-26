@@ -509,6 +509,17 @@ void ServerController::getNotifications(sf::Packet &packet, sf::TcpSocket &clien
 	clearNotifications(username);
 }
 
+void ServerController::notifyConference(const std::string &conf, const std::string &msg)
+{
+	for (int i = 0; i < (int)accounts.size(); ++i)
+	{
+		if (accounts[i].hasAccess(conf))
+		{
+			this->addNotification(accounts[i].getUsername(), msg);
+		}
+	}
+}
+
 void ServerController::addNotification(const std::string &username, const std::string &str)
 {
 	notifications[username].push_back(str);
