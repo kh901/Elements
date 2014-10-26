@@ -3,6 +3,7 @@ Conference::Conference()
 {
 	maxReviewersPerPaper = CONFERENCE_DEFAULT_MAX_REVIEWERS_PER_PAPER;
 	maxPapersPerReviewer = CONFERENCE_DEFAULT_MAX_PAPERS_PER_REVIEWER;
+	deadline = getTimeValue();
 }
 Conference::Conference(const Conference &other)
 {
@@ -15,6 +16,7 @@ Conference::Conference(const Conference &other)
 	phase.setCurrentId(other.phase.getCurrentId());
 	maxReviewersPerPaper = other.maxReviewersPerPaper;
 	maxPapersPerReviewer = other.maxPapersPerReviewer;
+	deadline = other.deadline;
 }
 
 Conference & Conference::operator=(const Conference &other)
@@ -28,6 +30,7 @@ Conference & Conference::operator=(const Conference &other)
 	phase.setCurrentId(other.phase.getCurrentId());
 	maxReviewersPerPaper = other.maxReviewersPerPaper;
 	maxPapersPerReviewer = other.maxPapersPerReviewer;
+	deadline = other.deadline;
 	return *this;
 }
 
@@ -102,6 +105,17 @@ int Conference::getMaxPaperReviewers()
 {
 	return maxReviewersPerPaper;
 }
+void Conference::adjustDeadlineDays(const int num)
+{
+	if (num > 0)
+	{
+		deadline = getDaysAhead(deadline, num);
+	}
+}
+bool Conference::hasDeadlinePassed(const time_t cur)
+{
+	return (cur >= deadline);
+}
 
 void Conference::addReviewer(const std::string &aReviewer)
 {
@@ -142,6 +156,7 @@ void Conference::writeFile(std::ofstream &ofs) const
 	appendString(ofs, this->chairman);
 	appendData<int>(ofs, this->maxReviewersPerPaper);
 	appendData<int>(ofs, this->maxPapersPerReviewer);
+	appendData<time_t>(ofs, this->deadline);
 }
 
 void Conference::readFile(std::ifstream &ifs)
@@ -155,6 +170,7 @@ void Conference::readFile(std::ifstream &ifs)
 	readString(ifs, this->chairman);
 	readData<int>(ifs, this->maxReviewersPerPaper);
 	readData<int>(ifs, this->maxPapersPerReviewer);
+	readData<time_t>(ifs, this->deadline);
 }
 
 sf::Packet & operator<<(sf::Packet &packet, const Conference &conf)
@@ -176,6 +192,8 @@ sf::Packet & operator<<(sf::Packet &packet, const Conference &conf)
 	// send allocation parameters
 	packet << conf.maxReviewersPerPaper;
 	packet << conf.maxPapersPerReviewer;
+	sf::Int32 val = conf.deadline;
+	packet << val;
 	return packet;
 }
 sf::Packet & operator>>(sf::Packet &packet, Conference &conf)
@@ -207,5 +225,8 @@ sf::Packet & operator>>(sf::Packet &packet, Conference &conf)
 	// get allocation parameters
 	packet >> conf.maxReviewersPerPaper;
 	packet >> conf.maxPapersPerReviewer;
+	sf::Int32 val;
+	packet >> val;
+	conf.deadline = val;
 	return packet;
 }

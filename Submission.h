@@ -1,12 +1,14 @@
 #ifndef SUBMISSION_H
 #define SUBMISSION_H
 
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <SFML/Network.hpp>
 #include "File.h"
+#include "common.h"
 #include "Menu.h"
 
 class Comment : public FileIO
@@ -65,6 +67,9 @@ class Submission : public FileIO
 		bool hasReviewer(const std::string &);
 		int getReviewerCount() const;
 		bool hasKeyword(const std::string &) const;
+		
+		void adjustDeadlineDays(const int);
+        bool hasDeadlinePassed(const time_t);
 
 		void addComment(const std::string &, const std::string &);
 		void displayComments();
@@ -86,6 +91,8 @@ class Submission : public FileIO
 		std::vector<Fullname> authors;
 		std::vector<std::string> keywords;
 		std::vector<Comment> comments;
+		
+		time_t deadline;
 		
 		friend sf::Packet & operator<<(sf::Packet &packet, const Submission &);
 		friend sf::Packet & operator>>(sf::Packet &packet, Submission &);	

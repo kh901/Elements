@@ -4,6 +4,7 @@ Submission::Submission()
 {
     reviewed = false;
     status = "Pending";
+    deadline = getTimeValue();
 }
 
 Submission::Submission(const Submission &other)
@@ -19,6 +20,7 @@ Submission::Submission(const Submission &other)
 	status = other.status;
 	reviewers = other.reviewers;
 	uni = other.uni;
+	deadline = other.deadline;
 }
 Submission & Submission::operator=(const Submission &other)
 {
@@ -33,6 +35,7 @@ Submission & Submission::operator=(const Submission &other)
 	status = other.status;
 	reviewers = other.reviewers;
 	uni = other.uni;
+	deadline = other.deadline;
 	return *this;
 }
 
@@ -72,6 +75,18 @@ void Submission::setUniversity(const std::string &aUni)
 std::string Submission::getUniversity() const
 {
 	return uni;
+}
+
+void Submission::adjustDeadlineDays(const int num)
+{
+	if (num > 0)
+	{
+		deadline = getDaysAhead(deadline, num);
+	}
+}
+bool Submission::hasDeadlinePassed(const time_t cur)
+{
+	return (cur >= deadline);
 }
 
 bool Submission::isAuthorIncluded(const std::string &aFirst, const std::string &aLast){
@@ -213,6 +228,8 @@ sf::Packet & operator<<(sf::Packet &packet, const Submission &sub)
 {
 	packet << sub.reviewed << sub.filename << sub.title << sub.description;
 	packet << sub.conference << sub.status << sub.uni;
+	sf::Int32 val = sub.deadline;
+	packet << val;
 	packet << (int)sub.authors.size();
 	for (int i = 0; i < (int)sub.authors.size(); ++i)
 	{
@@ -243,6 +260,9 @@ sf::Packet & operator>>(sf::Packet &packet, Submission &sub)
 	
 	packet >> sub.reviewed >> sub.filename >> sub.title >> sub.description;
 	packet >> sub.conference >> sub.status >> sub.uni;
+	sf::Int32 val;
+	packet >> val;
+	sub.deadline = val;
 	int authorSize = 0;
 	packet >> authorSize;
 	for (int a = 0; a < authorSize; ++a)
@@ -287,6 +307,7 @@ void Submission::writeFile(std::ofstream &ofs) const
 	appendString(ofs, this->conference);
 	appendString(ofs, this->status);
 	appendString(ofs, this->uni);
+	appendData<time_t>(ofs, this->deadline);
 	appendClassVector<Fullname>(ofs, this->authors);
 	appendStringVector(ofs, this->keywords);
 	appendClassVector<Comment>(ofs, this->comments);
@@ -301,6 +322,7 @@ void Submission::readFile(std::ifstream &ifs)
 	readString(ifs, this->conference);
 	readString(ifs, this->status);
 	readString(ifs, this->uni);
+	readData<time_t>(ifs, this->deadline);
 	readClassVector<Fullname>(ifs, this->authors);
 	readStringVector(ifs, this->keywords);
 	readClassVector<Comment>(ifs, this->comments);	

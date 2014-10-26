@@ -14,6 +14,8 @@ std::string getDate();
 // gets current time as a time_t (long int)
 time_t getTimeValue();
 // gets a day later at 12 midday from given value
+time_t getDaysAhead(time_t, const int);
+// gets a day later at 12 midday from given value
 time_t getDayAhead(time_t);
 // gets a week later at 12 midday from given value 
 time_t getWeekAhead(time_t);

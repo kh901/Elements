@@ -1,10 +1,12 @@
 #include <string>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include "File.h"
 #include "Submission.h"
 #include "Phase.h"
+#include "common.h"
 #include <SFML/Network.hpp>
 
 #ifndef CONFERENCE_H
@@ -30,6 +32,8 @@ class Conference : public FileIO
         
         std::string getCurrentPhase();
         void advancePhase();
+        void adjustDeadlineDays(const int);
+        bool hasDeadlinePassed(const time_t);
         
         void setMaxReviewedPapers(const int);
         int getMaxReviewedPapers();
@@ -55,6 +59,8 @@ class Conference : public FileIO
 		std::vector<std::string> reviewers;
 		std::vector<std::string> subchairs;
 		std::string chairman;
+		
+		time_t deadline;
 		
 		// Conference settings
 		int maxReviewersPerPaper;

@@ -73,6 +73,19 @@ time_t getTimeValue()
 	return time(NULL);
 }
 
+time_t getDaysAhead(time_t cur, const int num)
+{
+	// add a number of days
+	static const long int DAY_TIME = 86400;
+	cur += (DAY_TIME * num);
+	// set the time to be 12 midday
+	struct tm * curTime = localtime(&cur);
+	curTime->tm_hour = 12;
+	curTime->tm_min = 0;
+	curTime->tm_sec = 0;
+	return mktime(curTime);
+}
+
 time_t getDayAhead(time_t cur)
 {
 	// add a day
