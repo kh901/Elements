@@ -57,7 +57,8 @@ class ServerController
 		int checkConference(std::string);
 		void bidPaper(sf::Packet&, sf::TcpSocket&);
 		void notifyConference(const std::string &, const std::string &);
-		void allocate();
+		void autoAllocate();
+		void allocate(const std::string &);
 };
 
 #endif

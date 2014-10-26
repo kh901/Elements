@@ -12,7 +12,7 @@ ServerController::ServerController()
 
 }
 
-void ServerController::allocate()
+void ServerController::autoAllocate()
 {
 
 	std::cout << "Allocating..." << std::endl;
@@ -130,13 +130,10 @@ void ServerController::run()
 	
 	for(;;){
 		time_t current = getTimeValue();
-		if (deadlineSet == true)
+		//check if current time is past deadline
+		if (current > deadline)
 		{
-			//check if current time is past deadline
-			if (current > deadline)
-			{
-				allocate();
-			}
+			autoAllocate();
 		}
 		
 		if (selector.wait()){
@@ -545,22 +542,55 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (conferences[confIndex].getCurrentPhase() == "Submission")
 	{
-		deadlineSet = true;
-		//set deadline up here
-		deadline = getDayAhead(getTimeValue());
-		//store submission title with deadline
-		for (int i = 0; i < (int)submissions.size(); i++)
-		{
-			if (submissions[i].getConference() == conferences[confIndex].getName())
-			{
-				deadlineSubmissions.push_back(submissions[i].getTitle());
-			}
-		}
+		allocate(conference);
 	}
 	
 	if (access == Account::Access_Admin)
 	{
+		std::cout << "Moving from " << conferences[confIndex].getCurrentPhase();
 		conferences[confIndex].advancePhase();
+		std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
+	}
+}
+
+void ServerController::allocate(const std::string &conference)
+{
+	int reviewerCount = 0;
+	int maxReviewer = 0;
+	int spotsLeft = 0;
+	std::string username;
+	bool verdict = false;
+	
+	int confIndex = checkConference(conference);
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			reviewerCount = submissions[i].getReviewerCount();
+			maxReviewer = conferences[confIndex].getMaxPaperReviewers();
+			spotsLeft = maxReviewer - reviewerCount;
+			if (spotsLeft != 0)
+			{
+				for (int j = 0; j < (int)accounts.size() || verdict == true || spotsLeft > 0; j++)
+				{
+					verdict = accounts[j].matchKeywordsForSubmission(submissions[i]);
+					if (verdict == true)
+					{
+						username = accounts[j].getUsername();
+						if (submissions[i].hasReviewer(username))
+						{
+							verdict = false;
+						}
+						else
+						{
+							submissions[i].addReviewer(username);
+							spotsLeft--;
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
