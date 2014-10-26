@@ -143,6 +143,18 @@ void ServerController::loadFalseAccounts(){
 	submissions.push_back(temp3);
 }*/
 
+int ServerController::checkConference(std::string conference)
+{
+	for (int i = 0; i < (int)conferences.size(); i++)
+	{
+		if (conferences[i].getName == conference)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 int ServerController::checkAccount(std::string username, std::string password){
 	for(int i=0;i<accounts.size();i++){
 		if(accounts[i].matchUsername(username))
@@ -257,6 +269,12 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	}
 	else if (protocol=="GET_NOTIFICATIONS"){
 		getNotifications(packet, client);
+	}
+	else if (protocol=="CHECK_PHASE"){
+		checkPhase(packet, client);
+	}
+	else if (protocol=="BID_PAPER"){
+		bidPaper(packet, client);
 	}
 	else if(protocol=="BYE"){
 		logoutUser(packet, client);
@@ -454,5 +472,57 @@ void ServerController::getConferences(sf::Packet &packet, sf::TcpSocket &socket)
 			list << results[i];
 		}
 		socket.send(list);
+	}
+}
+
+void ServerController::checkPhase(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username;
+	std::string conference;
+	std::string currentPhase;
+	sf::Packet response;
+	Account::AccessLevel level;
+	
+	packet >> username >> conference;
+	
+	int findIndex = checkAccount(username);
+	int confIndex = checkConference(conference);
+	
+	if (confIndex != -1)
+	{
+		level = accounts[findIndex].getAccess(conference);
+		currentPhase = conferences[confIndex].getCurrentPhase();
+	
+		response << level << currentPhase;
+		client.send(response);
+	}
+}
+
+void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username;
+	std::string conference;
+	std::string subTitle;
+	
+	packet >> username >> conference >> subTitle;
+	
+	int findIndex = checkAccount(username);
+	int confIndex = checkConference(conference);
+	
+	if (confIndex != -1)
+	{
+		if (conference[confIndex].getCurrentPhase == "Allocation")
+		{
+			for (int i = 0; i < (int)submissions.size(); i++)
+			{
+				if (conference == submissions[i].getConference())
+				{
+					if (subTitle == submissions[i].getTitle())
+					{
+						submissions[i].addReviewer(username);
+					}
+				}
+			}
+		}			
 	}
 }

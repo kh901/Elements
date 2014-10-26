@@ -45,6 +45,9 @@ class ServerController
 		
 		int checkAccount(std::string, std::string = "#USERNAMEONLY");//
 		bool conferenceExists(const std::string &);
+		void checkPhase(sf::Packet&, sf::TcpSocket&);
+		int checkConference(std::string);
+		void bidPaper(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif
