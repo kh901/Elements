@@ -109,7 +109,7 @@ void Menu::displayValue(const int i)
 {
 	if (values)
 	{
-		Menu::buffer << std::setw(18 - options[i].length()) << values[i];
+		Menu::buffer << std::setw(MENU_VALUES_OFFSET - options[i].length()) << values[i];
 	}
 }
 void Menu::displayDescription(const int option)
@@ -283,10 +283,17 @@ void Menu::displayPaged(const int option)
 }
 void Menu::displayControls()
 {
-	static char controlHint [] = "Controls: Up, Down - Cursor Movement\nEnter - Select Option\nBackspace - Return to previous menu";
 	if (showControls)
 	{
-		Menu::buffer << controlHint << std::endl;
+		Menu::buffer << "Controls:\n Up, Down Arrow - Cursor Movement\nEnter - Select Option" << std::endl;
+		if (values != NULL)
+		{
+			Menu::buffer << "Left, Right Arrow - Change values" << std::endl;
+		}
+		if (!disableBack)
+		{
+			Menu::buffer << "Backspace - Return to previous menu" << std::endl;
+		}
 	}
 }
 int Menu::doMenu()

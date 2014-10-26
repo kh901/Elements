@@ -58,6 +58,7 @@ namespace text
 #define MENU_BAR_DEFAULT_WIDTH 52
 #define MENU_VALUES_MAX 10
 #define MENU_VALUES_MIN 0
+#define MENU_VALUES_OFFSET 28
 
 class Menu
 {
