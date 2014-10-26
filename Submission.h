@@ -59,6 +59,9 @@ class Submission : public FileIO
 		void setConference(const std::string &);
 		std::string getConference() const;
 
+		void addReviewer(const std::string &);
+		int getReviewerCount();
+
 		void addComment(Account account);
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
@@ -74,6 +77,7 @@ class Submission : public FileIO
 		std::string title;
 		std::string description;
 		std::string conference;
+		std::vector<std::string> reviewers;
 		std::vector<Fullname> authors;
 		std::vector<std::string> keywords;
 		std::vector<Comment> comments;

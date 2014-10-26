@@ -17,6 +17,7 @@ Submission::Submission(const Submission &other)
 	comments = other.comments;
 	conference = other.conference;
 	status = other.status;
+	reviewers = other.reviewers;
 }
 Submission & Submission::operator=(const Submission &other)
 {
@@ -29,6 +30,7 @@ Submission & Submission::operator=(const Submission &other)
 	comments = other.comments;
 	conference = other.conference;
 	status = other.status;
+	reviewers = other.reviewers;
 	return *this;
 }
 
@@ -132,7 +134,16 @@ void Submission::withdraw()
     
     // function call to database to delete the file? maybe?
 
+
 }
+void Submission::addReviewer(const std::string &user)
+{
+	reviewers.push_back(user);
+}
+int Submission::getReviewerCount()
+{
+	return reviewers.size();
+}		
 
 void Submission::addAuthor(const std::string &first, const std::string &last)
 {
@@ -178,6 +189,11 @@ sf::Packet & operator<<(sf::Packet &packet, const Submission &sub)
 	{
 		packet << sub.comments[k].username << sub.comments[k].comment;
 	}
+	packet << (int)sub.reviewers.size();
+	for (int o = 0; o < (int)sub.reviewers.size(); ++o)
+	{
+		packet << sub.reviewers[o];
+	}
 	return packet;
 }
 sf::Packet & operator>>(sf::Packet &packet, Submission &sub)
@@ -212,6 +228,14 @@ sf::Packet & operator>>(sf::Packet &packet, Submission &sub)
 		packet >> tmpComment.username >> tmpComment.comment;
 		sub.comments.push_back(tmpComment);
 	}
+	int reviewersSize = 0;
+	packet >> reviewersSize;
+	for (int d = 0; d < reviewersSize; ++d)
+	{
+		std::string tmpReviewer;
+		packet >> tmpReviewer;
+		sub.reviewers.push_back(tmpReviewer);
+	}
 	return packet;
 }
 
@@ -226,6 +250,7 @@ void Submission::writeFile(std::ofstream &ofs) const
 	appendClassVector<Fullname>(ofs, this->authors);
 	appendStringVector(ofs, this->keywords);
 	appendClassVector<Comment>(ofs, this->comments);
+	appendStringVector(ofs, this->reviewers);
 }
 void Submission::readFile(std::ifstream &ifs)
 {
@@ -238,6 +263,7 @@ void Submission::readFile(std::ifstream &ifs)
 	readClassVector<Fullname>(ifs, this->authors);
 	readStringVector(ifs, this->keywords);
 	readClassVector<Comment>(ifs, this->comments);	
+	readStringVector(ifs, this->reviewers);
 }
 
 Comment::Comment(const Comment &other)
