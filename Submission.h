@@ -52,19 +52,23 @@ class Submission : public FileIO
 		void withdraw();
 
 		void setReviewed();
+		void accept();
+		void reject();
+		std::string getStatus() const;
+		std::string getTitle() const;
+		void setConference(const std::string &);
+		std::string getConference() const;
 
 		void addComment(Account account);
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
-		std::string getTitle() const;
-		void setConference(const std::string &);
-		std::string getConference() const;
 		Submission & operator=(const Submission &);
 		bool isAuthorIncluded(const std::string &, const std::string &);
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
 		void readFile(std::ifstream &);
     private:
+    	std::string status;
 		bool reviewed;
 		std::string filename;
 		std::string title;
