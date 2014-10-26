@@ -12,6 +12,60 @@ ServerController::ServerController()
 
 }
 
+void ServerController::allocate()
+{
+
+	std::cout << "Allocating..." << std::endl;
+	int numOfReviewers = 0;
+	int maxReviewers = 0;
+	int spotsLeft = 0;
+	bool verdict = false;
+	bool reviewerAlready = false;
+	std::string username;
+	for (int i = 0; i < (int)deadlineSubmissions.size(); i++)
+	{
+		for (int j = 0; j <(int)submissions.size(); j++)
+		{
+			if (deadlineSubmissions[i] == submissions[j].getTitle())
+			{
+				numOfReviewers = submissions[j].getReviewerCount();
+				for (int k = 0; k < (int)conferences.size(); k++)
+				{
+					if (submissions[j].getConference() == conferences[k].getName())
+					{
+						maxReviewers = conferences[k].getMaxPaperReviewers();
+					}
+				}
+				spotsLeft = maxReviewers - numOfReviewers;
+				if (spotsLeft == 0)
+				{
+					deadlineSubmissions.erase(deadlineSubmissions.begin()+i);
+				}
+				else
+				{
+					for (int k = 0; k < (int)accounts.size() || verdict == true || spotsLeft > 0; k++)
+					{
+						verdict = accounts[k].matchKeywordsForSubmission(submissions[j]);
+						if (verdict == true)
+						{
+							username = accounts[k].getUsername();
+							if (submissions[j].hasReviewer(username))
+							{
+								verdict = false;
+							}
+							else
+							{
+								submissions[j].addReviewer(username);
+								spotsLeft--;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client)
 {
 	sf::Packet response;
@@ -65,6 +119,7 @@ void ServerController::run()
 	loadFalseAccounts();
 	//loadFalseSubmissions();
 	loadFalseConferences();
+	deadlineSet = false;
 	
 	sf::TcpListener listener;
 	
@@ -74,8 +129,17 @@ void ServerController::run()
 	selector.add(listener);
 	
 	for(;;){
-	
-		 if (selector.wait()){
+		time_t current = getTimeValue();
+		if (deadlineSet == true)
+		{
+			//check if current time is past deadline
+			if (current > deadline)
+			{
+				allocate();
+			}
+		}
+		
+		if (selector.wait()){
 			// Test the listener
 			if (selector.isReady(listener))
 			{
@@ -464,7 +528,7 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	std::string username, conference;
 	bool valid = false;
 	packet >> username >> conference;
-	
+
 	int findIndex = checkAccount(username);		//get Account index
 	if (findIndex == -1)
 	{
@@ -478,6 +542,22 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	
 	// check that they have admin rights to the conference
 	Account::AccessLevel access = accounts[findIndex].getAccess(conference);
+	
+	if (conferences[confIndex].getCurrentPhase() == "Submission")
+	{
+		deadlineSet = true;
+		//set deadline up here
+		deadline = getDayAhead(getTimeValue());
+		//store submission title with deadline
+		for (int i = 0; i < (int)submissions.size(); i++)
+		{
+			if (submissions[i].getConference() == conferences[confIndex].getName())
+			{
+				deadlineSubmissions.push_back(submissions[i].getTitle());
+			}
+		}
+	}
+	
 	if (access == Account::Access_Admin)
 	{
 		conferences[confIndex].advancePhase();

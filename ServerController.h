@@ -7,6 +7,7 @@
 #include "Account.h"
 #include "Conference.h"
 #include "Submission.h"
+#include "common.h"
 
 #ifndef SERVER_CONTROLLER
 #define SERVER_CONTROLLER
@@ -24,6 +25,9 @@ class ServerController
 		std::vector<Account> accounts;
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
+		std::vector<std::string> deadlineSubmissions;
+		bool deadlineSet;
+		time_t deadline;
 		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
@@ -53,6 +57,7 @@ class ServerController
 		int checkConference(std::string);
 		void bidPaper(sf::Packet&, sf::TcpSocket&);
 		void notifyConference(const std::string &, const std::string &);
+		void allocate();
 };
 
 #endif
