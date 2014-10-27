@@ -361,6 +361,17 @@ void Comment::readFile(std::ifstream &ifs)
 	readString(ifs, this->comment);	
 }
 
+sf::Packet & operator<<(sf::Packet &packet, const Comment &com)
+{
+	packet << com.username << com.comment;
+	return packet;
+}
+sf::Packet & operator>>(sf::Packet &packet, Comment &com)
+{
+	packet >> com.username >> com.comment;
+	return packet;
+}
+
 Fullname::Fullname(const Fullname &other)
 {
 	firstname = other.firstname;

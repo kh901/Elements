@@ -26,6 +26,9 @@ class Comment : public FileIO
 	// write and read this class to a binary file stream
 	void writeFile(std::ofstream &) const;
 	void readFile(std::ifstream &);
+	
+	friend sf::Packet & operator<<(sf::Packet &packet, const Comment &);
+	friend sf::Packet & operator>>(sf::Packet &packet, Comment &);	
 };
 
 class Fullname : public FileIO
