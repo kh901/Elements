@@ -10,6 +10,7 @@ Review::Review()
 	presentation = 0;
 	technicalQuality = 0;
 	evaluation = 0;
+	final = false;
 }
 
 Review::Review(const Review &other)
@@ -40,6 +41,7 @@ Review & Review::operator=(const Review &other)
 	technicalQuality = other.technicalQuality;
 	evaluation = other.evaluation;
 	conference = other.conference;
+	final = other.final;
 	return *this;
 }
 
@@ -158,6 +160,16 @@ void Review::setConference(const std::string &conf)
 {
 	conference = conf;
 }
+
+void Review::setFinal()
+{
+	final = true;
+}
+bool Review::getFinal()
+{
+	return final;
+}
+
 std::string Review::getConference()
 {
 	return conference;
@@ -285,6 +297,7 @@ void Review::writeFile(std::ofstream &ofs) const
 	appendData<int>(ofs, this->presentation);
 	appendData<int>(ofs, this->technicalQuality);
 	appendData<int>(ofs, this->evaluation);
+	appendData<bool>(ofs, this->final);
 }
 void Review::readFile(std::ifstream &ifs)
 {
@@ -309,6 +322,7 @@ void Review::readFile(std::ifstream &ifs)
 	readData<int>(ifs, this->presentation);
 	readData<int>(ifs, this->technicalQuality);
 	readData<int>(ifs, this->evaluation);
+	readData<bool>(ifs, this->final);
 }
 sf::Packet & operator<<(sf::Packet &packet, const Review &rev)
 {
@@ -320,7 +334,7 @@ sf::Packet & operator<<(sf::Packet &packet, const Review &rev)
 	packet << rev.relevance << rev.originality;
 	packet << rev.significance << rev.presentation;
 	packet << rev.technicalQuality << rev.evaluation;
-	packet << rev.conference;
+	packet << rev.conference << rev.final;
 	return packet;
 }
 sf::Packet & operator>>(sf::Packet &packet, Review &rev)
@@ -333,6 +347,6 @@ sf::Packet & operator>>(sf::Packet &packet, Review &rev)
 	packet >> rev.relevance >> rev.originality;
 	packet >> rev.significance >> rev.presentation;
 	packet >> rev.technicalQuality >> rev.evaluation;
-	packet >> rev.conference;
+	packet >> rev.conference >> rev.final;
 	return packet;
 }

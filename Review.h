@@ -60,6 +60,9 @@ class Review : public FileIO
 		int getTechnicalQuality();
 		void setEvaluation(int&);
 		int getEvaluation();
+		
+		void setFinal();
+		bool getFinal();
 
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
@@ -86,6 +89,7 @@ class Review : public FileIO
 		int presentation;
 		int technicalQuality;
 		int evaluation;
+		bool final;
 		
 		friend sf::Packet & operator<<(sf::Packet &packet, const Review &);
 		friend sf::Packet & operator>>(sf::Packet &packet, Review &);
