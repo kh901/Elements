@@ -27,7 +27,6 @@ class ServerController
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
 		std::vector<std::string> deadlineSubmissions;
-		std::vector<std::string> reviewIDs;
 		std::vector<Review> reviews;
 		NotifyMap notifications;
 	

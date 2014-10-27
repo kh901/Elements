@@ -551,6 +551,7 @@ void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client)
 	std::string conference, paperTitle;
 	packet >> conference >> paperTitle;
 	
+	std::vector<std::string> reviewIDs;
 	for (int i = 0; i < (int)reviews.size(); i++)
 	{
 		if (reviews[i].getConference() == conference)
