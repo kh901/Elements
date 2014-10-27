@@ -75,6 +75,7 @@ class Submission : public FileIO
         bool hasDeadlinePassed(const time_t);
 
 		void addComment(const std::string &, const std::string &);
+		void getComments(std::vector<Comment> &);
 		void displayComments();
 		void addAuthor(const std::string &, const std::string &);
 		Submission & operator=(const Submission &);

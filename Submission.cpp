@@ -228,6 +228,11 @@ void Submission::addComment(const std::string &user, const std::string &msg)
     comments.push_back(com);
 }
 
+void Submission::getComments(std::vector<Comment> &list)
+{
+	list = comments;
+}
+
 void Submission::displayComments()
 {
     for(int i = 0; i < (int)comments.size(); i++)
