@@ -455,9 +455,62 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="SUBMIT_REVIEW"){
 		submitReview(packet, client);
 	}
+	else if (protocol=="GET_COMMENTS"){
+		getComments(packet, client);
+	}
+	else if (protocol=="SEND_COMMENTS"){
+		sendComments(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username, conference, subTitle, newComment;
+	
+	packet >> username >> conference >> subTitle >> newComment;
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if (submissions[i].getTitle() == subTitle)
+			{
+				if (submissions[i].hasReviewer(username))
+				{
+					submissions[i].addComment(username, newComment);
+				}
+			}
+		}
+	}
+}
+
+void ServerController::getComments(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string conference, paperTitle;
+	sf::Packet response;
+	
+	packet >> conference >> paperTitle;
+	std::vector<Comment> comments;
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if (submissions[i].getTitle() == paperTitle)
+			{
+				submissions[i].getComments(comments);
+			}
+		}
+	}
+	
+	for (int i = 0; i < (int)comments.size(); i++)
+	{
+		response << comments[i];
+	}
+	client.send(response);
 }
 
 void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)

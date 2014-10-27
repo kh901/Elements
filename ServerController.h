@@ -64,6 +64,8 @@ class ServerController
 		void allocate(const std::string &);
 		void getAllocations(sf::Packet&, sf::TcpSocket&);
 		void submitReview(sf::Packet&, sf::TcpSocket&);
+		void getComments(sf::Packet&, sf::TcpSocket&);
+		void sendComments(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif
