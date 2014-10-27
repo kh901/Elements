@@ -49,6 +49,7 @@ class ServerController
 		void getConferenceSubs(sf::Packet&, sf::TcpSocket&);
 		void getReviewList(sf::Packet&, sf::TcpSocket&);
 		void sendSubDetail(sf::Packet&, sf::TcpSocket&);
+		void addMember(sf::Packet&, sf::TcpSocket&, Account::AccessLevel);
 		
 		void addNotification(const std::string &user, const std::string &str);
 		void clearNotifications(const std::string &user);

@@ -455,7 +455,7 @@ void UserController::prepareFinalReview(const std::string &paper)
 			std::string protocol = "SUBMIT_REVIEW";
 			Review tmpReview;
 			tmpReview.setFinal();
-			tmpReview.setTitle(paperTitle);
+			tmpReview.setTitle(paper);
 			tmpReview.setConference(conference);
 			// use a form to enter in a review about this paper
 			if (createReviewForm(tmpReview))
@@ -1151,7 +1151,22 @@ void UserController::configuration()
             		}
             	} while (confirmMenu("Add more reviewers?"));
                 break;
+            // add authors
             case 3:
+            	do
+            	{
+            		std::string tmpAuthor;
+            		std::cout << "Enter author name: ";
+            		getline(std::cin, tmpAuthor);
+            		Menu::eraseLine("Enter author name: " + tmpAuthor);
+            		
+            		if (!addAuthor(tmpAuthor))
+            		{
+            			std::cout << "Error: Could not add author to conference.";
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine("Error: Could not add author to conference.");
+            		}
+            	} while (confirmMenu("Add more authors?"));
                 break;
             case 4:
             	break;
@@ -1161,6 +1176,18 @@ void UserController::configuration()
             	break;
     	}
     } while (configurationMenu.notExited(option));
+}
+
+bool UserController::addAuthor(const std::string &author)
+{
+	sf::Packet request, response;
+	std::string protocol = "ADD_AUTHOR";
+	bool result = false;
+	request << protocol << username << conference << author;
+	socket.send(request);
+	socket.receive(response);
+	response >> result;
+	return result;
 }
 
 bool UserController::addReviewer(const std::string &reviewer)
@@ -1174,6 +1201,8 @@ bool UserController::addReviewer(const std::string &reviewer)
 	response >> result;
 	return result;
 }
+
+
 
 void UserController::getPhase()
 {

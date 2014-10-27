@@ -52,6 +52,7 @@ class UserController
         bool createReviewForm(Review &);
         void detailSub(const std::string &);
         void prepareFinalReview(const std::string &);
+        bool addAuthor(const std::string &);
         bool addReviewer(const std::string &);
         void getAllocations(std::vector<std::string> &);
         void getBidList(std::vector<std::string> &);

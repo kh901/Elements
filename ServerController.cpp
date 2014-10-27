@@ -202,23 +202,22 @@ void ServerController::loadFalseAccounts(){
 	author.setPassword("pass");
 	author.setFirstName("Adam");
 	author.setLastName("Dahler");
-	author.setUniversity("You oh dubs");
-	author.addAccess("AIDS conference", Account::Access_Author);
-	author.addAccess("Zombie apocalypse conference", Account::Access_Admin);
+	author.setUniversity("University Of Wollongong");
+	author.addAccess("Medical Conference", Account::Access_Author);
+	author.addAccess("Information Technology Talk", Account::Access_Admin);
 	
 	Account reviewer;
 	reviewer.setUsername("Jonathan");
 	reviewer.setPassword("pass");
 	reviewer.setFirstName("Jonathan");
 	reviewer.setLastName("Yip");
-	reviewer.setUniversity("Yuh ooh dibs");
-	reviewer.addKeyword("lel");
-	reviewer.addKeyword("top");
-	reviewer.addAccess("AIDS conference", Account::Access_Reviewer);
-	addNotification("Jonathan", "Hai, u da one");
-	addNotification("Jonathan", "oh no, you get the second?");
-	addNotification("Jonathan", "aww, now you have 3. :{D");
-	addNotification("Jonathan", "spam");
+	reviewer.setUniversity("University Of Wollongong");
+	reviewer.addKeyword("medicine");
+	reviewer.addKeyword("phones");
+	reviewer.addAccess("Medical Conference", Account::Access_Reviewer);
+	addNotification("Jonathan", "Your emails have reached maximum storage.");
+	addNotification("Jonathan", "Your request for more storage has been denied");
+	addNotification("Jonathan", "Welcome to the system");
 	
 	Account admin;
 	admin.setUsername("Kieran");
@@ -226,9 +225,10 @@ void ServerController::loadFalseAccounts(){
 	admin.setFirstName("Kieran");
 	admin.setLastName("Haavisto");
 	admin.setSystemAdmin();
-	admin.setUniversity("Yah or debs");
-	admin.addKeyword("boop");
-	admin.addAccess("AIDS conference", Account::Access_Admin);
+	admin.setUniversity("University Of Wollongong");
+	admin.addKeyword("medicine");
+	admin.addKeyword("technology");
+	admin.addAccess("Medical Conference", Account::Access_Admin);
 		
 	accounts.push_back(author);
 	accounts.push_back(reviewer);
@@ -238,17 +238,17 @@ void ServerController::loadFalseAccounts(){
 void ServerController::loadFalseConferences(){
 	Conference con, con2, con3;
 	
-	con.setName("AIDS conference");
-	con2.setName("Zombie apocalypse conference");
-	con3.setName("Alcoholics Anonymous");
+	con.setName("Medical Conference");
+	con2.setName("Information Technology Talk");
+	con3.setName("Telecommunications Conference");
 	
 	con.setDate("30/10/2014");
 	con2.setDate("4/11/2014");
 	con3.setDate("28/11/2014");
 	
-	con.setLocation("A place where everyone has low self esteem");
-	con2.setLocation("A dusty old shack with all weaponry");
-	con3.setLocation("A local pharmacy cause why not");
+	con.setLocation("University Hall");
+	con2.setLocation("SMART Building");
+	con3.setLocation("Telstra Headquarters");
 	
 	con.setMaxReviewedPapers(5);
 	con2.setMaxReviewedPapers(5);
@@ -262,9 +262,9 @@ void ServerController::loadFalseConferences(){
 	con2.addReviewer("Jonathan");
 	con3.addReviewer("Adam");
 	
-	con.setChairman("Some old guy with a weird eye");
-	con2.setChairman("Someone who'll probably die");
-	con3.setChairman("An alcoholic, how ironic");
+	con.setChairman("Omar");
+	con2.setChairman("Joshua");
+	con3.setChairman("Jason");
 	
 	con.addSubchair("Kieran");
 	con2.addSubchair("Jonathan");
@@ -461,9 +461,54 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="SEND_COMMENT"){
 		sendComments(packet, client);
 	}
+	else if (protocol=="ADD_REVIEWER"){
+		addMember(packet, client, Account::Access_Reviewer);
+	}
+	else if (protocol=="ADD_AUTHOR"){
+		addMember(packet, client, Account::Access_Author);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::addMember(sf::Packet &packet, sf::TcpSocket &client, Account::AccessLevel level)
+{
+	sf::Packet response;
+	std::string username, conference, targetUser;
+	packet >> username >> conference >> targetUser;
+	
+	bool success = false;
+	
+	int findIndex = checkAccount(username);
+	if (findIndex == -1)
+	{
+		success = false;
+		response << success;
+		client.send(response);
+		return;
+	}
+	int targetIndex = checkAccount(targetUser);
+	if (targetIndex == -1)
+	{
+		success = false;
+		response << success;
+		client.send(response);
+		return;
+	}
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		success = false;
+		response << success;
+		client.send(response);
+		return;
+	}
+	// access to the conference in the target user's accessmap
+	accounts[targetIndex].addAccess(conference, level);
+	success = true;
+	response << success;
+	client.send(response);
 }
 
 void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
@@ -773,6 +818,7 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 		std::cout << "Moving from " << conferences[confIndex].getCurrentPhase();
 		conferences[confIndex].advancePhase();
 		std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
+		notifyConference(conference, conference + " is now in " + conferences[confIndex].getCurrentPhase());
 	}
 }
 
