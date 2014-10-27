@@ -1195,16 +1195,44 @@ void UserController::discussion()
 	option = discuss.doMenu();
 	if (option != -1 && option != backOption)
 	{
+		// request comments from server
 		submissionTitle = subs[option];
 		request << submissionTitle;
 		socket.send(request);
 		socket.receive(response);
 		
 		// print comments about submission
+		std::vector<Comment> comList;
+		int comSize;
+		response >> comSize;
+		for (int i = 0; i < comSize; ++i)
+		{
+			Comment tmp;
+			response >> tmp;
+			comList.push_back(tmp);
+			std::cout << tmp.username << ": " << tmp.comment << std::endl;
+		}
 		
 		// enter comment
+		std::string mycomment;
+		std::cout << "Enter comment (or type 'stop' to cancel): ";
+		getline(std::cin, mycomment);
+		Menu::eraseLine("Enter comment (or type 'stop' to cancel): " + mycomment);
 		
-		// pack comment and send to server to add to comments
+		// erase previous comments
+		for (int i = comSize-1; i >= 0; i--)
+		{
+			Menu::eraseLine(comList[i].username + ": " + comList[i].comment);
+		}
+		
+		if (mycomment != "stop")
+		{
+			// pack comment and send to server to add to comments
+			sf::Packet comPacket;
+			protocol = "SEND_COMMENT";
+			comPacket << protocol << username << conference << submissionTitle << mycomment;
+			socket.send(comPacket);
+		}
 	}
 }
 
