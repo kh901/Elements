@@ -7,4 +7,5 @@ g++ Phase.cpp -c
 g++ Submission.cpp -c
 g++ UserController.cpp -c
 g++ client_main.cpp -c
-g++ client_main.o Account.o common.o Conference.o File.o Menu.o Phase.o Submission.o UserController.o -lsfml-network -lsfml-system -o usercontroller -Wall
+g++ Review.cpp -c
+g++ client_main.o Account.o Review.o common.o Conference.o File.o Menu.o Phase.o Submission.o UserController.o -lsfml-network -lsfml-system -o usercontroller -Wall

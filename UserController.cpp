@@ -338,7 +338,7 @@ void UserController::mainMenu()
 	std::vector<std::string> fullOptions;
 	fillMainMenu(fullOptions);
 	std::ostringstream menuTitle;
-	menuTitle << "Main Menu - " << conference << " (" << phase << ")\nWelcome " << username;
+	menuTitle << "Main Menu - " << conference << "\nWelcome " << username;
 	Menu accessMenu;
 	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
 	int option = 0;
@@ -406,6 +406,8 @@ void UserController::finalise()
 	
 	Menu finaliseMenu;
 	finaliseMenu.setOptions("Main Menu > Finalise submissions", &subs[0], subs.size());
+	finaliseMenu.setPaged();
+	finaliseMenu.setVisibleNum(5);
 	int option, backOption = (int)(subs.size()-1);
 	do
 	{
@@ -427,6 +429,34 @@ void UserController::prepareFinalReview(const std::string &paper)
 	socket.receive(response);
 	
 	std::vector<std::string> list;
+	int size;
+	response >> size;
+	for (int i = 0; i < size; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		list.push_back(tmp);
+	}
+	list.push_back("Create final review");
+	list.push_back("Back");
+	
+	Menu detailReviewMenu;
+	detailReviewMenu.setOptions("Finalise submissions > Finalise Review", &list[0], list.size());
+	detailReviewMenu.setPaged();
+	detailReviewMenu.setVisibleNum(5);
+	int option, backOption = (int)(list.size()-1), createOption = (int)(list.size()-2);
+	do
+	{
+		option = detailReviewMenu.doMenu();
+		if (option == createOption)
+		{
+			
+		}
+		else if (option != -1 && option != backOption)
+		{
+			
+		}
+	} while (detailReviewMenu.notExited(option));
 }
 
 void UserController::logOut()
@@ -737,10 +767,6 @@ void UserController::submissions()
 		    case 1:      
 		    	this->viewSubmissions();
             break;
-		    
-            // Back
-            case 2:
-            break;
         }
     }
 }
@@ -869,7 +895,8 @@ void UserController::getAllocations(std::vector<std::string> &list)
 void UserController::submitReview()
 {
 	// send request to server to view submissions
-	sf::Packet request, response;
+	sf::Packet request;
+	std::string protocol = "SUBMIT_REVIEW";
 	std::vector<std::string> subs;
 	getAllocations(subs);
 	subs.push_back("Cancel");
@@ -881,8 +908,171 @@ void UserController::submitReview()
 	option = submit.doMenu();
 	if (option != -1 && option != cancelOption)
 	{
+		std::string paperTitle = subs[option];
+		Review tmpReview;
+		tmpReview.setTitle(paperTitle);
+		tmpReview.setConference(conference);
 		// use a form to enter in a review about this paper
+		if (createReviewForm(tmpReview))
+		{
+			request << protocol << username << conference << paperTitle;
+			request << tmpReview;
+			
+			socket.send(request);
+		}
 	}
+}
+
+bool UserController::createReviewForm(Review &rev)
+{
+	bool submitted = false;
+	rev.generateReviewID();
+	std::string fields [10] = {
+		"Enter Strengths",
+		"Enter Weaknesses",
+		"Enter Suggestions",
+		"Enter Short Paper Remark",
+		"Enter Best Paper Remark",
+		"Enter Remarks",
+		"Set subreviewer's details",
+		"Enter evaluations",
+		"Submit",
+		"Cancel"
+	};
+	Menu form;
+	form.setOptions("Detail review", fields, 10);
+	int option = 0, submitOption = 8, cancelOption = 9;
+	std::string buffer;
+	do
+	{
+		option = form.doMenu();
+		switch(option)
+		{
+			// strengths
+			case 0:
+			std::cout << "Enter strengths: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter strengths: " + buffer);
+			rev.setStrengths(buffer);
+			break;
+			// weaknesses
+			case 1:
+			std::cout << "Enter weaknesses: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter weaknesses: " + buffer);
+			rev.setWeaknesses(buffer);
+			break;
+			// suggestions
+			case 2:
+			std::cout << "Enter suggestions: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter suggestions: " + buffer);
+			rev.setSuggestions(buffer);
+			break;
+			// short paper
+			case 3:
+			std::cout << "Enter short paper remark: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter short paper remark: " + buffer);
+			rev.setShortPaper(buffer);
+			break;
+			// best paper
+			case 4:
+			std::cout << "Enter best paper remark: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter best paper remark: " + buffer);
+			rev.setBestPaper(buffer);
+			break;
+			// remarks
+			case 5:
+			std::cout << "Enter remarks for PC members: ";
+			getline(std::cin, buffer);
+			Menu::eraseLine("Enter remarks for PC members: " + buffer);
+			rev.setRemarks(buffer);
+			break;
+			// sub reviewer's details
+			case 6:
+			{
+				std::string first, last, email;
+				std::cout << "Enter sub reviewer first name: ";
+				getline(std::cin, first);
+				Menu::eraseLine("Enter sub reviewer first name: " + first);
+	
+				std::cout << "Enter sub reviewer last name: ";
+				getline(std::cin, last);
+				Menu::eraseLine("Enter sub reviewer last name: " + last);
+	
+				std::cout << "Enter sub reviewer email: ";
+				getline(std::cin, email);
+				Menu::eraseLine("Enter sub reviewer email: " + email);
+				rev.setReviewer(first, last, email);
+			}
+			break;
+			// evaluations value menu
+			case 7:
+			{
+				int overallEval [1] = {0};
+				std::string overallEvalStr [1] = {
+					"Overall Evaluation: "
+				};
+				Menu overallMenu;
+				overallMenu.setOptions("Set overall evaluation:\n-3 (strong reject) <----> 3 (strong accept)", overallEvalStr, 1);
+				overallMenu.setValues(overallEval);
+				overallMenu.setValueBounds(-3, 3);
+				overallMenu.disableBackButton();
+				overallMenu.setLastAsChoice();
+				overallMenu.setShowControls();
+				overallMenu.doMenu();
+				rev.setOverallEvaluation(overallEval[0]);
+				
+				int revConf [1] = {0};
+				std::string revConfStr [1] = {
+					"Reviewer Confidence: "
+				};
+				Menu revConfMenu;
+				revConfMenu.setOptions("Set reviewer confidence:\n0 (null) <----> 4 (expert)", revConfStr, 1);
+				revConfMenu.setValues(revConf);
+				revConfMenu.setValueBounds(0, 4);
+				revConfMenu.disableBackButton();
+				revConfMenu.setLastAsChoice();
+				revConfMenu.setShowControls();
+				revConfMenu.doMenu();
+				rev.setReviewerConfidence(revConf[0]);
+				
+				int scores [6] = {3, 3, 3, 3, 3, 3};
+				std::string scoreStr [6] = {
+					"Relevance: ",
+					"Originality: ",
+					"Significance: ",
+					"Presentation: ",
+					"Technical Quality: ",
+					"Evaluation: "
+				};
+				Menu scoreMenu;
+				scoreMenu.setOptions("Set scores:\n1 (lowest score) <----> 5 (highest score)", scoreStr, 6);
+				scoreMenu.setValues(scores);
+				scoreMenu.setValueBounds(1, 5);
+				scoreMenu.disableBackButton();
+				scoreMenu.setLastAsChoice();
+				scoreMenu.setShowControls();
+				scoreMenu.doMenu();
+				rev.setRelevance(scores[0]);
+				rev.setOriginality(scores[1]);
+				rev.setSignificance(scores[2]);
+				rev.setPresentation(scores[3]);
+				rev.setTechnicalQuality(scores[4]);
+				rev.setEvaluation(scores[5]);
+			}
+			break;
+			// submit
+			case 8: submitted = true; option = -1;
+			break;
+			// cancel
+			case 9:	submitted = false;
+			break;
+		}
+	} while (form.notExited(option));
+	return submitted;
 }
 
 bool UserController::confirmMenu(const std::string &msg)
@@ -989,6 +1179,9 @@ void UserController::advancePhase()
 
 void UserController::discussion()
 {
+	sf::Packet request, response;
+	std::string protocol = "GET_COMMENTS";
+	request << protocol << conference;
 	// send request to server to view submissions
 	std::vector<std::string> subs;
 	getAllocations(subs);
@@ -998,11 +1191,14 @@ void UserController::discussion()
 	Menu discuss;
 	discuss.setOptions("Reviews > Discussions", &subs[0], subs.size());
 	int option, backOption = subs.size()-1;
-	std::string subTitle;
+	std::string submissionTitle;
 	option = discuss.doMenu();
 	if (option != -1 && option != backOption)
 	{
-		subTitle = subs[option];
+		submissionTitle = subs[option];
+		request << submissionTitle;
+		socket.send(request);
+		socket.receive(response);
 		
 		// print comments about submission
 		

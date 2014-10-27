@@ -470,6 +470,10 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 	packet >> review;
 	
 	int findIndex = checkAccount(username);
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user does not exist
+	}
 	firstname = accounts[findIndex].getFirstName();
 	lastname = accounts[findIndex].getLastName();
 	
@@ -483,7 +487,10 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 			{
 				if (submissions[i].hasReviewer(username))
 				{
+					std::cout << "Review submitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
 					submissions[i].setReviewed();
+					reviews.push_back(review);
+					break;
 				}
 			}
 		}

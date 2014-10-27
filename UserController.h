@@ -2,6 +2,7 @@
 #include "Menu.h"
 #include "Conference.h"
 #include "Submission.h"
+#include "Review.h"
 
 #include <ctime>
 #include <iostream>
@@ -48,6 +49,7 @@ class UserController
        	bool connect();
        	void finalise();
         
+        bool createReviewForm(Review &);
         void detailSub(const std::string &);
         void prepareFinalReview(const std::string &);
         bool addReviewer(const std::string &);
