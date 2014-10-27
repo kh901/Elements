@@ -726,6 +726,7 @@ void ServerController::allocate(const std::string &conference)
 {
 	int reviewerCount = 0;
 	int maxReviewer = 0;
+	int maxPapers = 0;
 	int spotsLeft = 0;
 	std::string username, firstname, lastname;
 	bool verdict = false;
@@ -742,6 +743,7 @@ void ServerController::allocate(const std::string &conference)
 		{
 			reviewerCount = submissions[i].getReviewerCount();
 			maxReviewer = conferences[confIndex].getMaxPaperReviewers();
+			maxPapers = conferences[confIndex].getMaxReviewedPapers();
 			spotsLeft = maxReviewer - reviewerCount;
 			if (spotsLeft != 0)
 			{
@@ -753,7 +755,9 @@ void ServerController::allocate(const std::string &conference)
 					if (verdict == true && spotsLeft > 0)
 					{
 						username = accounts[j].getUsername();
-						if (!submissions[i].hasReviewer(username) && !submissions[i].isAuthorIncluded(firstname, lastname))
+						if (!submissions[i].hasReviewer(username) && 
+								!submissions[i].isAuthorIncluded(firstname, lastname) &&
+									accounts[j].incrementAllocated(conference, maxPapers) )
 						{
 							std::cout << "Allocated Reviewer " << username << " to Paper " << submissions[i].getTitle() << std::endl;
 							submissions[i].addReviewer(username);
