@@ -458,7 +458,7 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="GET_COMMENTS"){
 		getComments(packet, client);
 	}
-	else if (protocol=="SEND_COMMENTS"){
+	else if (protocol=="SEND_COMMENT"){
 		sendComments(packet, client);
 	}
 	else {
@@ -506,6 +506,7 @@ void ServerController::getComments(sf::Packet &packet, sf::TcpSocket &client)
 		}
 	}
 	
+	response << (int)comments.size();
 	for (int i = 0; i < (int)comments.size(); i++)
 	{
 		response << comments[i];
