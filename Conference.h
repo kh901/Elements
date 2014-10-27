@@ -41,6 +41,7 @@ class Conference : public FileIO
         int getMaxPaperReviewers();
         
 		void addReviewer(const std::string &);
+		void getReviewers(std::vector<std::string>&);
 		void printReviewers();
         void addSubchair(const std::string &);
         void printSubchairs();

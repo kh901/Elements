@@ -117,6 +117,11 @@ bool Conference::hasDeadlinePassed(const time_t cur)
 	return (cur >= deadline);
 }
 
+void Conference::getReviewers(std::vector<std::string> &list)
+{
+	list = reviewers;
+}
+
 void Conference::addReviewer(const std::string &aReviewer)
 {
 	reviewers.push_back(aReviewer);

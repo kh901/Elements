@@ -960,6 +960,17 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 		conferences.push_back(addConf);
 		// add conference to user access map
 		accounts[findIndex].addAccess(addConf.getName(), Account::Access_Admin);
+		// add conference to reviewers access map
+		std::vector<std::string> revs;
+		addConf.getReviewers(revs);
+		for (int i = 0; i < (int)revs.size(); ++i)
+		{
+			int getIndex = checkAccount(revs[i]);
+			if (getIndex != -1)
+			{
+				accounts[getIndex].addAccess(addConf.getName(), Account::Access_Reviewer);
+			}
+		}
 	}
 	// send response
 	response << exists;

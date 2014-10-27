@@ -1117,6 +1117,7 @@ void UserController::configuration()
 	};
 	// alter the first option to display the current phase
 	configurationMenu.setOptions("Main Menu > Configuration", configurationMenuOptions, 7);
+	configurationMenu.setSelectColour(text::Colour_Yellow);
 	int option;
     do
     {
