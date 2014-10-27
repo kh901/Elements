@@ -380,9 +380,9 @@ void UserController::finalise()
 {
 	if (phase != "Finalising")
 	{
-		std::cout << "Error: The conference has not yet required finalising yet.";
+		std::cout << "Error: The conference is not in the finalising stage.";
 		std::cin.ignore(1, '\n');
-		Menu::eraseLine("Error: The conference has not yet required finalising yet.");
+		Menu::eraseLine("Error: The conference is not in the finalising stage.");
 		return;
 	}
 
@@ -448,10 +448,26 @@ void UserController::prepareFinalReview(const std::string &paper)
 	do
 	{
 		option = detailReviewMenu.doMenu();
+		// create final review for this submission
 		if (option == createOption)
 		{
+			sf::Packet request;
+			std::string protocol = "SUBMIT_REVIEW";
+			Review tmpReview;
+			tmpReview.setFinal();
+			tmpReview.setTitle(paperTitle);
+			tmpReview.setConference(conference);
+			// use a form to enter in a review about this paper
+			if (createReviewForm(tmpReview))
+			{
+				request << protocol << username << conference << paper;
+				request << tmpReview;
 			
+				socket.send(request);
+				option = -1;
+			}
 		}
+		// view the details of each non final review
 		else if (option != -1 && option != backOption)
 		{
 			
