@@ -29,6 +29,7 @@ Menu::~Menu()
 	options = NULL;
 	descriptions = NULL;
 	values = NULL;
+	unsetTimeout();
 }
 void Menu::setOptions(const std::string theTitle, std::string theOptions[], const int num, const int row)
 {

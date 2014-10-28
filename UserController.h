@@ -50,6 +50,7 @@ class UserController
        	bool connect();
        	void finalise();
         
+        int getNotifyCount();
         void viewReview(const std::string &);
        	bool getAccountName(const std::string &, std::string &, std::string &);
         void changeAllocLimit(const int, const std::string &);

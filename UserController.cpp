@@ -337,10 +337,20 @@ void UserController::mainMenu()
 	if (conference.length() <= 0) { return; }
 	std::vector<std::string> fullOptions;
 	fillMainMenu(fullOptions);
-	std::ostringstream menuTitle;
+	std::ostringstream menuTitle, marqueeText;
 	menuTitle << "Main Menu - " << conference << "\nWelcome " << username;
+	int numNotify = getNotifyCount();
+	if (numNotify > 0)
+	{
+		marqueeText << "You have " << numNotify << " unread notifications";
+	}
+	else
+	{
+		marqueeText << "No new notifications";
+	}
+	
 	Menu accessMenu;
-	accessMenu.setMarquee("This is a test marquee", 0.3);
+	accessMenu.setMarquee(marqueeText.str(), 0.3);
 	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
 	int option = 0;
 	do
@@ -373,8 +383,32 @@ void UserController::mainMenu()
 				this->configuration();
 			}
 		}
+		// recheck notification count
+		marqueeText.str("");
+		numNotify = getNotifyCount();
+		if (numNotify > 0)
+		{
+			marqueeText << "You have " << numNotify << " unread notifications";
+		}
+		else
+		{
+			marqueeText << "No new notifications";
+		}
+		accessMenu.setMarquee(marqueeText.str(), 0.3);
 	} while (accessMenu.notExited(option));
 	this->logOut();
+}
+
+int UserController::getNotifyCount()
+{
+	sf::Packet request, response;
+	std::string protocol = "NOTIFY_COUNT";
+	request << protocol << username;
+	sf::Int16 recVal = 0;
+	socket.send(request);
+	socket.receive(response);
+	response >> recVal;
+	return recVal;
 }
 
 void UserController::finalise()
@@ -490,8 +524,6 @@ void UserController::viewReview(const std::string &id)
 	response >> found;
 	if (found)
 	{
-		//std::string first, last;
-		//getAccountName(tmpReview.getPCMember(), first, last);
 		response >> tmpReview;
 		tmpReview.view();
 	}

@@ -485,6 +485,9 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="VIEW_REVIEW"){
 		getReview(packet, client);
 	}
+	else if (protocol=="NOTIFY_COUNT"){
+		checkNotifyCount(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
@@ -1047,7 +1050,7 @@ void ServerController::checkNotifyCount(sf::Packet &packet, sf::TcpSocket &clien
 	{
 		return;		// ignore request if user is not found
 	}
-	int notifyCount = getNotificationCount(username);
+	sf::Int16 notifyCount = getNotificationCount(username);
 	response << notifyCount;
 	client.send(response);
 }
