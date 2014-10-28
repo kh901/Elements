@@ -274,7 +274,7 @@ std::string Review::getReviewerEmail()
 	return reviewerEmail;
 }
 
-void Review::view(const std::string &first, const std::string &last)
+void Review::view()
 {
 	bool hasSubReviewer = (reviewerFirstName.length() > 0 && reviewerLastName.length() > 0);
 	if (final)
@@ -284,7 +284,7 @@ void Review::view(const std::string &first, const std::string &last)
 	std::cout << "Review ID: " << reviewID << std::endl;
 	std::cout << "Conference: " << conference << std::endl;
 	std::cout << "Paper: " << title << std::endl;
-	std::cout << "Reviewer: " << first << " " << last << std::endl;
+	std::cout << "Reviewer: " << pcMember << std::endl;
 	std::cout << "Strengths: " << strengths << std::endl;
 	std::cout << "Weaknesses: " << weaknesses << std::endl;
 	std::cout << "Suggestions: " << suggestions << std::endl;
@@ -306,7 +306,7 @@ void Review::view(const std::string &first, const std::string &last)
 	scores << "Significance: " << significance << '\n';
 	scores << "Presentation: " << presentation << '\n';
 	scores << "Technical Quality: " << technicalQuality << '\n';
-	scores << "Evaluation: " << evaluation << '\n';
+	scores << "Evaluation: " << evaluation;
 	std::cout << scores.str();
 	
 	std::cin.ignore(1, '\n');
@@ -350,7 +350,7 @@ void Review::view(const std::string &first, const std::string &last)
 	Menu::eraseLine("Suggestions: " + suggestions);
 	Menu::eraseLine("Weaknesses: " + weaknesses);
 	Menu::eraseLine("Strengths: " + strengths);
-	Menu::eraseLine("Reviewer: " + first + " " + last);
+	Menu::eraseLine("Reviewer: " + pcMember);
 	Menu::eraseLine("Paper: " + title);
 	Menu::eraseLine( "Conference: " + conference);
 	Menu::eraseLine("Review ID: " + reviewID);

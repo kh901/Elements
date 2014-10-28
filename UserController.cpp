@@ -490,10 +490,10 @@ void UserController::viewReview(const std::string &id)
 	response >> found;
 	if (found)
 	{
-		std::string first, last;
-		getAccountName(tmpReview.getPCMember(), first, last);
+		//std::string first, last;
+		//getAccountName(tmpReview.getPCMember(), first, last);
 		response >> tmpReview;
-		tmpReview.view(first, last);
+		tmpReview.view();
 	}
 }
 
@@ -1046,7 +1046,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter remarks for PC members: " + buffer);
 			rev.setRemarks(buffer);
-			fields[5] = "Enter Best Paper Remark\n    " + buffer;
+			fields[5] = "Enter Remarks for PC Members\n    " + buffer;
 			break;
 			// sub reviewer's details
 			case 6:

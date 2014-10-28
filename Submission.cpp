@@ -167,14 +167,14 @@ void Submission::view()
     std::cout << "Authors: " << std::endl;
     for(int i = 0; i < (int)authors.size(); i++)
         std::cout << authors[i].firstname << " " << authors[i].surname << std::endl;
-    std::cout << "Description: " << description;
+    std::cout << "Description: " << description << std::endl;
     std::cout << "Keywords: ";
     std::ostringstream ks;
     for (int w = 0; w < (int)keywords.size(); ++w)
     {
     	ks << keywords[w] << (w != (int)(keywords.size()-1) ? ", " : "");
     }
-    std::cout << ks.str();
+    std::cout << ks.str() << std::endl;
     std::cout << "Status: " << status;
     std::cin.ignore(1, '\n');
     

@@ -211,7 +211,7 @@ void ServerController::loadFalseAccounts(){
 	reviewer.setPassword("pass");
 	reviewer.setFirstName("Jonathan");
 	reviewer.setLastName("Yip");
-	reviewer.setUniversity("University Of Wollongong");
+	reviewer.setUniversity("University Of Sydney");
 	reviewer.addKeyword("medicine");
 	reviewer.addKeyword("phones");
 	reviewer.addAccess("Medical Conference", Account::Access_Reviewer);
@@ -225,7 +225,7 @@ void ServerController::loadFalseAccounts(){
 	admin.setFirstName("Kieran");
 	admin.setLastName("Haavisto");
 	admin.setSystemAdmin();
-	admin.setUniversity("University Of Wollongong");
+	admin.setUniversity("University Of Technology Sydney");
 	admin.addKeyword("medicine");
 	admin.addKeyword("technology");
 	admin.addAccess("Medical Conference", Account::Access_Admin);
@@ -562,6 +562,7 @@ void ServerController::getAccountName(sf::Packet &packet, sf::TcpSocket &client)
 	std::string username, target, first, last;
 	bool exists = false;
 	packet >> username >> target;
+	std::cout << "Attempting to find full name for User " << target << std::endl;
 	// authenticate request
 	if (checkAccount(username) == -1)
 	{
@@ -570,6 +571,7 @@ void ServerController::getAccountName(sf::Packet &packet, sf::TcpSocket &client)
 	int targetIndex = checkAccount(target);
 	if (targetIndex != -1)
 	{
+		std::cout << "User does exist" << std::endl;
 		first = accounts[targetIndex].getFirstName();
 		last = accounts[targetIndex].getLastName();
 		exists = true;
@@ -577,6 +579,7 @@ void ServerController::getAccountName(sf::Packet &packet, sf::TcpSocket &client)
 		client.send(response);
 		return;
 	}
+	std::cout << "User does not exist" << std::endl;
 	response << exists;
 	client.send(response);
 }
@@ -1000,6 +1003,7 @@ void ServerController::allocate(const std::string &conference)
 					}
 				}
 			}
+			reviewerCount = submissions[i].getReviewerCount();
 			if (reviewerCount == 0)
 			{
 				std::cout << "This paper has no reviewers assigned to it!" << std::endl;
