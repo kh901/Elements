@@ -104,6 +104,10 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 		sub.addAuthor(firstname, lastname);
 		submissions.push_back(sub);
 		std::cout << "Submitted paper: " << title << " by " << username << std::endl;
+		addNotification(username, "You submitted a paper '" + title + "' to " + conference);
+		notifyConference(conference, 
+			username + " submitted a paper '" + title + "' to " + conference, 
+				Account::Access_Chairman);
 	}
 	else
 	{
@@ -551,10 +555,16 @@ void ServerController::changeLimit(sf::Packet &packet, sf::TcpSocket &client, co
 		if (mode == "ALLOCATED")
 		{
 			conferences[confIndex].setMaxReviewedPapers(setVal);
+			notifyConference(conference, 
+				username + " has changed the max papers per reviewer limit for " + conference, 
+					Account::Access_Chairman);
 		}
 		else if (mode == "PAPERREV")
 		{
 			conferences[confIndex].setMaxPaperReviewers(setVal);
+			notifyConference(conference, 
+				username + " has changed the max reviewers per paper limit for " + conference, 
+					Account::Access_Chairman);
 		}
 	}
 }
@@ -656,6 +666,7 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 	
 	packet >> username >> conference >> subTitle >> newComment;
 	
+	int subIndex = -1;
 	for (int i = 0; i < (int)submissions.size(); i++)
 	{
 		if (submissions[i].getConference() == conference)
@@ -665,7 +676,20 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 				if (submissions[i].hasReviewer(username))
 				{
 					submissions[i].addComment(username, newComment);
+					subIndex = i;
 				}
+			}
+		}
+	}
+	if (subIndex != -1)
+	{
+		std::vector<std::string> revList;
+		submissions[subIndex].getReviewerList(revList);
+		for (int r = 0; r < (int)revList.size(); ++r)
+		{
+			if (revList[r] != username)
+			{
+				addNotification(revList[r], username + " has added a new comment for Paper " + subTitle);
 			}
 		}
 	}
@@ -1055,11 +1079,11 @@ void ServerController::checkNotifyCount(sf::Packet &packet, sf::TcpSocket &clien
 	client.send(response);
 }
 
-void ServerController::notifyConference(const std::string &conf, const std::string &msg)
+void ServerController::notifyConference(const std::string &conf, const std::string &msg, Account::AccessLevel minAccess)
 {
 	for (int i = 0; i < (int)accounts.size(); ++i)
 	{
-		if (accounts[i].hasAccess(conf))
+		if (accounts[i].hasAccess(conf) && accounts[i].getAccess(conf) >= minAccess)
 		{
 			this->addNotification(accounts[i].getUsername(), msg);
 		}

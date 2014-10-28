@@ -69,6 +69,7 @@ class Submission : public FileIO
 
 		void addReviewer(const std::string &);
 		bool hasReviewer(const std::string &);
+		void getReviewerList(std::vector<std::string> &);
 		void removeReviewer(const std::string &);
 		int getReviewerCount() const;
 		bool hasKeyword(const std::string &) const;

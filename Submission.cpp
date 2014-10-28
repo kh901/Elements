@@ -218,6 +218,10 @@ bool Submission::hasReviewer(const std::string &user)
 	}
 	return false;
 }
+void Submission::getReviewerList(std::vector<std::string> &list)
+{
+	list = reviewers;
+}
 void Submission::removeReviewer(const std::string &user)
 {
 	if (hasReviewer(user))

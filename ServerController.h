@@ -68,7 +68,7 @@ class ServerController
 		void checkPhase(sf::Packet&, sf::TcpSocket&);
 		int checkConference(std::string);
 		void bidPaper(sf::Packet&, sf::TcpSocket&);
-		void notifyConference(const std::string &, const std::string &);
+		void notifyConference(const std::string &, const std::string &, Account::AccessLevel = Account::Access_Author);
 		void autoAllocate();
 		void allocate(const std::string &);
 		void getAllocations(sf::Packet&, sf::TcpSocket&);
