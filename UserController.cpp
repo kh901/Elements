@@ -332,6 +332,20 @@ void UserController::fillMainMenu(std::vector<std::string> &list)
 	list.push_back(options[2]);
 }
 
+void UserController::updateMainMenuMarquee(std::ostringstream &msg)
+{
+	msg.str("");
+	int numNotify = getNotifyCount();
+	if (numNotify > 0)
+	{
+		msg << "You have " << numNotify << " unread notifications";
+	}
+	else
+	{
+		msg << "No new notifications";
+	}
+}
+
 void UserController::mainMenu()
 {
 	if (conference.length() <= 0) { return; }
@@ -339,15 +353,7 @@ void UserController::mainMenu()
 	fillMainMenu(fullOptions);
 	std::ostringstream menuTitle, marqueeText;
 	menuTitle << "Main Menu - " << conference << "\nWelcome " << username;
-	int numNotify = getNotifyCount();
-	if (numNotify > 0)
-	{
-		marqueeText << "You have " << numNotify << " unread notifications";
-	}
-	else
-	{
-		marqueeText << "No new notifications";
-	}
+	updateMainMenuMarquee(marqueeText);
 	
 	Menu accessMenu;
 	accessMenu.setMarquee(marqueeText.str(), 0.3);
@@ -384,16 +390,7 @@ void UserController::mainMenu()
 			}
 		}
 		// recheck notification count
-		marqueeText.str("");
-		numNotify = getNotifyCount();
-		if (numNotify > 0)
-		{
-			marqueeText << "You have " << numNotify << " unread notifications";
-		}
-		else
-		{
-			marqueeText << "No new notifications";
-		}
+		updateMainMenuMarquee(marqueeText);
 		accessMenu.setMarquee(marqueeText.str(), 0.3);
 	} while (accessMenu.notExited(option));
 	this->logOut();

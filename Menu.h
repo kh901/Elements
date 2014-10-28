@@ -121,8 +121,7 @@ class Menu
 		std::string BAR;
 		text::Colour selectColour;
 		
-		// scroller 
-		struct termios oldSettings;
+		// marquee
 		std::string marqueeMsg;
 		int inputTimeout;
 		int msgPos;

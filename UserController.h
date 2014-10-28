@@ -50,6 +50,7 @@ class UserController
        	bool connect();
        	void finalise();
         
+        void updateMainMenuMarquee(std::ostringstream &);
         int getNotifyCount();
         void viewReview(const std::string &);
        	bool getAccountName(const std::string &, std::string &, std::string &);

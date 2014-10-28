@@ -407,8 +407,11 @@ void Menu::setMarquee(const std::string &msg, const double timeout)
 {
 	marqueeMsg = msg;
 	// save old settings for terminal
-	setTimeout();
-  	hasMarquee = true;
+	if (!hasMarquee)
+	{
+		setTimeout();
+  		hasMarquee = true;
+  	}
   	if (timeout > 0.1 && timeout < 5)
   	{
   		inputTimeout = timeout * 1000000;
@@ -417,14 +420,14 @@ void Menu::setMarquee(const std::string &msg, const double timeout)
 void Menu::setTimeout()
 {
 	//To keep terminal settings
-  	struct termios newt;
+  	struct termios newSettings, oldSettings;
 	//Get current settings
   	tcgetattr( STDIN_FILENO, &oldSettings );
-  	newt = oldSettings;
+  	newSettings = oldSettings;
 	//Set new flags
-  	newt.c_lflag &= ~( ICANON | ECHO );
+  	newSettings.c_lflag &= ~( ICANON | ECHO );
 	//Set new terminal settings
-  	tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+  	tcsetattr( STDIN_FILENO, TCSANOW, &newSettings );
 }
 void Menu::displayMarquee()
 {
