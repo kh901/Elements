@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 #include <algorithm>
 #include <SFML/Network.hpp>
 #include "File.h"
@@ -68,6 +69,7 @@ class Submission : public FileIO
 
 		void addReviewer(const std::string &);
 		bool hasReviewer(const std::string &);
+		void removeReviewer(const std::string &);
 		int getReviewerCount() const;
 		bool hasKeyword(const std::string &) const;
 		

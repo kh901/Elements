@@ -19,6 +19,10 @@ Menu::Menu()
 	fillBar();
 	minVal = MENU_VALUES_MIN;
 	maxVal = MENU_VALUES_MAX;
+	hasMarquee = false;
+	inputTimeout = 350000;		// initial timeout is 0.35 seconds
+	msgPos = barWidth;
+	animFrame = 0;
 }
 Menu::~Menu()
 {
@@ -68,6 +72,7 @@ void Menu::setBarWidth(const int width)
 	{
 		barWidth = width;
 		fillBar();
+		msgPos = barWidth;
 	}
 }
 void Menu::fillBar()
@@ -125,7 +130,15 @@ bool Menu::processInput(int &option)
 	static const int LEFTKEY = 68 + 128, RIGHTKEY = 67 + 128;
 	static const int BACKSPACE = 8, DELETE = 127;
 	
-	int key = getCmd();
+	int key;
+	if (hasMarquee)
+	{
+		key = getTimeoutCmd();
+	}
+	else
+	{
+	 	key = getCmd();
+	}
 	
 	if(key == ENTERKEY)
 	{
@@ -304,6 +317,10 @@ int Menu::doMenu()
 	{
 		scrollIndex = 0;
 	}
+	if (hasMarquee)
+	{
+		setTimeout();
+	}
 	std::string tmpbuf;
 	
 	while (!selected)
@@ -314,6 +331,7 @@ int Menu::doMenu()
 		Menu::buffer << "\x1B[" << displayRow << ";1f";
 
 		Menu::buffer << title << std::endl;
+		if (hasMarquee) { displayMarquee(); }
 		Menu::buffer << BAR << std::endl;
 
 		// display the content of the menu
@@ -338,6 +356,10 @@ int Menu::doMenu()
 
 		// Get and process input
 		selected = processInput(option);
+	}
+	if (hasMarquee)
+	{
+		unsetTimeout();
 	}
 	return option;
 }
@@ -368,6 +390,104 @@ int Menu::getCmd()
 
 	//Return
   	return ch;
+}
+void Menu::unsetTimeout()
+{
+	struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+	//tty.c_lflag |= ECHO;
+	tty.c_lflag |= ( ICANON | ECHO );
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+	//Reset terminal settings to old ones
+  	//tcsetattr( STDIN_FILENO, TCSANOW, &oldSettings );
+}
+void Menu::setMarquee(const std::string &msg, const double timeout)
+{
+	marqueeMsg = msg;
+	// save old settings for terminal
+	setTimeout();
+  	hasMarquee = true;
+  	if (timeout > 0.1 && timeout < 5)
+  	{
+  		inputTimeout = timeout * 1000000;
+  	}
+}
+void Menu::setTimeout()
+{
+	//To keep terminal settings
+  	struct termios newt;
+	//Get current settings
+  	tcgetattr( STDIN_FILENO, &oldSettings );
+  	newt = oldSettings;
+	//Set new flags
+  	newt.c_lflag &= ~( ICANON | ECHO );
+	//Set new terminal settings
+  	tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+}
+void Menu::displayMarquee()
+{
+	std::string tmp;
+	int msgSize = marqueeMsg.length();
+	for (int i = 0; i < barWidth; ++i)
+	{
+		tmp.clear();
+		if (i < msgPos || i > (msgPos + msgSize -1))
+		{
+			tmp += ' ';
+			Menu::buffer << text::styleString(tmp, text::Colour_White, text::Effect_Bold, text::Bkg_Black);
+		}
+		else if (i >= msgPos && i <= (msgPos + msgSize - 1))
+		{
+			tmp += marqueeMsg[i - msgPos];
+			Menu::buffer << text::styleString(tmp, text::Colour_Yellow, text::Effect_Bold, text::Bkg_Black);
+		}
+	}
+	Menu::buffer << std::endl;
+	msgPos--;
+	if (animFrame < (msgSize + barWidth))
+	{
+		++animFrame;
+	}
+	else
+	{
+		animFrame = 0;
+		msgPos = barWidth;
+	}
+}
+int Menu::getTimeoutCmd()
+{
+	fd_set fdset;
+	struct timeval timeout;
+   	int  rc;
+   	int  value;
+
+   	timeout.tv_sec = 0;   /* wait for x seconds for data */
+   	timeout.tv_usec = inputTimeout;		/* 500000 is 0.5 seconds ? */
+
+   	FD_ZERO(&fdset);
+   	FD_SET(0, &fdset);
+
+   	rc = select(1, &fdset, NULL, NULL, &timeout);
+   	if (rc == -1)  /* select failed */
+   	{
+	   	value = -1;
+   	}
+   	else if (rc == 0)  /* select timed out */
+   	{
+	   	value = -1;
+   	}
+   	else 
+   	{
+	  	//Get content (arrow keys or enter)
+	  	value = getchar();
+	  	if (value == 27)	//If the character is a '^[', it's probably an arrow key
+		{
+			value = getchar();
+			value = getchar() + 128;
+		}	
+   	}
+   	return value;
 }
 bool Menu::notExited(const int result)
 {

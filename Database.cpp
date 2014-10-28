@@ -2,11 +2,6 @@
 
 Database::Database()
 {
-	// set current log file name according to current date
-	std::ostringstream os;
-	os << getDate() << ".log";
-	logFilename = os.str();
-	std::cout << "log file name today: " << logFilename << std::endl;
 	load();
 }
 
@@ -76,7 +71,7 @@ void Database::addAccount(const Account &acc)
 {
 	accounts.push_back(acc);
 	saveAccounts();
-	addLog("Added new account. Username: " + acc.getUsername());
+	log.addLog("Added new account. Username: " + acc.getUsername());
 }
 
 bool Database::getAccount(const std::string &request, Account &acc)
@@ -109,7 +104,7 @@ void Database::editAccount(const Account &acc)
 	if (edited)
 	{
 		saveAccounts();
-		addLog("Edited account. Username: " + acc.getUsername());
+		log.addLog("Edited account. Username: " + acc.getUsername());
 	}
 }
 
@@ -117,7 +112,7 @@ void Database::addConference(const Conference &con)
 {
 	conferences.push_back(con);
 	saveConferences();
-	addLog("Added new conference. Conference Name: " + con.getName());
+	log.addLog("Added new conference. Conference Name: " + con.getName());
 }
 
 bool Database::getConference(const std::string &request, Conference &con)
@@ -150,7 +145,7 @@ void Database::editConference(Conference &con)
 	if (edited)
 	{
 		saveConferences();
-		addLog("Edited conference. Conference Name: " + con.getName());
+		log.addLog("Edited conference. Conference Name: " + con.getName());
 	}
 }
 
@@ -158,7 +153,7 @@ void Database::addSubmission(const Submission &sub)
 {
 	submissions.push_back(sub);
 	saveSubmissions();
-	addLog("Added new submission. Title: " + sub.getTitle());
+	log.addLog("Added new submission. Title: " + sub.getTitle());
 }
 
 bool Database::getSubmission(const std::string &request, Submission &sub)
@@ -191,14 +186,14 @@ void Database::editSubmission(Submission &sub)
 	if (edited)
 	{
 		saveSubmissions();
-		addLog("Edited submission. Title: " + sub.getTitle());
+		log.addLog("Edited submission. Title: " + sub.getTitle());
 	}
 }
 
 void Database::setupFiles()
 {
 	// log set up
-	addLog("Initialised database.");
+	log.addLog("Initialised database.");
 	std::cout << "First time set up." << std::endl;
 	// create default admin account
 	Account admin;
@@ -245,7 +240,26 @@ bool Database::checkFile(const std::string &filename)
 	return status;
 }
 
-void Database::addLog(const std::string &aEvent)
+void Database::update()
+{
+	log.updateLogDate();
+}
+
+LogManager::LogManager()
+{
+	updateLogDate();
+	// set current log file name according to current date
+	std::cout << "log file name today: " << logFilename << std::endl;
+}
+
+void LogManager::updateLogDate()
+{
+	std::ostringstream os;
+	os << getDate() << ".log";
+	logFilename = os.str();
+}
+
+void LogManager::addLog(const std::string &aEvent)
 {
 	std::string timestamp = getTimestamp();
 	std::cout << "Logging event - " << timestamp << ": " << aEvent << std::endl;
@@ -268,7 +282,7 @@ void Database::addLog(const std::string &aEvent)
 	fout << timestamp << ": " << aEvent << std::endl;
 	fout.close();
 }
-void Database::getRecentLog(std::vector<std::string> &list)
+void LogManager::getRecentLog(std::vector<std::string> &list)
 {
 	std::ifstream fin;
 	std::ostringstream fullFilename;
@@ -298,7 +312,7 @@ void Database::getRecentLog(std::vector<std::string> &list)
 	}
 }
 
-int Database::countLogFileLines(const std::string &filename)
+int LogManager::countLogFileLines(const std::string &filename)
 {
 	std::ifstream fin(filename.c_str());
 	   

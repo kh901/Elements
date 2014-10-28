@@ -467,10 +467,155 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="ADD_AUTHOR"){
 		addMember(packet, client, Account::Access_Author);
 	}
+	else if (protocol=="CHANGE_MAX_ALLOCATED_CONF"){
+		changeLimit(packet, client, "ALLOCATED");
+	}
+	else if (protocol=="CHANGE_MAX_PAPERREVIEWERS_CONF"){
+		changeLimit(packet, client, "PAPERREV");
+	}
+	else if (protocol=="GET_MAX_ALLOCATED_CONF"){
+		getLimit(packet, client, "ALLOCATED");
+	}
+	else if (protocol=="GET_MAX_PAPERREVIEWERS_CONF"){
+		getLimit(packet, client, "PAPERREV");
+	}
+	else if (protocol=="GET_FULLNAME"){
+		getAccountName(packet, client);
+	}
+	else if (protocol=="VIEW_REVIEW"){
+		getReview(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
 }
+
+void ServerController::getLimit(sf::Packet &packet, sf::TcpSocket &client, const std::string &mode)
+{
+	sf::Packet response;
+	std::string username, conference;
+	sf::Int16 limit;
+	packet >> username >> conference >> limit;
+	// authenticate request
+	int accIndex = checkAccount(username);
+	if (accIndex == -1)
+	{
+		return;
+	}
+	// authenticate conference
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
+	if (mode == "ALLOCATED")
+	{
+		limit = conferences[confIndex].getMaxReviewedPapers();
+	}
+	else if (mode == "PAPERREV")
+	{
+		limit = conferences[confIndex].getMaxPaperReviewers();
+	}
+	response << limit;
+	client.send(response);
+}
+
+void ServerController::changeLimit(sf::Packet &packet, sf::TcpSocket &client, const std::string &mode)
+{
+	std::string username, conference;
+	sf::Int16 val;
+	packet >> username >> conference >> val;
+	int setVal = val;
+	// authenticate request
+	int accIndex = checkAccount(username);
+	if (accIndex == -1)
+	{
+		return;
+	}
+	// authenticate conference
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
+	// authenticate privileges
+	if (accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
+	{
+		return;
+	}
+	if (val > 0 && val < MAXIMUM_USEABLEINT_LIMIT)
+	{
+		if (mode == "ALLOCATED")
+		{
+			conferences[confIndex].setMaxReviewedPapers(setVal);
+		}
+		else if (mode == "PAPERREV")
+		{
+			conferences[confIndex].setMaxPaperReviewers(setVal);
+		}
+	}
+}
+
+void ServerController::getAccountName(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username, target, first, last;
+	bool exists = false;
+	packet >> username >> target;
+	// authenticate request
+	if (checkAccount(username) == -1)
+	{
+		return;
+	}
+	int targetIndex = checkAccount(target);
+	if (targetIndex != -1)
+	{
+		first = accounts[targetIndex].getFirstName();
+		last = accounts[targetIndex].getLastName();
+		exists = true;
+		response << exists << first << last;
+		client.send(response);
+		return;
+	}
+	response << exists;
+	client.send(response);
+}
+void ServerController::getReview(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username, conf, id;
+	Review aReview;
+	bool found = false;
+	packet >> username >> conf >> id;
+	// authenticate request
+	if (checkAccount(username) == -1)
+	{
+		return;
+	}
+	// authenticate conference
+	if (checkConference(conf) == -1)
+	{
+		return;
+	}
+	// find review with id
+	std::vector<Review>::iterator it;
+	for (it = reviews.begin(); it != reviews.end(); ++it)
+	{
+		if (it->getReviewID() == id)
+		{
+			aReview = *it;
+			found = true;
+			break;
+		}
+	}
+	response << found;
+	if (found)
+	{
+		response << aReview;
+	}
+	client.send(response);
+}
+		
 
 void ServerController::addMember(sf::Packet &packet, sf::TcpSocket &client, Account::AccessLevel level)
 {
@@ -481,31 +626,19 @@ void ServerController::addMember(sf::Packet &packet, sf::TcpSocket &client, Acco
 	bool success = false;
 	
 	int findIndex = checkAccount(username);
-	if (findIndex == -1)
-	{
-		success = false;
-		response << success;
-		client.send(response);
-		return;
-	}
 	int targetIndex = checkAccount(targetUser);
-	if (targetIndex == -1)
-	{
-		success = false;
-		response << success;
-		client.send(response);
-		return;
-	}
 	int confIndex = checkConference(conference);
-	if (confIndex == -1)
+	if (findIndex == -1 || targetIndex == -1 || confIndex == -1)
 	{
 		success = false;
 		response << success;
 		client.send(response);
 		return;
 	}
-	// access to the conference in the target user's accessmap
+	// add access to the conference in the target user's accessmap
 	accounts[targetIndex].addAccess(conference, level);
+	// add welcome notification to the user
+	addNotification(targetUser, "Welcome to " + conference + "!");
 	success = true;
 	response << success;
 	client.send(response);
@@ -806,16 +939,16 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	// check that they have admin rights to the conference
 	Account::AccessLevel access = accounts[findIndex].getAccess(conference);
 	
-	if (conferences[confIndex].getCurrentPhase() == "Allocation")
+	if (access >= Account::Access_Chairman)
 	{
-		std::cout << "Semi auto allocation for conference " << conference << std::endl;
-		allocate(conference);
-		std::cout << "Finished allocation" << std::endl;
-	}
+		if (conferences[confIndex].getCurrentPhase() == "Allocation")
+		{
+			std::cout << "Semi auto allocation for conference " << conference << std::endl;
+			allocate(conference);
+			std::cout << "Finished allocation" << std::endl;
+		}
 	
-	if (access == Account::Access_Admin)
-	{
-		std::cout << "Moving from " << conferences[confIndex].getCurrentPhase();
+		std::cout << username << " moved Conference " << conference << " from " << conferences[confIndex].getCurrentPhase();
 		conferences[confIndex].advancePhase();
 		std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
 		notifyConference(conference, conference + " is now in " + conferences[confIndex].getCurrentPhase());
@@ -841,6 +974,7 @@ void ServerController::allocate(const std::string &conference)
 	{
 		if (submissions[i].getConference() == conference)
 		{
+			std::cout << "Allocating reviewers for Paper " << submissions[i].getTitle() << std::endl;
 			reviewerCount = submissions[i].getReviewerCount();
 			maxReviewer = conferences[confIndex].getMaxPaperReviewers();
 			maxPapers = conferences[confIndex].getMaxReviewedPapers();
@@ -865,6 +999,10 @@ void ServerController::allocate(const std::string &conference)
 						}
 					}
 				}
+			}
+			if (reviewerCount == 0)
+			{
+				std::cout << "This paper has no reviewers assigned to it!" << std::endl;
 			}
 		}
 	}
@@ -895,6 +1033,21 @@ void ServerController::getNotifications(sf::Packet &packet, sf::TcpSocket &clien
 	clearNotifications(username);
 }
 
+void ServerController::checkNotifyCount(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username;
+	packet >> username;
+	int findIndex = checkAccount(username);		//get Account index
+	if (findIndex == -1)
+	{
+		return;		// ignore request if user is not found
+	}
+	int notifyCount = getNotificationCount(username);
+	response << notifyCount;
+	client.send(response);
+}
+
 void ServerController::notifyConference(const std::string &conf, const std::string &msg)
 {
 	for (int i = 0; i < (int)accounts.size(); ++i)
@@ -909,6 +1062,11 @@ void ServerController::notifyConference(const std::string &conf, const std::stri
 void ServerController::addNotification(const std::string &username, const std::string &str)
 {
 	notifications[username].push_back(str);
+}
+
+int ServerController::getNotificationCount(const std::string &user)
+{
+	return notifications[user].size();
 }
 
 void ServerController::clearNotifications(const std::string &username)
@@ -960,6 +1118,7 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 		conferences.push_back(addConf);
 		// add conference to user access map
 		accounts[findIndex].addAccess(addConf.getName(), Account::Access_Admin);
+		addNotification(username, "Welcome to " + addConf.getName() + "!");
 		// add conference to reviewers access map
 		std::vector<std::string> revs;
 		addConf.getReviewers(revs);
@@ -969,6 +1128,7 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 			if (getIndex != -1)
 			{
 				accounts[getIndex].addAccess(addConf.getName(), Account::Access_Reviewer);
+				addNotification(revs[i], "Welcome to " + addConf.getName() + "!");
 			}
 		}
 	}

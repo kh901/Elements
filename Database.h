@@ -24,6 +24,31 @@
 #define SYSTEM_ADMIN_DEFAULT_USERNAME "cms_admin"
 #define SYSTEM_ADMIN_DEFAULT_PASSWORD "cms_password"
 
+/*
+	A class that thinly wraps a vector so that it can intercept when its contents is changed.
+	It can manage saving itself as well as loading itself from a given filename.
+*/
+class Resource
+{
+	public:
+	private:
+};
+
+class LogManager
+{
+	public:
+		LogManager();
+	
+		// automatically adds the timestamp to the front of the log event
+		void addLog(const std::string &);
+		void getRecentLog(std::vector<std::string> &);
+		void updateLogDate();
+	private:
+		// current log filename - based on the current date
+		std::string logFilename;
+		int countLogFileLines(const std::string &);
+};
+
 class Database
 {
 	public:
@@ -60,20 +85,15 @@ class Database
 		
 		bool checkFile(const std::string &);
 		
-		// Logging
-		// automatically adds the timestamp to the front of the log event
-		void addLog(const std::string &);
-		void getRecentLog(std::vector<std::string> &);
+		void update();
 	private:
 		// data structures in memory
 		std::vector<Account> accounts;
 		std::vector<Conference> conferences;
 		std::vector<Submission> submissions;
 		
-		// current log filename - based on the current date
-		std::string logFilename;
+		LogManager log;
 		
-		int countLogFileLines(const std::string &);
 		void setupFiles();
 		bool filesExist();
 };

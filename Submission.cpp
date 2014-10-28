@@ -168,9 +168,19 @@ void Submission::view()
     for(int i = 0; i < (int)authors.size(); i++)
         std::cout << authors[i].firstname << " " << authors[i].surname << std::endl;
     std::cout << "Description: " << description;
+    std::cout << "Keywords: ";
+    std::ostringstream ks;
+    for (int w = 0; w < (int)keywords.size(); ++w)
+    {
+    	ks << keywords[w] << (w != (int)(keywords.size()-1) ? ", " : "");
+    }
+    std::cout << ks.str();
+    std::cout << "Status: " << status;
     std::cin.ignore(1, '\n');
     
     // erase display
+    Menu::eraseLine("Status: " + status);
+    Menu::eraseLine("Keywords: " + ks.str());
     Menu::eraseLine("Description: " + description);
     for (int e = (int)(authors.size()-1); e >= 0; e--)
     {
@@ -198,6 +208,7 @@ int Submission::getReviewerCount() const
 }		
 bool Submission::hasReviewer(const std::string &user)
 {
+	// return (std::find(reviewers.begin(), reviewers.end(), user) != reviewers.end());
 	for (int i = 0; i < (int)reviewers.size(); ++i)
 	{
 		if (reviewers[i] == user)
@@ -207,6 +218,14 @@ bool Submission::hasReviewer(const std::string &user)
 	}
 	return false;
 }
+void Submission::removeReviewer(const std::string &user)
+{
+	if (hasReviewer(user))
+	{
+		reviewers.erase(std::find(reviewers.begin(), reviewers.end(), user));
+	}
+}
+
 bool Submission::hasKeyword(const std::string &word) const
 {
 	return (std::find(keywords.begin(), keywords.end(), word) != keywords.end()); 

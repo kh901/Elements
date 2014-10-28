@@ -262,7 +262,7 @@ void UserController::registerAccount()
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("Email: " + email);
 		
-		std::cout << "Univerisity: ";
+		std::cout << "University: ";
 		std::cin >> uni;
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("University: " + uni);
@@ -340,6 +340,7 @@ void UserController::mainMenu()
 	std::ostringstream menuTitle;
 	menuTitle << "Main Menu - " << conference << "\nWelcome " << username;
 	Menu accessMenu;
+	accessMenu.setMarquee("This is a test marquee", 0.3);
 	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
 	int option = 0;
 	do
@@ -428,6 +429,7 @@ void UserController::prepareFinalReview(const std::string &paper)
 	socket.send(request);
 	socket.receive(response);
 	
+	// request a list of reviews filled with review ids
 	std::vector<std::string> list;
 	int size;
 	response >> size;
@@ -470,9 +472,45 @@ void UserController::prepareFinalReview(const std::string &paper)
 		// view the details of each non final review
 		else if (option != -1 && option != backOption)
 		{
-			
+			viewReview(list[option]);
 		}
 	} while (detailReviewMenu.notExited(option));
+}
+
+void UserController::viewReview(const std::string &id)
+{
+	sf::Packet request, response;
+	std::string protocol = "VIEW_REVIEW";
+	bool found;
+	request << protocol << username << conference << id;
+	
+	socket.send(request);
+	socket.receive(response);
+	Review tmpReview;
+	response >> found;
+	if (found)
+	{
+		std::string first, last;
+		getAccountName(tmpReview.getPCMember(), first, last);
+		response >> tmpReview;
+		tmpReview.view(first, last);
+	}
+}
+
+bool UserController::getAccountName(const std::string &target, std::string &first, std::string &last)
+{
+	sf::Packet request, response;
+	bool exists;
+	std::string protocol = "GET_FULLNAME";
+	request << protocol << username << target;
+	socket.send(request);
+	socket.receive(response);
+	response >> exists;
+	if (exists)
+	{
+		response >> first >> last;
+	}
+	return exists;
 }
 
 void UserController::logOut()
@@ -722,11 +760,6 @@ void UserController::viewSubmissions()
 			option = viewSubMenu.doMenu();
 			if (option != (int)(subList.size()-1) && option != -1)
 			{
-				/*
-				std::cout << "Viewing sub: " << subList[option];
-				std::cin.ignore(1, '\n');
-				viewSubMenu.eraseLine(subList[option] + "Viewing sub: ");
-				*/
 				detailSub(subList[option]);
 			}
 		} while (viewSubMenu.notExited(option));
@@ -949,7 +982,7 @@ bool UserController::createReviewForm(Review &rev)
 		"Enter Suggestions",
 		"Enter Short Paper Remark",
 		"Enter Best Paper Remark",
-		"Enter Remarks",
+		"Enter Remarks for PC Members",
 		"Set subreviewer's details",
 		"Enter evaluations",
 		"Submit",
@@ -959,6 +992,9 @@ bool UserController::createReviewForm(Review &rev)
 	form.setOptions("Detail review", fields, 10);
 	int option = 0, submitOption = 8, cancelOption = 9;
 	std::string buffer;
+	int overallEval [1] = {0};
+	int revConf [1] = {0};
+	int scores [6] = {3, 3, 3, 3, 3, 3};
 	do
 	{
 		option = form.doMenu();
@@ -970,6 +1006,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter strengths: " + buffer);
 			rev.setStrengths(buffer);
+			fields[0] = "Enter Strengths\n    " + buffer;
 			break;
 			// weaknesses
 			case 1:
@@ -977,6 +1014,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter weaknesses: " + buffer);
 			rev.setWeaknesses(buffer);
+			fields[1] = "Enter Weaknesses\n    " + buffer;
 			break;
 			// suggestions
 			case 2:
@@ -984,6 +1022,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter suggestions: " + buffer);
 			rev.setSuggestions(buffer);
+			fields[2] = "Enter Suggestions\n    " + buffer;
 			break;
 			// short paper
 			case 3:
@@ -991,6 +1030,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter short paper remark: " + buffer);
 			rev.setShortPaper(buffer);
+			fields[3] = "Enter Short Paper Remark\n    " + buffer;
 			break;
 			// best paper
 			case 4:
@@ -998,6 +1038,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter best paper remark: " + buffer);
 			rev.setBestPaper(buffer);
+			fields[4] = "Enter Best Paper Remark\n    " + buffer;
 			break;
 			// remarks
 			case 5:
@@ -1005,6 +1046,7 @@ bool UserController::createReviewForm(Review &rev)
 			getline(std::cin, buffer);
 			Menu::eraseLine("Enter remarks for PC members: " + buffer);
 			rev.setRemarks(buffer);
+			fields[5] = "Enter Best Paper Remark\n    " + buffer;
 			break;
 			// sub reviewer's details
 			case 6:
@@ -1022,12 +1064,12 @@ bool UserController::createReviewForm(Review &rev)
 				getline(std::cin, email);
 				Menu::eraseLine("Enter sub reviewer email: " + email);
 				rev.setReviewer(first, last, email);
+				fields[6] = "Set subreviewer's details\n    " + first + " " + last + "\n    " + email;
 			}
 			break;
 			// evaluations value menu
 			case 7:
 			{
-				int overallEval [1] = {0};
 				std::string overallEvalStr [1] = {
 					"Overall Evaluation: "
 				};
@@ -1038,10 +1080,10 @@ bool UserController::createReviewForm(Review &rev)
 				overallMenu.disableBackButton();
 				overallMenu.setLastAsChoice();
 				overallMenu.setShowControls();
+				
 				overallMenu.doMenu();
 				rev.setOverallEvaluation(overallEval[0]);
 				
-				int revConf [1] = {0};
 				std::string revConfStr [1] = {
 					"Reviewer Confidence: "
 				};
@@ -1052,10 +1094,10 @@ bool UserController::createReviewForm(Review &rev)
 				revConfMenu.disableBackButton();
 				revConfMenu.setLastAsChoice();
 				revConfMenu.setShowControls();
+				
 				revConfMenu.doMenu();
 				rev.setReviewerConfidence(revConf[0]);
 				
-				int scores [6] = {3, 3, 3, 3, 3, 3};
 				std::string scoreStr [6] = {
 					"Relevance: ",
 					"Originality: ",
@@ -1071,6 +1113,7 @@ bool UserController::createReviewForm(Review &rev)
 				scoreMenu.disableBackButton();
 				scoreMenu.setLastAsChoice();
 				scoreMenu.setShowControls();
+				
 				scoreMenu.doMenu();
 				rev.setRelevance(scores[0]);
 				rev.setOriginality(scores[1]);
@@ -1134,7 +1177,7 @@ void UserController::configuration()
 					this->getPhase();
 					configurationMenuOptions[0] = "Current Phase: " + phase;
     			}
-                break;
+            break;
             // add reviewers
             case 2:
             	do
@@ -1144,14 +1187,14 @@ void UserController::configuration()
             		getline(std::cin, tmpReviewer);
             		Menu::eraseLine("Enter reviewer name: " + tmpReviewer);
             		
-            		if (!addReviewer(tmpReviewer))
+            		if (!addMember(tmpReviewer, "ADD_REVIEWER"))
             		{
             			std::cout << "Error: Could not add reviewer to conference.";
             			std::cin.ignore(1, '\n');
             			Menu::eraseLine("Error: Could not add reviewer to conference.");
             		}
             	} while (confirmMenu("Add more reviewers?"));
-                break;
+            break;
             // add authors
             case 3:
             	do
@@ -1161,49 +1204,109 @@ void UserController::configuration()
             		getline(std::cin, tmpAuthor);
             		Menu::eraseLine("Enter author name: " + tmpAuthor);
             		
-            		if (!addAuthor(tmpAuthor))
+            		if (!addMember(tmpAuthor, "ADD_AUTHOR"))
             		{
             			std::cout << "Error: Could not add author to conference.";
             			std::cin.ignore(1, '\n');
             			Menu::eraseLine("Error: Could not add author to conference.");
             		}
             	} while (confirmMenu("Add more authors?"));
-                break;
+            break;
+            // change number of papers that reviewers can review
             case 4:
-            	break;
+            {
+            	int limit;
+            	do
+            	{
+            		std::string input;
+            		std::cout << "Enter new papers per reviewer limit: ";
+            		getline(std::cin, input);
+            		Menu::eraseLine("Enter new papers per reviewer limit: " + input);
+            		limit = atoi(input.c_str());
+            		if (limit > 0)
+            		{
+            			changeAllocLimit(limit, "CHANGE_MAX_ALLOCATED_CONF");
+            			std::ostringstream os;
+            			limit = getAllocLimit("GET_MAX_ALLOCATED_CONF");
+            			os << "Papers per reviewer limit is now " << limit;
+            			std::cout << os.str();
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine(os.str());
+            		} 
+            		else
+            		{
+            			std::cout << "Invalid limit. Limit must be 1 or more.";
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine("Invalid limit. Limit must be 1 or more.");
+            		}
+            	} while (limit <= 0);
+            }
+            break;
+            // change number of reviewers that can be assigned to a paper
             case 5:
-            	break;
+            {
+            	int limit;
+            	do
+            	{
+            		std::string input;
+            		std::cout << "Enter new reviewers per paper limit: ";
+            		getline(std::cin, input);
+            		Menu::eraseLine("Enter new reviewers per paper limit: " + input);
+            		limit = atoi(input.c_str());
+            		if (limit > 0)
+            		{
+            			changeAllocLimit(limit, "CHANGE_MAX_PAPERREVIEWERS_CONF");
+            			std::ostringstream os;
+            			limit = getAllocLimit("GET_MAX_PAPERREVIEWERS_CONF");
+            			os << "Reviewers per paper limit is now " << limit;
+            			std::cout << os.str();
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine(os.str());
+            		} 
+            		else
+            		{
+            			std::cout << "Invalid limit. Limit must be 1 or more.";
+            			std::cin.ignore(1, '\n');
+            			Menu::eraseLine("Invalid limit. Limit must be 1 or more.");
+            		}
+            	} while (limit <= 0);
+            }
+           	break;
             case 6:
-            	break;
+            break;
     	}
     } while (configurationMenu.notExited(option));
 }
 
-bool UserController::addAuthor(const std::string &author)
+int UserController::getAllocLimit(const std::string &protocol)
 {
 	sf::Packet request, response;
-	std::string protocol = "ADD_AUTHOR";
+	sf::Int16 receiveVal;
+	request << protocol << username << conference;
+	socket.send(request);
+	socket.receive(response);
+	response >> receiveVal;
+	return receiveVal;
+}
+
+void UserController::changeAllocLimit(const int val, const std::string &protocol)
+{
+	sf::Packet request;
+	sf::Int16 transmittedVal = val;
+	request << protocol << username << conference << transmittedVal;
+	socket.send(request);
+}
+
+bool UserController::addMember(const std::string &user, const std::string &protocol)
+{
+	sf::Packet request, response;
 	bool result = false;
-	request << protocol << username << conference << author;
+	request << protocol << username << conference << user;
 	socket.send(request);
 	socket.receive(response);
 	response >> result;
 	return result;
 }
-
-bool UserController::addReviewer(const std::string &reviewer)
-{
-	sf::Packet request, response;
-	std::string protocol = "ADD_REVIEWER";
-	bool result = false;
-	request << protocol << username << conference << reviewer;
-	socket.send(request);
-	socket.receive(response);
-	response >> result;
-	return result;
-}
-
-
 
 void UserController::getPhase()
 {

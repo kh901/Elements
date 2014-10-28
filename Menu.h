@@ -14,6 +14,10 @@
 #include <unistd.h>
 //END INPUT STUFF
 
+//TIME STUFF
+#include <sys/time.h>
+//END TIME STUFF
+
 #include "common.h"
 
 namespace text
@@ -81,6 +85,7 @@ class Menu
 		void setSelectColour(const text::Colour);
 		void setBarWidth(const int);
 		void setValueBounds(const int, const int);
+		void setMarquee(const std::string&, const double);
 		static void eraseLine(const std::string &);
         static void eraseLine(int);
         static void clearDisplay();
@@ -105,19 +110,30 @@ class Menu
 		 
 		bool disableBack;
 		bool doesLastReturn;
+		bool hasMarquee;
 		
 		// menu appearance
 		DisplayMode displayMode;
 		bool showControls;
 		int visibleNum;
 		int scrollIndex;
-		text::Colour selectColour;
 		int barWidth;
 		std::string BAR;
+		text::Colour selectColour;
 		
+		// scroller 
+		struct termios oldSettings;
+		std::string marqueeMsg;
+		int inputTimeout;
+		int msgPos;
+		int animFrame;
+		
+		int getTimeoutCmd();
 		static int getCmd();
 		void clearLastDisplay();
 		void fillBar();
+		void unsetTimeout();
+		void setTimeout();
 	protected:
 		void displayOption(const int);
 		void displayValue(const int);
@@ -129,6 +145,7 @@ class Menu
 		void displayPaged(const int);
 		void displayScrollBar(const int);
 		void displayControls();
+		void displayMarquee();
 };
 
 #endif

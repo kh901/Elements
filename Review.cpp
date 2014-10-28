@@ -4,12 +4,12 @@ Review::Review()
 {
 	overallEvaluation = 0;
 	reviewerConfidence = 0;
-	relevance = 0;
-	originality = 0;
-	significance = 0;
-	presentation = 0;
-	technicalQuality = 0;
-	evaluation = 0;
+	relevance = 3;
+	originality = 3;
+	significance = 3;
+	presentation = 3;
+	technicalQuality = 3;
+	evaluation = 3;
 	final = false;
 }
 
@@ -272,6 +272,93 @@ std::string Review::getReviewerLast()
 std::string Review::getReviewerEmail()
 {
 	return reviewerEmail;
+}
+
+void Review::view(const std::string &first, const std::string &last)
+{
+	bool hasSubReviewer = (reviewerFirstName.length() > 0 && reviewerLastName.length() > 0);
+	if (final)
+	{
+		std::cout << "This is the final review for this paper." << std::endl;
+	}
+	std::cout << "Review ID: " << reviewID << std::endl;
+	std::cout << "Conference: " << conference << std::endl;
+	std::cout << "Paper: " << title << std::endl;
+	std::cout << "Reviewer: " << first << " " << last << std::endl;
+	std::cout << "Strengths: " << strengths << std::endl;
+	std::cout << "Weaknesses: " << weaknesses << std::endl;
+	std::cout << "Suggestions: " << suggestions << std::endl;
+	std::cout << "Remark for short paper listing: " << shortPaper << std::endl;
+	std::cout << "Remark for best paper award: " << bestPaper << std::endl;
+	std::cout << "Remarks for PC members: " << remarks << std::endl;
+	std::cout << std::endl;
+	if (hasSubReviewer)
+	{
+		std::cout << "Sub reviewer name: " << reviewerFirstName << " " << reviewerLastName << std::endl;
+		std::cout << "Sub reviewer email: " << reviewerEmail << std::endl;
+		std::cout << std::endl;
+	}
+	std::ostringstream scores;
+	scores << "Overall evaluation: " << overallEvaluation << '\n';
+	scores << "Reviewer confidence: " << reviewerConfidence << '\n';
+	scores << "Relevance: " << relevance << '\n';
+	scores << "Originality: " << originality << '\n';
+	scores << "Significance: " << significance << '\n';
+	scores << "Presentation: " << presentation << '\n';
+	scores << "Technical Quality: " << technicalQuality << '\n';
+	scores << "Evaluation: " << evaluation << '\n';
+	std::cout << scores.str();
+	
+	std::cin.ignore(1, '\n');
+	// clean up display
+	scores.str("");
+	scores << overallEvaluation;
+	Menu::eraseLine("Evaluation: " + scores.str());
+	scores.str("");
+	scores << technicalQuality;
+	Menu::eraseLine("Technical Quality: " + scores.str());
+	scores.str("");
+	scores << presentation;
+	Menu::eraseLine("Presentation: " + scores.str());
+	scores.str("");
+	scores << significance;
+	Menu::eraseLine("Significance: " + scores.str());
+	scores.str("");
+	scores << originality;
+	Menu::eraseLine("Originality: " + scores.str());
+	scores.str("");
+	scores << relevance;
+	Menu::eraseLine("Relevance: " + scores.str());
+	scores.str("");
+	scores << reviewerConfidence;
+	Menu::eraseLine("Reviewer confidence: " + scores.str());
+	scores.str("");
+	scores << overallEvaluation;
+	Menu::eraseLine("Overall evaluation: " + scores.str());
+	Menu::eraseLine(0);
+	
+	if (hasSubReviewer)
+	{
+		Menu::eraseLine("Sub reviewer email: " + reviewerEmail);
+		Menu::eraseLine("Sub reviewer name: " + reviewerFirstName + " " + reviewerLastName);
+		Menu::eraseLine(0);
+	}
+	
+	Menu::eraseLine("Remarks for PC members: " + remarks);
+	Menu::eraseLine("Remark for best paper award: " + bestPaper);
+	Menu::eraseLine("Remark for short paper listing: " + shortPaper);
+	Menu::eraseLine("Suggestions: " + suggestions);
+	Menu::eraseLine("Weaknesses: " + weaknesses);
+	Menu::eraseLine("Strengths: " + strengths);
+	Menu::eraseLine("Reviewer: " + first + " " + last);
+	Menu::eraseLine("Paper: " + title);
+	Menu::eraseLine( "Conference: " + conference);
+	Menu::eraseLine("Review ID: " + reviewID);
+	
+	if (final)
+	{
+		Menu::eraseLine("This is the final review for this paper.");
+	}
 }
 
 void Review::writeFile(std::ofstream &ofs) const

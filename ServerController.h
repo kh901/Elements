@@ -13,6 +13,8 @@
 #ifndef SERVER_CONTROLLER
 #define SERVER_CONTROLLER
 
+#define MAXIMUM_USEABLEINT_LIMIT 256000
+
 typedef std::map< std::string, std::deque<std::string> > NotifyMap;
 
 class ServerController
@@ -50,8 +52,14 @@ class ServerController
 		void getReviewList(sf::Packet&, sf::TcpSocket&);
 		void sendSubDetail(sf::Packet&, sf::TcpSocket&);
 		void addMember(sf::Packet&, sf::TcpSocket&, Account::AccessLevel);
+		void getAccountName(sf::Packet&, sf::TcpSocket&);
+		void getReview(sf::Packet&, sf::TcpSocket&);
+		void changeLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
+		void getLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
+		void checkNotifyCount(sf::Packet&, sf::TcpSocket&);
 		
 		void addNotification(const std::string &user, const std::string &str);
+		int getNotificationCount(const std::string &user);
 		void clearNotifications(const std::string &user);
 		
 		int checkSubmission(const std::string &, const std::string &);

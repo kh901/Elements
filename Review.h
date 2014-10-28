@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include "Menu.h"
 #include "File.h"
 #include <SFML/Network.hpp>
 
@@ -63,6 +64,8 @@ class Review : public FileIO
 		
 		void setFinal();
 		bool getFinal();
+		
+		void view(const std::string &, const std::string &);
 
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;

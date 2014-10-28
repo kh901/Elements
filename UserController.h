@@ -5,6 +5,7 @@
 #include "Review.h"
 
 #include <ctime>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -49,11 +50,14 @@ class UserController
        	bool connect();
        	void finalise();
         
+        void viewReview(const std::string &);
+       	bool getAccountName(const std::string &, std::string &, std::string &);
+        void changeAllocLimit(const int, const std::string &);
+        int getAllocLimit(const std::string &);
         bool createReviewForm(Review &);
         void detailSub(const std::string &);
         void prepareFinalReview(const std::string &);
-        bool addAuthor(const std::string &);
-        bool addReviewer(const std::string &);
+        bool addMember(const std::string &, const std::string &);
         void getAllocations(std::vector<std::string> &);
         void getBidList(std::vector<std::string> &);
         void bidPaper();
