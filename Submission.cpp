@@ -43,6 +43,9 @@ void Submission::setReviewed(){
 	reviewed = true;
 }
 
+bool Submission::getReviewed(){
+	return reviewed;
+}
 void Submission::accept()
 {
 	status = "Accepted";

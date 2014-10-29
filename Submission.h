@@ -58,6 +58,7 @@ class Submission : public FileIO
 		void withdraw();
 
 		void setReviewed();
+		bool getReviewed();
 		void accept();
 		void reject();
 		std::string getStatus() const;

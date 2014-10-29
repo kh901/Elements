@@ -75,7 +75,7 @@ class ServerController
 		void bidPaper(sf::Packet&, sf::TcpSocket&);
 		void notifyConference(const std::string &, const std::string &, Account::AccessLevel = Account::Access_Author);
 		void autoAllocate();
-		void allocate(const std::string &);
+		bool allocate(const std::string &);
 		void getAllocations(sf::Packet&, sf::TcpSocket&);
 		void submitReview(sf::Packet&, sf::TcpSocket&);
 		void getComments(sf::Packet&, sf::TcpSocket&);
@@ -86,6 +86,7 @@ class ServerController
 		void checkPaperAlloc(sf::Packet&, sf::TcpSocket&);
 		void getFreeReviewers(sf::Packet&, sf::TcpSocket&);
 		void assignReviewer(sf::Packet&, sf::TcpSocket&);
+		bool checkAllFinalised(const std::string&);
 };
 
 #endif

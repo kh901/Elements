@@ -7,7 +7,6 @@ ServerController::ServerController()
 
 void ServerController::autoAllocate()
 {
-
 	std::cout << "Allocating..." << std::endl;
 	int numOfReviewers = 0;
 	int maxReviewers = 0;
@@ -1029,9 +1028,7 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 			if (submissions[i].getTitle() == paperTitle)
 			{
 				if (submissions[i].hasReviewer(username))
-				{
-					submissions[i].setReviewed();
-					
+				{					
 					// overwrite the old review by this reviewer
 					bool exists = false;
 					for (int q = 0; q < (int)reviews.size(); ++q)
@@ -1057,6 +1054,7 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 					if (review.getFinal())
 					{
 						std::cout << "Submitted review is final" << std::endl;
+						submissions[i].setReviewed();
 					}
 					break;
 				}
@@ -1268,10 +1266,28 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 	client.send(response);
 }
 
+bool ServerController::checkAllFinalised(const std::string &conference)
+{
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if (!submissions[i].getReviewed())
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
 void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 {
+	sf::Packet response;
 	std::string username, conference;
 	bool valid = false;
+	bool result = true;
 	packet >> username >> conference;
 
 	int findIndex = checkAccount(username);		//get Account index
@@ -1290,27 +1306,48 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (access >= Account::Access_Chairman)
 	{
+		std::string reason;
 		std::string oldAdvancePhase = conferences[confIndex].getCurrentPhase();
 		if (oldAdvancePhase == "Allocation")
 		{
 			std::cout << "Semi auto allocation for conference " << conference << std::endl;
-			allocate(conference);
+			result = allocate(conference);
+			if (!result)
+			{
+				reason = "There are some papers that could not be auto allocated.\nPlease manually allocate reviewers to the papers using\nManual Allocation option under Manage Reviews.";
+			}
 			std::cout << "Finished allocation" << std::endl;
 		}
 		// auto reject all papers in a conference that have not been approved
 		else if (oldAdvancePhase == "Finalising")
 		{
+			result = checkAllFinalised(conference);
+			if (!result)
+			{
+				reason = "There are papers that have not had their final review completed.\nPlease complete the final reviews.";
+			}
 			autoRejectPapers(conference);
 		}
 		else if (oldAdvancePhase == "Completed")
 		{
-			return;		// ignore this request
+			result = true;		// ignore this request
 		}
 	
-		std::cout << username << " moved Conference " << conference << " from " << oldAdvancePhase;
-		conferences[confIndex].advancePhase();
-		std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
+		response << result;
+		
+		if (!result)
+		{
+			response << reason;
+			std::cout << conference << " could not be moved from " << oldAdvancePhase << std::endl;
+		}
+		else
+		{
+			std::cout << username << " moved Conference " << conference << " from " << oldAdvancePhase;
+			conferences[confIndex].advancePhase();
+			std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
+		}
 		notifyConference(conference, conference + " is now in " + conferences[confIndex].getCurrentPhase());
+		client.send(response);
 	}
 }
 
@@ -1351,7 +1388,7 @@ void ServerController::autoRejectPapers(const std::string &conference)
 	}
 }
 
-void ServerController::allocate(const std::string &conference)
+bool ServerController::allocate(const std::string &conference)
 {
 	int reviewerCount = 0;
 	int maxReviewer = 0;
@@ -1359,11 +1396,12 @@ void ServerController::allocate(const std::string &conference)
 	int spotsLeft = 0;
 	std::string username, firstname, lastname;
 	bool verdict = false;
+	bool allAllocated = true;
 	
 	int confIndex = checkConference(conference);
 	if (confIndex == -1)
 	{
-		return;
+		return false;
 	}
 	
 	for (int i = 0; i < (int)submissions.size(); i++)
@@ -1385,7 +1423,7 @@ void ServerController::allocate(const std::string &conference)
 					if (verdict == true && spotsLeft > 0)
 					{
 						username = accounts[j].getUsername();
-						if (!submissions[i].hasReviewer(username) && 
+						if (!submissions[i].hasReviewer(username) &&
 								!submissions[i].isAuthorIncluded(firstname, lastname) &&
 									accounts[j].incrementAllocated(conference, maxPapers) )
 						{
@@ -1400,9 +1438,12 @@ void ServerController::allocate(const std::string &conference)
 			if (reviewerCount == 0)
 			{
 				std::cout << "This paper has no reviewers assigned to it!" << std::endl;
+				allAllocated = false;
 			}
 		}
 	}
+	
+	return allAllocated;
 }
 
 void ServerController::getNotifications(sf::Packet &packet, sf::TcpSocket &client)
