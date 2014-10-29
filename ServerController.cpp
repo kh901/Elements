@@ -571,8 +571,10 @@ void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &clien
 	for (int i = 0; i < (int)reviewerList.size(); i++)
 	{
 		int findIndex = checkAccount(reviewerList[i]);
+		std::cout << "Displaying Reviewers: " << reviewerList[i] << std::endl;
 		if (accounts[findIndex].checkAllocation(conference, maxReviewers))
 		{
+			std::cout << "Pushing" << std::endl;
 			freeList.push_back(reviewerList[i]);
 		}
 	}
@@ -658,9 +660,7 @@ void ServerController::getReviewers(sf::Packet &packet, sf::TcpSocket &client)
 	
 	for (int i = 0; i < (int)reviewer.size(); i++)
 	{
-		std::string temp;
-		temp = reviewer[i];
-		response << temp;
+		response << reviewer[i];
 	}
 	
 	client.send(response);
@@ -930,6 +930,10 @@ void ServerController::addMember(sf::Packet &packet, sf::TcpSocket &client, Acco
 	}
 	// add access to the conference in the target user's accessmap
 	accounts[targetIndex].addAccess(conference, level);
+	if (level == Account::Access_Reviewer)
+	{
+		conferences[confIndex].addReviewer(targetUser);
+	}
 	// add welcome notification to the user
 	addNotification(targetUser, "Welcome to " + conference + "!");
 	success = true;
