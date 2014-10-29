@@ -504,9 +504,53 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="DID_REVIEW"){
 		checkReviewed(packet, client);
 	}
+	else if (protocol=="FINAL_REVIEW"){
+		getFinalReview(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::getFinalReview(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username, conference, paper;
+	std::string finalRev;
+	bool exists = false;
+	packet >> username >> conference >> paper;
+	// authenticate request
+	int accIndex = checkAccount(username);
+	if (accIndex == -1)
+	{
+		return;
+	}
+	// authenticate conference
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
+	if (accounts[accIndex].getAccess(conference))
+	{
+		for (int i = 0; i < (int)reviews.size(); ++i)
+		{
+			if (reviews[i].getConference() == conference &&
+				reviews[i].getTitle() == paper &&
+					reviews[i].getFinal())
+			{
+				finalRev = reviews[i].getReviewID();
+				exists = true;
+				break;
+			}
+		}
+		response << exists << finalRev;
+	}
+	else
+	{
+		response << exists;
+	}
+	client.send(response);
 }
 
 void ServerController::checkReviewed(sf::Packet &packet, sf::TcpSocket &client)

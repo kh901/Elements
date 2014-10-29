@@ -541,46 +541,6 @@ void Menu::clearDisplay()
 	std::cout << "\x1B[1;1f";
 }
 
-/*
-	Menu test;
-	test.setOptions("Normal Menu", opts, 3);
-	switch(test.doMenu())
-	{
-		case 0:
-			
-		break;
-		case 1:
-			
-		break;
-		case 2:
-			
-		break;
-	}
-
-	Menu vtest;
-	vtest.setOptions("Value Menu", opts, 3);
-	vtest.setValues(val);
-	cout << "Picked: " << vtest.doMenu() << endl;
-
-	Menu dtest;
-	dtest.setOptions("Describe Menu", opts, 3);
-	dtest.setDescriptions(desc);
-	cout << "Picked: " << dtest.doMenu() << endl;
-	*/
-
-/*
-
-	string menuDesc[6] = {
-		"View information about your account.", 
-		"Manage paper submissions.", 
-		"Manage notifications.",
-		"Configure options.",
-		"Manage reviews for assigned papers.",
-		"Log out of the system."
-	};
-
-*/
-
 std::string text::styleString(const std::string & str, text::Colour col, text::Effect eft, text::Background bkg)
 {
 	std::ostringstream os;

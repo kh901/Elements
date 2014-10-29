@@ -50,6 +50,7 @@ class UserController
        	bool connect();
        	void finalise();
         
+        bool getFinalReview(const std::string &, std::string &);
         bool hasReviewed(const std::string &);
         void viewMyReview(const std::string &);
         void updateMainMenuMarquee(std::ostringstream &);

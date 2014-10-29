@@ -59,6 +59,7 @@ class ServerController
 		void getLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
 		void checkNotifyCount(sf::Packet&, sf::TcpSocket&);
 		void decidePaper(sf::Packet&, sf::TcpSocket&, const bool);
+		void getFinalReview(sf::Packet&, sf::TcpSocket&);
 		
 		void addNotification(const std::string &user, const std::string &str);
 		int getNotificationCount(const std::string &user);

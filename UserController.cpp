@@ -186,11 +186,11 @@ bool UserController::loginAccount()
 	
 	while(valid==false && invalidCount < MAX_INVALID_LOGINS){
 		std::cout<<"Username: ";
-		getline(std::cin, tmpUser);
+		std::cin>>tmpUser;
 		std::cin.ignore(1, '\n');
 		
 		std::cout<<"Password: ";
-		getline(std::cin, tmpPass);
+		std::cin>>tmpPass;
 		std::cin.ignore(1, '\n');
 		
 		Menu::eraseLine(tmpPass + "Password: ");
@@ -349,6 +349,18 @@ void UserController::updateMainMenuMarquee(std::ostringstream &msg)
 void UserController::mainMenu()
 {
 	if (conference.length() <= 0) { return; }
+	
+	std::string menuDesc[7] = {
+		"Manage your account details.", 
+		"Manage notifications.", 
+		"Manage paper submissions.",
+		"Manage reviews for assigned papers.",
+		"Finalise papers for the conference.",
+		"Configure conference options.",
+		"Log out of the system."
+	};
+	if (level > 0 && level < 3) { menuDesc[2+level] = "Log out of the system."; }
+	
 	std::vector<std::string> fullOptions;
 	fillMainMenu(fullOptions);
 	std::ostringstream menuTitle, marqueeText;
@@ -358,6 +370,7 @@ void UserController::mainMenu()
 	Menu accessMenu;
 	accessMenu.setMarquee(marqueeText.str(), 0.3);
 	accessMenu.setOptions(menuTitle.str(), &fullOptions[0], fullOptions.size());
+	accessMenu.setDescriptions(menuDesc);
 	int option = 0;
 	do
 	{
@@ -471,7 +484,7 @@ void UserController::prepareFinalReview(const std::string &paper)
 		list.push_back(tmp);
 	}
 	list.push_back("Create final review");
-	list.push_back("Approve submission");
+	list.push_back("Approve / Reject submission");
 	list.push_back("Back");
 	
 	Menu detailReviewMenu;
@@ -860,7 +873,18 @@ void UserController::viewSubmissions()
 			option = viewSubMenu.doMenu();
 			if (option != (int)(subList.size()-1) && option != -1)
 			{
-				detailSub(subList[option]);
+				// if the conference has been completed 
+				// give access to the final review for their paper
+				std::string finalRevId;
+				if (phase == "Completed" && getFinalReview(subList[option], finalRevId)
+					&& confirmMenu("Do you want to see the final review?"))
+				{
+					viewReview(finalRevId);
+				}
+				else
+				{
+					detailSub(subList[option]);
+				}
 			}
 		} while (viewSubMenu.notExited(option));
 	}
@@ -870,6 +894,22 @@ void UserController::viewSubmissions()
 		std::cin.ignore(1, '\n');
 		Menu::eraseLine("No submissions!");
 	}
+}
+
+bool UserController::getFinalReview(const std::string &paper, std::string &final)
+{
+	sf::Packet request, response;
+	bool exists;
+	std::string protocol = "FINAL_REVIEW";
+	request << protocol << username << conference << paper;
+	socket.send(request);
+	socket.receive(response);
+	response >> exists;
+	if (exists)
+	{
+		response >> final;
+	}
+	return exists;
 }
 
 void UserController::detailSub(const std::string &title)
