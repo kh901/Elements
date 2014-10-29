@@ -544,7 +544,8 @@ void ServerController::assignReviewer(sf::Packet &packet, sf::TcpSocket &client)
 		{
 			if (submissions[i].getTitle() == paperTitle)
 			{
-				if (!submissions[i].isAuthorIncluded(firstname, lastname))
+				if (!submissions[i].isAuthorIncluded(firstname, lastname)
+					&& !submissions[i].hasReviewer(targetUsername))
 				{
 					submissions[i].addReviewer(targetUsername);
 					accounts[findIndex].incrementAllocated(conference, maxReviewers);
