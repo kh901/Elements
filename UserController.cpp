@@ -1541,10 +1541,19 @@ void UserController::configuration()
     			// confirm choice with user
     			if (confirmMenu("Advance to next phase?"))
     			{
-    				this->advancePhase();
-    				// get next phase by request
-					this->getPhase();
-					configurationMenuOptions[0] = "Current Phase: " + phase;
+    				std::string failReason;
+    				if (this->advancePhase(failReason))
+    				{
+						// get next phase by request
+						this->getPhase();
+						configurationMenuOptions[0] = "Current Phase: " + phase;
+					}
+					else
+					{
+						std::cout << "Error: " << failReason;
+						std::cin.ignore(1, '\n');
+						Menu::eraseLine("Error: " + failReason);
+					}
     			}
             break;
             // add reviewers
@@ -1687,12 +1696,20 @@ void UserController::getPhase()
 	response >> phase;
 }
 
-void UserController::advancePhase()
+bool UserController::advancePhase(std::string &reason)
 {
-	sf::Packet request;
+	bool result = false;
+	sf::Packet request, response;
 	std::string protocol = "ADVANCE_PHASE";
 	request << protocol << username << conference;
 	socket.send(request);
+	socket.receive(response);
+	response >> result;
+	if (!result)
+	{
+		response >> reason;
+	}
+	return result;
 }
 
 void UserController::discussion()

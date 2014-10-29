@@ -77,7 +77,7 @@ class UserController
         void bidPaper();
         void submitReview();
         void getPhase();
-        void advancePhase();
+        bool advancePhase(std::string &);
         bool loginAccount();
         void registerAccount();
        	bool pickConference();

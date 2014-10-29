@@ -13,7 +13,7 @@ std::string encrypt(const std::string &str)
 	//std::cout << "Sum: " << sum << std::endl;
 	for (int i = 0; i < (int)result.length(); ++i)
 	{
-		result[i] = result[i] ^ static_cast<char>(sum);
+		result[i] = result[i] ^ static_cast<char>(sum * i ^ result[i] ^ result.length());
 	}
 	return result;
 }
