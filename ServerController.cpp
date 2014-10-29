@@ -1611,8 +1611,8 @@ void ServerController::getAdminStatus(sf::Packet &packet, sf::TcpSocket &client)
 void ServerController::getSubmissions(sf::Packet &packet, sf::TcpSocket &client)
 {
 	sf::Packet subPacket;
-	std::string username;
-	packet >> username;
+	std::string username, conference;
+	packet >> username >> conference;
 	std::string firstname, lastname, fullname;
 	
 	int findIndex = checkAccount(username);		//get Account index
@@ -1629,12 +1629,15 @@ void ServerController::getSubmissions(sf::Packet &packet, sf::TcpSocket &client)
 	std::vector<std::string> sub;
 	int count=0;
 	
-	for(int i=0;i<submissions.size();i++)
+	for(int i=0;i<(int)submissions.size();i++)
 	{
-		if(submissions[i].isAuthorIncluded(firstname, lastname))
+		if (submissions[i].getConference() == conference)
 		{
-			count++;
-			sub.push_back(submissions[i].getTitle());
+			if(submissions[i].isAuthorIncluded(firstname, lastname))
+			{
+				count++;
+				sub.push_back(submissions[i].getTitle());
+			}
 		}
 	}
 	
