@@ -57,11 +57,14 @@ class ServerController
 		void changeLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
 		void getLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
 		void checkNotifyCount(sf::Packet&, sf::TcpSocket&);
+		void decidePaper(sf::Packet&, sf::TcpSocket&, const bool);
 		
 		void addNotification(const std::string &user, const std::string &str);
 		int getNotificationCount(const std::string &user);
 		void clearNotifications(const std::string &user);
 		
+		void autoNotifyAuthors(const Submission &);
+		void autoRejectPapers(const std::string &);
 		int checkSubmission(const std::string &, const std::string &);
 		int checkAccount(std::string, std::string = "#USERNAMEONLY");//
 		bool conferenceExists(const std::string &);

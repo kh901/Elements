@@ -83,6 +83,7 @@ class Submission : public FileIO
 		void addAuthor(const std::string &, const std::string &);
 		Submission & operator=(const Submission &);
 		bool isAuthorIncluded(const std::string &, const std::string &);
+		void getAuthors(std::vector<Fullname> &) const;
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;
 		void readFile(std::ifstream &);

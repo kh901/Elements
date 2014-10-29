@@ -471,13 +471,15 @@ void UserController::prepareFinalReview(const std::string &paper)
 		list.push_back(tmp);
 	}
 	list.push_back("Create final review");
+	list.push_back("Approve submission");
 	list.push_back("Back");
 	
 	Menu detailReviewMenu;
 	detailReviewMenu.setOptions("Finalise submissions > Finalise Review", &list[0], list.size());
 	detailReviewMenu.setPaged();
 	detailReviewMenu.setVisibleNum(5);
-	int option, backOption = (int)(list.size()-1), createOption = (int)(list.size()-2);
+	int option, backOption = (int)(list.size()-1), createOption = (int)(list.size()-3);
+	int approveOption = (int)(list.size()-2);
 	do
 	{
 		option = detailReviewMenu.doMenu();
@@ -499,6 +501,18 @@ void UserController::prepareFinalReview(const std::string &paper)
 				socket.send(request);
 				option = -1;
 			}
+		}
+		// approve or reject this paper
+		else if (option == approveOption)
+		{
+			sf::Packet request;
+			std::string protocol = "APPROVE_PAPER";
+			if (!confirmMenu("Do you want to approve this paper? \n(Answering No will reject the paper)"))
+			{
+				protocol = "REJECT_PAPER";
+			}
+			request << protocol << username << conference << paper;
+			socket.send(request);
 		}
 		// view the details of each non final review
 		else if (option != -1 && option != backOption)
@@ -1018,7 +1032,7 @@ bool UserController::createReviewForm(Review &rev)
 		"Cancel"
 	};
 	Menu form;
-	form.setOptions("Detail review", fields, 10);
+	form.setOptions("Fill out a review", fields, 10);
 	int option = 0, submitOption = 8, cancelOption = 9;
 	std::string buffer;
 	int overallEval [1] = {0};

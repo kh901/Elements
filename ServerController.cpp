@@ -492,8 +492,51 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="NOTIFY_COUNT"){
 		checkNotifyCount(packet, client);
 	}
+	else if (protocol=="APPROVE_PAPER"){
+		decidePaper(packet, client, true);
+	}
+	else if (protocol=="REJECT_PAPER"){
+		decidePaper(packet, client, false);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
+	}
+}
+
+void ServerController::decidePaper(sf::Packet &packet, sf::TcpSocket &client, const bool approved)
+{
+	std::string username, conference, paper;
+	packet >> username >> conference >> paper;
+	// authenticate request
+	int accIndex = checkAccount(username);
+	if (accIndex == -1)
+	{
+		return;
+	}
+	// authenticate conference
+	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
+	// authenticate privileges
+	if (accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
+	{
+		return;
+	}
+	// authenticate paper
+	int paperIndex = checkSubmission(paper, conference);
+	if (paperIndex == -1)
+	{
+		return;		// ignore request if submission does not exist
+	}
+	if (approved)
+	{
+		submissions[paperIndex].accept();
+	}
+	else
+	{
+		submissions[paperIndex].reject();
 	}
 }
 
@@ -689,7 +732,7 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 		{
 			if (revList[r] != username)
 			{
-				addNotification(revList[r], username + " has added a new comment for Paper " + subTitle);
+				addNotification(revList[r], username + " has commented for Paper " + subTitle);
 			}
 		}
 	}
@@ -971,17 +1014,64 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (access >= Account::Access_Chairman)
 	{
-		if (conferences[confIndex].getCurrentPhase() == "Allocation")
+		std::string oldAdvancePhase = conferences[confIndex].getCurrentPhase();
+		if (oldAdvancePhase == "Allocation")
 		{
 			std::cout << "Semi auto allocation for conference " << conference << std::endl;
 			allocate(conference);
 			std::cout << "Finished allocation" << std::endl;
 		}
+		// auto reject all papers in a conference that have not been approved
+		else if (oldAdvancePhase == "Finalising")
+		{
+			autoRejectPapers(conference);
+		}
+		else if (oldAdvancePhase == "Completed")
+		{
+			return;		// ignore this request
+		}
 	
-		std::cout << username << " moved Conference " << conference << " from " << conferences[confIndex].getCurrentPhase();
+		std::cout << username << " moved Conference " << conference << " from " << oldAdvancePhase;
 		conferences[confIndex].advancePhase();
 		std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
 		notifyConference(conference, conference + " is now in " + conferences[confIndex].getCurrentPhase());
+	}
+}
+
+void ServerController::autoNotifyAuthors(const Submission &sub)
+{
+	std::vector<Fullname> list;
+	std::string paper = sub.getTitle();
+	std::string status = sub.getStatus();
+	sub.getAuthors(list);
+	for (int e = 0; e < (int)list.size(); ++e)
+	{
+		std::string authFirst = list[e].firstname;
+		std::string authLast = list[e].surname;
+		for (int w = 0; w < (int)accounts.size(); ++w)
+		{
+			std::string accountFirst = accounts[w].getFirstName();
+			std::string accountLast = accounts[w].getLastName();
+			if (accountFirst == authFirst && accountLast == authLast &&
+					accounts[w].hasAccess(sub.getConference()))
+			{
+				addNotification(accounts[w].getUsername(), paper + " has been " + status);
+			}
+		}
+	}
+}
+
+void ServerController::autoRejectPapers(const std::string &conference)
+{
+	for (int i = 0; i < (int)submissions.size(); ++i)
+	{
+		std::string status = submissions[i].getStatus();
+		if (submissions[i].getConference() == conference && 
+			status == "Pending")
+		{
+			submissions[i].reject();
+		}
+		autoNotifyAuthors(submissions[i]);
 	}
 }
 

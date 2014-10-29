@@ -101,6 +101,11 @@ bool Submission::isAuthorIncluded(const std::string &aFirst, const std::string &
 	return false;
 }
 
+void Submission::getAuthors(std::vector<Fullname> &list) const
+{
+	list = authors;
+}
+
 
 void Submission::submit()
 {
