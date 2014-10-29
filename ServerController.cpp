@@ -1731,7 +1731,7 @@ void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
 				{
 					int reviewerCount = submissions[i].getReviewerCount();
 					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
-					if (reviewerCount < maxPaperReviewers)
+					if (accounts[findIndex].incrementAllocated(conf, maxPaperReviewers))
 					{
 						submissions[i].addReviewer(username);
 						break;
