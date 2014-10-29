@@ -50,6 +50,7 @@ class Account : public FileIO
 		
 		// functions dealing with bidding and papers allocated to review
 		bool incrementAllocated(const std::string &, const int);
+		bool checkAllocation(const std::string &, const int);
 		
 		bool isSystemAdmin() { return accountType == Account_Admin; }
 		void setSystemAdmin() { accountType = Account_Admin; }			// this must only be done in necessary circumstances

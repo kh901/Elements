@@ -80,6 +80,12 @@ class ServerController
 		void submitReview(sf::Packet&, sf::TcpSocket&);
 		void getComments(sf::Packet&, sf::TcpSocket&);
 		void sendComments(sf::Packet&, sf::TcpSocket&);
+		
+		void getReviewers(sf::Packet&, sf::TcpSocket&);
+		void getConfSubmissions(sf::Packet&, sf::TcpSocket&);
+		void checkPaperAlloc(sf::Packet&, sf::TcpSocket&);
+		void getFreeReviewers(sf::Packet&, sf::TcpSocket&);
+		void assignReviewer(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif

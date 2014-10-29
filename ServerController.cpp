@@ -507,9 +507,163 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="FINAL_REVIEW"){
 		getFinalReview(packet, client);
 	}
+	else if (protocol=="CONF_REVIEWERS"){
+		getReviewers(packet, client);
+	}
+	else if (protocol=="CONF_SUBMISSIONS"){
+		getConfSubmissions(packet, client);
+	}
+	else if (protocol=="FILLED_ALLOCATION"){
+		checkPaperAlloc(packet, client);
+	}
+	else if (protocol=="GET_FREE_REVIEWERS"){
+		getFreeReviewers(packet, client);
+	}
+	else if (protocol=="ASSIGN_REVIEWER"){
+		assignReviewer(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::assignReviewer(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string conference, paperTitle, targetUsername;
+	std::string firstname, lastname;
+	
+	packet >> conference >> paperTitle >> targetUsername;
+	int findIndex = checkAccount(targetUsername);
+	firstname = accounts[findIndex].getFirstName();
+	lastname = accounts[findIndex].getLastName();
+	int confIndex = checkConference(conference);
+	int maxReviewers = conferences[confIndex].getMaxPaperReviewers();
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference);
+		{
+			if (submissions[i].getTitle() == paperTitle)
+			{
+				if (!submissions[i].isAuthorIncluded(firstname, lastname))
+				{
+					submissions[i].addReviewer(targetUsername);
+					accounts[findIndex].incrementAllocated(conference, maxReviewers);
+				}
+			}
+		}
+	}				
+}
+
+void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conference;
+	std::vector<std::string> reviewerList;
+	std::vector<std::string> freeList;
+	
+	packet >> conference;
+	
+	int confIndex = checkConference(conference);
+	conferences[confIndex].getReviewers(reviewerList);
+	int maxReviewers = conferences[confIndex].getMaxPaperReviewers();
+	
+	for (int i = 0; i < (int)reviewerList.size(); i++)
+	{
+		int findIndex = checkAccount(reviewerList[i]);
+		if (accounts[findIndex].checkAllocation(conference, maxReviewers))
+		{
+			freeList.push_back(reviewerList[i]);
+		}
+	}
+	
+	response << (int)freeList.size();
+	for (int i = 0; i < (int)freeList.size(); i++)
+	{
+		response << freeList[i];
+	}
+	
+	client.send(response);
+} 
+
+void ServerController::checkPaperAlloc(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conference, paperTitle;
+	int rev_count;
+	bool result = false;
+	
+	packet >> conference >> paperTitle;
+	
+	int confIndex = checkConference(conference);
+	int max_rev = conferences[confIndex].getMaxPaperReviewers();
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if (submissions[i].getConference() == conference)
+		{
+			if(submissions[i].getTitle() == paperTitle)
+			{
+				rev_count = submissions[i].getReviewerCount();
+				if (rev_count < max_rev)
+				{
+					result = true;
+					break;
+				}
+			}
+		}
+	}
+	response << result;
+	client.send(response);	
+}
+
+void ServerController::getConfSubmissions(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string conference;
+	std::vector<std::string> submission;
+	
+	packet >> conference;
+	
+	for (int i = 0; i < (int)submissions.size(); i++)
+	{
+		if(submissions[i].getConference() == conference)
+		{
+			submission.push_back(submissions[i].getTitle());
+		}
+	}
+	
+	response << (int)submission.size();
+	
+	for (int i = 0; i < (int)submission.size(); i++)
+	{
+		response << submission[i];
+	}
+	
+	client.send(response);
+}
+
+void ServerController::getReviewers(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string username, conference;
+	std::vector<std::string> reviewer;
+	
+	packet >> username >> conference;	
+
+	int confIndex = checkConference(conference);
+	conferences[confIndex].getReviewers(reviewer);
+	
+	response << (int)reviewer.size();
+	
+	for (int i = 0; i < (int)reviewer.size(); i++)
+	{
+		std::string temp;
+		temp = reviewer[i];
+		response << temp;
+	}
+	
+	client.send(response);
 }
 
 void ServerController::getFinalReview(sf::Packet &packet, sf::TcpSocket &client)
