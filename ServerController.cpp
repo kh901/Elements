@@ -1315,7 +1315,7 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 			result = allocate(conference);
 			if (!result)
 			{
-				reason = "There are some papers that could not be auto allocated.\nPlease manually allocate reviewers to the papers using\nManual Allocation option under Manage Reviews.";
+				reason = "Auto Allocation failed. Please manually allocate to rectify.";
 			}
 			std::cout << "Finished allocation" << std::endl;
 		}
@@ -1325,7 +1325,7 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 			result = checkAllFinalised(conference);
 			if (!result)
 			{
-				reason = "There are papers that have not had their final review completed.\nPlease complete the final reviews.";
+				reason = "Final reviews missing. Please complete the final reviews on all papers.";
 			}
 			autoRejectPapers(conference);
 		}
