@@ -59,7 +59,7 @@ class Account : public FileIO
 		void setUsername(const std::string &);
 		void setPassword(const std::string &);		// encrypts the given string with a one way encryption
 		bool matchUsername(const std::string &aUser) { return username == aUser; }
-		bool matchPassword(const std::string &, const bool encryptValue = true);
+		bool matchPassword(const std::string &, const bool doEncryption = true);
 				
 		// get/set details
 		void setFirstName(const std::string &aFirst);

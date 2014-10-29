@@ -43,9 +43,9 @@ Account::Account(const AccountType accType, const bool loginStatus)
 	loggedIn = loginStatus;
 }
 
-bool Account::matchPassword(const std::string &str, const bool encryptValue)
+bool Account::matchPassword(const std::string &str, const bool doEncryption)
 {
-	if (encryptValue)
+	if (doEncryption)
 	{
 		return password == encrypt(str);
 	}

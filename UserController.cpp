@@ -186,17 +186,17 @@ bool UserController::loginAccount()
 	
 	while(valid==false && invalidCount < MAX_INVALID_LOGINS){
 		std::cout<<"Username: ";
-		std::cin>>tmpUser;
+		getline(std::cin, tmpUser);
 		std::cin.ignore(1, '\n');
 		
 		std::cout<<"Password: ";
-		std::cin>>tmpPass;
+		getline(std::cin, tmpPass);
 		std::cin.ignore(1, '\n');
 		
 		Menu::eraseLine(tmpPass + "Password: ");
 		Menu::eraseLine(tmpUser + "Username: ");
 	
-		request << tmpUser << tmpPass;
+		request << tmpUser << encrypt(tmpPass);
 		socket.send(request);
 		socket.receive(response);
 		response >> valid;
@@ -1006,19 +1006,14 @@ void UserController::bidPaper()
 		{
 			if (confirmMenu("Bid for this paper? (Final decision)"))
 			{
-				bidIndex = pick;
+				sf::Packet request;
+				std::string protocol = "BID_PAPER";
+				request << protocol << username << conference << subList[pick];
+				socket.send(request);
 				pick = -1;
 			}
 		}
 	} while (bidMenu.notExited(pick));
-
-	if (bidIndex != -1)
-	{
-		sf::Packet request;
-		std::string protocol = "BID_PAPER";
-		request << protocol << username << conference << subList[bidIndex];
-		socket.send(request);
-	}
 }
 void UserController::getAllocations(std::vector<std::string> &list)
 {

@@ -318,7 +318,7 @@ int ServerController::checkAccount(std::string username, std::string password){
 	for(int i=0;i<accounts.size();i++){
 		if(accounts[i].matchUsername(username))
 		{
-			if (password=="#USERNAMEONLY" || accounts[i].matchPassword(password))
+			if (password=="#USERNAMEONLY" || accounts[i].matchPassword(password, false))
 			{
 				return i;
 			}
