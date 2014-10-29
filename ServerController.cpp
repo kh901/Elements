@@ -1721,7 +1721,7 @@ void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
 	int findIndex = checkAccount(username);
 	int confIndex = checkConference(conf);
 	
-	if (confIndex != -1)
+	if (confIndex != -1 && findIndex != -1)
 	{
 		if (conferences[confIndex].getCurrentPhase() == "Allocation")
 		{
