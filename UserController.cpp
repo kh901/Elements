@@ -1154,7 +1154,7 @@ void UserController::assignReviewers(const std::string &paper)
 			
 			socket.send(request);
 		}
-	} while (!assigned);
+	} while (!assigned && option != -1 && option != backOption);
 }
 bool UserController::needsAllocation(const std::string &paper)
 {
