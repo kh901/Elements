@@ -64,8 +64,6 @@ class Review : public FileIO
 		
 		void setFinal();
 		bool getFinal();
-		
-		void view();
 
 		// write and read this class to a binary file stream
 		void writeFile(std::ofstream &) const;

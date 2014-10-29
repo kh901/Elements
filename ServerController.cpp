@@ -451,7 +451,7 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 		getConferenceSubs(packet, client);
 	}
 	else if(protocol=="REVIEW_LIST"){
-		getReviewList(packet, client);
+		getReviewList(packet, client, true);
 	}
 	else if (protocol=="SUB_DETAIL"){
 		sendSubDetail(packet, client);
@@ -498,9 +498,45 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="REJECT_PAPER"){
 		decidePaper(packet, client, false);
 	}
+	else if (protocol=="MY_REVIEWS"){
+		getReviewList(packet, client, false);
+	}
+	else if (protocol=="DID_REVIEW"){
+		checkReviewed(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::checkReviewed(sf::Packet &packet, sf::TcpSocket &client)
+{
+	sf::Packet response;
+	std::string user, conference, paper, first, last;
+	packet >> user >> conference >> paper;
+	
+	// authenticate request
+	int	findIndex = checkAccount(user);
+	if (findIndex != -1)
+	{
+		first = accounts[findIndex].getFirstName();
+		last = accounts[findIndex].getLastName();
+	}
+	
+	bool hasReviewed = false;
+	for (int i = 0; i < (int)reviews.size(); ++i)
+	{
+		if (reviews[i].getTitle() == paper && reviews[i].getConference() == conference)
+		{
+			if (reviews[i].getPCMember() == (first + " " + last))
+			{
+				hasReviewed = true;
+				break;
+			}
+		}
+	}
+	response << hasReviewed;
+	client.send(response);
 }
 
 void ServerController::decidePaper(sf::Packet &packet, sf::TcpSocket &client, const bool approved)
@@ -792,9 +828,34 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 			{
 				if (submissions[i].hasReviewer(username))
 				{
-					std::cout << "Review submitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
 					submissions[i].setReviewed();
-					reviews.push_back(review);
+					
+					// overwrite the old review by this reviewer
+					bool exists = false;
+					for (int q = 0; q < (int)reviews.size(); ++q)
+					{
+						if (reviews[q].getConference() == conference &&
+							reviews[q].getTitle() == paperTitle &&
+								reviews[q].getPCMember() == (firstname + " " + lastname))
+						{
+							reviews[q] = review;		// overwrite the old review
+							exists = true;
+							break;
+						}
+					}
+					if (!exists)
+					{
+						std::cout << "Review submitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
+						reviews.push_back(review);
+					}
+					else
+					{
+						std::cout << "Review resubmitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
+					}
+					if (review.getFinal())
+					{
+						std::cout << "Submitted review is final" << std::endl;
+					}
 					break;
 				}
 			}
@@ -850,18 +911,31 @@ void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &clie
 	}	
 	client.send(response);
 }
-void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client)
+void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client, const bool allReviewers)
 {
 	sf::Packet response;
-	std::string conference, paperTitle;
+	std::string conference, paperTitle, user, first, last;
 	packet >> conference >> paperTitle;
+	int findIndex = -1;
+	if (!allReviewers)
+	{
+		packet >> user;
+		findIndex = checkAccount(user);
+		if (findIndex != -1)
+		{
+			first = accounts[findIndex].getFirstName();
+			last = accounts[findIndex].getLastName();
+		}
+	}
 	
 	std::vector<std::string> reviewIDs;
 	for (int i = 0; i < (int)reviews.size(); i++)
 	{
 		if (reviews[i].getConference() == conference)
 		{
-			if (reviews[i].getTitle() == paperTitle)
+			bool isOwnPaper = (reviews[i].getPCMember() == first + " " + last);
+			if (reviews[i].getTitle() == paperTitle && 
+					(allReviewers || !allReviewers && isOwnPaper))
 			{
 				reviewIDs.push_back(reviews[i].getReviewID());
 			}

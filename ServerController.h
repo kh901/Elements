@@ -49,11 +49,12 @@ class ServerController
 		void advancePhase(sf::Packet&, sf::TcpSocket&);
 		void bidList(sf::Packet&, sf::TcpSocket&);
 		void getConferenceSubs(sf::Packet&, sf::TcpSocket&);
-		void getReviewList(sf::Packet&, sf::TcpSocket&);
+		void getReviewList(sf::Packet&, sf::TcpSocket&, const bool);
 		void sendSubDetail(sf::Packet&, sf::TcpSocket&);
 		void addMember(sf::Packet&, sf::TcpSocket&, Account::AccessLevel);
 		void getAccountName(sf::Packet&, sf::TcpSocket&);
 		void getReview(sf::Packet&, sf::TcpSocket&);
+		void checkReviewed(sf::Packet&, sf::TcpSocket&);
 		void changeLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
 		void getLimit(sf::Packet&, sf::TcpSocket&, const std::string &);
 		void checkNotifyCount(sf::Packet&, sf::TcpSocket&);

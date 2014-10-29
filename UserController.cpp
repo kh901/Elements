@@ -536,7 +536,64 @@ void UserController::viewReview(const std::string &id)
 	if (found)
 	{
 		response >> tmpReview;
-		tmpReview.view();
+		std::vector<std::string> reviewDetails;
+		std::ostringstream os;
+		// manually set up a display menu for a review
+		reviewDetails.push_back("Conference: " + tmpReview.getConference());
+		reviewDetails.push_back("Paper: " + tmpReview.getTitle());
+		reviewDetails.push_back("PC Member: " + tmpReview.getPCMember());
+		reviewDetails.push_back("Strengths:\n   " + tmpReview.getStrengths());
+		reviewDetails.push_back("Weaknesses:\n    " + tmpReview.getWeaknesses());
+		reviewDetails.push_back("Suggestions:\n    " + tmpReview.getSuggestions());
+		reviewDetails.push_back("Remark for short paper listing:\n    " + tmpReview.getShortPaper());
+		reviewDetails.push_back("Remark for best paper award:\n    " + tmpReview.getBestPaper());
+		reviewDetails.push_back("Remarks for PC members:\n    " + tmpReview.getRemarks());
+		if (tmpReview.getReviewerFirst().length() > 0)
+		{
+			reviewDetails.push_back("Sub reviewer name: " + tmpReview.getReviewerFirst() + " " + 
+				tmpReview.getReviewerLast() + "\n  Sub reviewer email: " + tmpReview.getReviewerEmail());
+		}
+		os << "Overall evaluation: " << tmpReview.getOverallEvaluation();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Reviewer confidence: " << tmpReview.getReviewerConfidence();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Relevance: " << tmpReview.getRelevance();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Originality: " << tmpReview.getOriginality();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Significance: " << tmpReview.getSignificance();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Presentation: " << tmpReview.getPresentation();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Technical Quality: " << tmpReview.getTechnicalQuality();
+		reviewDetails.push_back(os.str());
+		os.str("");
+		os << "Evaluation: " << tmpReview.getEvaluation();
+		reviewDetails.push_back(os.str());
+		reviewDetails.push_back("Back");
+		
+		Menu display;
+		os.str("");
+		os << "Viewing review id: " << tmpReview.getReviewID();
+		if (tmpReview.getFinal())
+		{
+			os << " (Final Review)";
+		}
+		display.setOptions(os.str(), &reviewDetails[0], reviewDetails.size());
+		display.setPaged();
+		display.setVisibleNum(5);
+		int option;
+		do
+		{
+			option = display.doMenu();
+		} while (display.notExited(option));
+		
 	}
 }
 
@@ -997,22 +1054,76 @@ void UserController::submitReview()
 	Menu submit;
 	submit.setOptions("Reviews > Submit review", &subs[0], subs.size());
 	int option, cancelOption = (int)(subs.size()-1);
-	option = submit.doMenu();
-	if (option != -1 && option != cancelOption)
+	do
 	{
-		std::string paperTitle = subs[option];
-		Review tmpReview;
-		tmpReview.setTitle(paperTitle);
-		tmpReview.setConference(conference);
-		// use a form to enter in a review about this paper
-		if (createReviewForm(tmpReview))
+		option = submit.doMenu();
+		if (option != -1 && option != cancelOption)
 		{
-			request << protocol << username << conference << paperTitle;
-			request << tmpReview;
+			std::string paperTitle = subs[option];
+			if (hasReviewed(paperTitle) && !confirmMenu("Do you want to resubmit your review?"))
+			{
+				viewMyReview(paperTitle);
+			}
+			else
+			{
+				Review tmpReview;
+				tmpReview.setTitle(paperTitle);
+				tmpReview.setConference(conference);
+				// use a form to enter in a review about this paper
+				if (createReviewForm(tmpReview))
+				{
+					request << protocol << username << conference << paperTitle;
+					request << tmpReview;
 			
-			socket.send(request);
+					socket.send(request);
+				}
+			}
 		}
+	} while (submit.notExited(option));
+}
+
+bool UserController::hasReviewed(const std::string &paper)
+{
+	sf::Packet request, response;
+	std::string protocol = "DID_REVIEW";
+	request << protocol << username << conference << paper;
+	socket.send(request);
+	socket.receive(response);
+	bool result = false;
+	response >> result;
+	return result;
+}
+
+void UserController::viewMyReview(const std::string &paper)
+{
+	sf::Packet request, response;
+	std::string protocol = "MY_REVIEWS";
+	request << protocol << conference << paper << username;
+	socket.send(request);
+	socket.receive(response);
+	
+	int receiveNum = 0;
+	response >> receiveNum;
+	std::vector<std::string> idList;
+	for (int i = 0; i < receiveNum; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		idList.push_back(tmp);
 	}
+	idList.push_back("Back");
+	
+	Menu myReviewMenu;
+	myReviewMenu.setOptions("Submit Review > View My Reviews", &idList[0], idList.size());
+	int option, backOption = (int)(idList.size()-1);
+	do
+	{
+		option = myReviewMenu.doMenu();
+		if (option != -1 && option != backOption)
+		{
+			viewReview(idList[option]);	
+		}
+	} while (myReviewMenu.notExited(option));
 }
 
 bool UserController::createReviewForm(Review &rev)
@@ -1033,6 +1144,8 @@ bool UserController::createReviewForm(Review &rev)
 	};
 	Menu form;
 	form.setOptions("Fill out a review", fields, 10);
+	form.setScrolling();
+	form.setVisibleNum(4);
 	int option = 0, submitOption = 8, cancelOption = 9;
 	std::string buffer;
 	int overallEval [1] = {0};
@@ -1107,7 +1220,7 @@ bool UserController::createReviewForm(Review &rev)
 				getline(std::cin, email);
 				Menu::eraseLine("Enter sub reviewer email: " + email);
 				rev.setReviewer(first, last, email);
-				fields[6] = "Set subreviewer's details\n    " + first + " " + last + "\n    " + email;
+				fields[6] = "Set subreviewer's details\n    " + first + " " + last + ", " + email;
 			}
 			break;
 			// evaluations value menu
