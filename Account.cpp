@@ -91,15 +91,22 @@ void Account::endSession()
 {
 	loggedIn = false;
 }
-bool Account::incrementAllocated(const std::string &id, const int max)
+// returns true if under the max
+bool Account::checkAllocation(const std::string &id, const int max)
 {
 	std::map<std::string, int>::iterator it;
 	it = allocatedMap.find(id);
 	if (it == allocatedMap.end())
 	{
 		allocatedMap[id] = 0;
+		return true;
 	}
-	if (allocatedMap[id] < max)
+	return allocatedMap[id] < max;
+}
+
+bool Account::incrementAllocated(const std::string &id, const int max)
+{
+	if (checkAllocation(id, max))
 	{
 		allocatedMap[id] += 1;
 		return true;
