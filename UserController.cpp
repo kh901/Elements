@@ -1143,7 +1143,7 @@ void UserController::assignReviewers(const std::string &paper)
 	do
 	{
 		option = allocateMenu.doMenu();
-		if (option == -1 && option != backOption &&
+		if (option != -1 && option != backOption &&
 			confirmMenu("Allocate to this reviewer?"))
 		{
 			sf::Packet request;
