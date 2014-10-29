@@ -847,7 +847,7 @@ void UserController::viewSubmissions()
 {
 	sf::Packet request, response;
 	std::string protocol = "VIEW_SUBMISSIONS";
-	request << protocol << username;
+	request << protocol << username << conference;
 	
 	socket.send(request);			// send a request for a list of submissions
 	socket.receive(response);		// get response
