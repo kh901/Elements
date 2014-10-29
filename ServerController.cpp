@@ -633,9 +633,9 @@ void ServerController::getConfSubmissions(sf::Packet &packet, sf::TcpSocket &cli
 		}
 	}
 	
-	response << (int)submission;
+	response << (int)submission.size();
 	
-	for (int i = 0; i < (int)submission; i++)
+	for (int i = 0; i < (int)submission.size(); i++)
 	{
 		response << submission[i];
 	}
@@ -654,9 +654,9 @@ void ServerController::getReviewers(sf::Packet &packet, sf::TcpSocket &client)
 	int confIndex = checkConference(conference);
 	conferences[confIndex].getReviewers(reviewer);
 	
-	response << (int)reviewer;
+	response << (int)reviewer.size();
 	
-	for (int i = 0; i < (int)reviewer; i++)
+	for (int i = 0; i < (int)reviewer.size(); i++)
 	{
 		std::string temp;
 		temp = reviewer[i];
