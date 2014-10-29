@@ -138,13 +138,13 @@ void Conference::printReviewers()
 
 void Conference::addSubchair(const std::string &aSubchair)
 {
-	reviewers.push_back(aSubchair);
+	subchairs.push_back(aSubchair);
 }
 
 void Conference::printSubchairs()
 {
     std::vector<std::string>::iterator it;
-    for(it = subchairs.begin(); it != reviewers.end(); ++it)
+    for(it = subchairs.begin(); it != subchairs.end(); ++it)
     {
         std::cout << "Subchair: " << *it << std::endl;
     }
