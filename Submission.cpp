@@ -169,6 +169,7 @@ void Submission::submit()
 void Submission::view()
 {    
     std::cout << "Title: " << title << std::endl;
+    std::cout << "Conference: " << conference << std::endl;
     std::cout << "Authors: " << std::endl;
     for(int i = 0; i < (int)authors.size(); i++)
         std::cout << authors[i].firstname << " " << authors[i].surname << std::endl;
@@ -192,6 +193,7 @@ void Submission::view()
     	Menu::eraseLine(authors[e].firstname + " " + authors[e].surname);
     }
     Menu::eraseLine("Authors: ");
+    Menu::eraseLine("Conference: " + conference);
     Menu::eraseLine("Title: " + title);
 }
 

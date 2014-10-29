@@ -974,6 +974,11 @@ void UserController::reviews()
 	if (phase == "Allocation")
 	{
 		optionList.push_back(reviewMenuOptions[0]);
+		// if user is at least a chairman
+		if (level >= 3)
+		{
+			optionList.push_back("Manage Submission Allocation");
+		}
 	}
 	else if (phase == "Reviewing")
 	{
@@ -1005,8 +1010,181 @@ void UserController::reviews()
 			{
 				this->discussion();
 			}
+			else if (optionList[option].find("Allocation") != std::string::npos)
+			{
+				this->viewAllocations();
+			}
     	}
     } while(reviewMenu.notExited(option));
+}
+
+void UserController::viewAllocations()
+{
+	// display a list of all reviewer usernames, where selecting them will show
+	// their currently allocated papers
+	sf::Packet request, response;
+	std::string protocol = "CONF_REVIEWERS";
+	request << protocol << username << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	std::vector<std::string> reviewerList;
+	int reviewerListSize;
+	response >> reviewerListSize;
+	for (int i = 0; i < reviewerListSize; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		reviewerList.push_back(tmp);	
+	}
+	reviewerList.push_back("Allocate Reviewers");
+	reviewerList.push_back("Back");
+	
+	Menu viewAllocMenu;
+	viewAllocMenu.setOptions("Reviews > Manage Allocations", &reviewerList[0], reviewerList.size());
+	viewAllocMenu.setScrolling();
+	viewAllocMenu.setVisibleNum(5);
+	int option, allocateOption = (int)(reviewerList.size()-2), backOption = (int)(reviewerList.size()-1);
+	do
+	{
+		option = viewAllocMenu.doMenu();
+		// selected to manually allocate papers to reviewers
+		if (option == allocateOption)
+		{
+			doAllocations();
+		}
+		// selected a specific reviewer to see their current allocations
+		else if (option != -1 && option != backOption)
+		{
+			viewReviewerAllocations(reviewerList[option]);
+		}
+	} while (viewAllocMenu.notExited(option));
+}
+
+void UserController::getConferenceAlloc(std::vector<std::string> &unAllocList)
+{
+	sf::Packet request, response;
+	std::string protocol = "CONF_SUBMISSIONS";
+	request << protocol << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	int listSize = 0;
+	response >> listSize;
+	for (int i = 0; i < listSize; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		unAllocList.push_back(tmp);
+	}
+}
+
+void UserController::doAllocations()
+{
+	std::vector<std::string> paperList;
+	getConferenceAlloc(paperList);
+	paperList.push_back("Back");
+	
+	Menu allocPaperMenu;
+	allocPaperMenu.setOptions("Manage Allocations > Papers to allocate", 
+		&paperList[0], paperList.size());
+	int option, backOption = (int)(paperList.size()-1);
+	do
+	{
+		option = allocPaperMenu.doMenu();
+		if (option != -1 && option != backOption)
+		{
+			if (needsAllocation(paperList[option]))
+			{
+				assignReviewers(paperList[option]);
+			}
+			else
+			{
+				std::cout << "Paper does not need to be allocated.";
+				std::cin.ignore(1, '\n');
+				Menu::eraseLine("Paper does not need to be allocated.");
+			}
+		}
+	} while (allocPaperMenu.notExited(option));
+}
+void UserController::getFreeReviewers(std::vector<std::string> &list)
+{
+	sf::Packet request, response;
+	std::string protocol = "GET_FREE_REVIEWERS";
+	request << protocol << conference;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	int size = 0;
+	response >> size;
+	for (int i = 0; i < size; ++i)
+	{
+		std::string tmp;
+		response >> tmp;
+		list.push_back(tmp);
+	}
+}
+void UserController::assignReviewers(const std::string &paper)
+{
+	// get a list of reviewers that can be allocated to papers
+	std::vector<std::string> freeReviewerList;
+	getFreeReviewers(freeReviewerList);
+	freeReviewerList.push_back("Back");
+	
+	Menu allocateMenu;
+	allocateMenu.setOptions("Papers to allocate > Allocate reviewers", 
+		&freeReviewerList[0], freeReviewerList.size());
+	int option, backOption = (int)(freeReviewerList.size()-1);
+	bool assigned = false;
+	
+	do
+	{
+		option = allocateMenu.doMenu();
+		if (option == -1 && option != backOption &&
+			confirmMenu("Allocate to this reviewer?"))
+		{
+			sf::Packet request;
+			std::string protocol = "ASSIGN_REVIEWER";
+			request << protocol << conference << paper;
+			request << freeReviewerList[option];
+			assigned = true;
+			
+			socket.send(request);
+		}
+	} while (!assigned);
+}
+bool UserController::needsAllocation(const std::string &paper)
+{
+	sf::Packet request, response;
+	std::string protocol = "FILLED_ALLOCATION";
+	bool result = false;
+	request << protocol << conference << paper;
+	
+	socket.send(request);
+	socket.receive(response);
+	
+	response >> result;
+	return result;
+}
+void UserController::viewReviewerAllocations(const std::string &revUser)
+{
+	std::vector<std::string> allocList;
+	getAllocations(allocList, revUser);
+	allocList.push_back("Back");
+	
+	Menu displayAlloc;
+	displayAlloc.setOptions("Manage Allocations > Current Allocations for " + revUser, 
+		&allocList[0], allocList.size());
+	displayAlloc.setPaged();
+	displayAlloc.setVisibleNum(5);
+	int option;
+	do
+	{
+		option = displayAlloc.doMenu();
+	} while (displayAlloc.notExited(option));
 }
 
 void UserController::getBidList(std::vector<std::string> &list)
@@ -1055,12 +1233,12 @@ void UserController::bidPaper()
 		}
 	} while (bidMenu.notExited(pick));
 }
-void UserController::getAllocations(std::vector<std::string> &list)
+void UserController::getAllocations(std::vector<std::string> &list, const std::string &target)
 {
 	// send request to server to view submissions
 	sf::Packet request, response;
 	std::string protocol = "GET_ALLOCATIONS";
-	request << protocol << username << conference;
+	request << protocol << target << conference;
 	
 	socket.send(request);
 	socket.receive(response);
@@ -1082,7 +1260,7 @@ void UserController::submitReview()
 	sf::Packet request;
 	std::string protocol = "SUBMIT_REVIEW";
 	std::vector<std::string> subs;
-	getAllocations(subs);
+	getAllocations(subs, username);
 	subs.push_back("Cancel");
 
 	// select submission	
@@ -1524,7 +1702,7 @@ void UserController::discussion()
 	request << protocol << conference;
 	// send request to server to view submissions
 	std::vector<std::string> subs;
-	getAllocations(subs);
+	getAllocations(subs, username);
 	subs.push_back("Back");
 
 	// select submission	

@@ -50,6 +50,15 @@ class UserController
        	bool connect();
        	void finalise();
         
+        // Manual allocation
+        void getFreeReviewers(std::vector<std::string> &);
+        bool needsAllocation(const std::string &);
+        void assignReviewers(const std::string &);
+        void getConferenceAlloc(std::vector<std::string> &);
+        void doAllocations();
+        void viewReviewerAllocations(const std::string &);
+        void viewAllocations();
+        // ---------------------------------------------------
         bool getFinalReview(const std::string &, std::string &);
         bool hasReviewed(const std::string &);
         void viewMyReview(const std::string &);
@@ -63,7 +72,7 @@ class UserController
         void detailSub(const std::string &);
         void prepareFinalReview(const std::string &);
         bool addMember(const std::string &, const std::string &);
-        void getAllocations(std::vector<std::string> &);
+        void getAllocations(std::vector<std::string> &, const std::string &);
         void getBidList(std::vector<std::string> &);
         void bidPaper();
         void submitReview();
