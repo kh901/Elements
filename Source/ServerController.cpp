@@ -451,6 +451,10 @@ void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &clien
 	packet >> conference;
 	
 	int confIndex = checkConference(conference);
+	if (confIndex == -1)
+	{
+		return;
+	}
 	data.conferences[confIndex].getReviewers(reviewerList);
 	int maxReviewers = data.conferences[confIndex].getMaxPaperReviewers();
 	
@@ -458,11 +462,14 @@ void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &clien
 	for (int i = 0; i < (int)reviewerList.size(); i++)
 	{
 		int findIndex = checkAccount(reviewerList[i]);
-		std::cout << "Displaying Reviewers: " << reviewerList[i] << std::endl;
-		if (data.accounts[findIndex].checkAllocation(conference, maxReviewers))
+		if (findIndex != -1)
 		{
-			std::cout << "Pushing" << std::endl;
-			freeList.push_back(reviewerList[i]);
+			std::cout << "Displaying Reviewers: " << reviewerList[i] << std::endl;
+			if (data.accounts[findIndex].checkAllocation(conference, maxReviewers))
+			{
+				std::cout << "Pushing" << std::endl;
+				freeList.push_back(reviewerList[i]);
+			}
 		}
 	}
 	
@@ -485,6 +492,10 @@ void ServerController::checkPaperAlloc(sf::Packet &packet, sf::TcpSocket &client
 	packet >> conference >> paperTitle;
 	
 	int confIndex = checkConference(conference);
+	if(confIndex == -1)
+	{
+		return;
+	}
 	int max_rev = data.conferences[confIndex].getMaxPaperReviewers();
 	
 	for (int i = 0; i < (int)data.submissions.size(); i++)
@@ -541,6 +552,10 @@ void ServerController::getReviewers(sf::Packet &packet, sf::TcpSocket &client)
 	packet >> username >> conference;	
 
 	int confIndex = checkConference(conference);
+	if(confIndex == -1)
+	{
+		return;
+	}
 	data.conferences[confIndex].getReviewers(reviewer);
 	
 	response << (int)reviewer.size();
