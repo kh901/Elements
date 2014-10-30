@@ -27,17 +27,8 @@ class ServerController
 		std::list<sf::TcpSocket*> clients;
 		sf::SocketSelector selector;
 		Database data;
-		/*
-		std::vector<Account> accounts;
-		std::vector<Submission> submissions;
-		std::vector<Conference> conferences;
-		std::vector<Review> reviews;
-		*/
 		NotifyMap notifications;
 	
-		void loadFalseAccounts();//
-		void loadFalseConferences();
-		//void loadFalseSubmissions();//
 		void loginAccount(sf::Packet&, sf::TcpSocket&);//
 		bool registerAccount(sf::Packet&, sf::TcpSocket&);//
 		void processClient(sf::Packet&, sf::TcpSocket&);//
