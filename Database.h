@@ -26,16 +26,6 @@
 #define SYSTEM_ADMIN_DEFAULT_USERNAME "cms_admin"
 #define SYSTEM_ADMIN_DEFAULT_PASSWORD "cms_password"
 
-/*
-	A class that thinly wraps a vector so that it can intercept when its contents is changed.
-	It can manage saving itself as well as loading itself from a given filename.
-*/
-class Resource
-{
-	public:
-	private:
-};
-
 class LogManager
 {
 	public:
