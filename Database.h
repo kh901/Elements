@@ -1,6 +1,3 @@
-#ifndef DATABASE_H
-#define DATABASE_H
-
 #include <ctime>
 #include <iostream>
 #include <iterator>
@@ -13,10 +10,15 @@
 #include "Conference.h"
 #include "File.h"
 #include "Submission.h"
+#include "Review.h"
+
+#ifndef DATABASE_H
+#define DATABASE_H
 
 #define DATABASE_ACCOUNTS_FILENAME "./Storage/Data/elements_acc.bin"
 #define DATABASE_CONFERENCES_FILENAME "./Storage/Data/elements_con.bin"
 #define DATABASE_SUBMISSIONS_FILENAME "./Storage/Data/elements_sub.bin"
+#define DATABASE_REVIEWS_FILENAME "./Storage/Data/elements_rev.bin"
 
 #define DATABASE_PAPERS_DIRECTORY "./Storage/Papers/"
 #define DATABASE_LOGS_DIRECTORY "./Storage/Logs/"
@@ -53,16 +55,19 @@ class Database
 {
 	public:
 		Database();
+		~Database();
 		
 		// database management
 		void save();
 		void saveAccounts();
 		void saveConferences();
 		void saveSubmissions();
+		void saveReviews();
 		void load();
 		void loadAccounts();
 		void loadConferences();
 		void loadSubmissions();
+		void loadReviews();
 		
 		// data manipulation
 		// For every kind of data we store
@@ -86,12 +91,17 @@ class Database
 		bool checkFile(const std::string &);
 		
 		void update();
-	private:
+		
+		// delegating logging to the log manager
+		void addLog(const std::string &);
+		void getRecentLog(std::vector<std::string> &);
+		
 		// data structures in memory
 		std::vector<Account> accounts;
 		std::vector<Conference> conferences;
 		std::vector<Submission> submissions;
-		
+		std::vector<Review> reviews;
+	private:
 		LogManager log;
 		
 		void setupFiles();

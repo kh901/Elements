@@ -5,6 +5,11 @@ Database::Database()
 	load();
 }
 
+Database::~Database()
+{
+	save();
+}
+
 void Database::save()
 {
 	// save accounts
@@ -13,6 +18,8 @@ void Database::save()
 	saveConferences();
 	// save submissions
 	saveSubmissions();
+	// save reviews
+	saveReviews();
 }
 
 void Database::saveAccounts()
@@ -26,6 +33,10 @@ void Database::saveConferences()
 void Database::saveSubmissions()
 {
 	writeFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
+}
+void Database::saveReviews()
+{
+	writeFileClassVector<Review>(DATABASE_REVIEWS_FILENAME, reviews);
 }
 
 void Database::load() 
@@ -41,6 +52,9 @@ void Database::load()
 		
 		// load submissions
 		loadSubmissions();
+		
+		// load reviews
+		loadReviews();
 	}
 	else
 	{
@@ -50,21 +64,27 @@ void Database::load()
 
 void Database::loadAccounts()
 {
-	std::cout << "Loading accounts...";
+	log.addLog("Loading accounts...");
 	readFileClassVector<Account>(DATABASE_ACCOUNTS_FILENAME, accounts);
-	std::cout << "Done" << std::endl;
+	log.addLog("Done");
 }
 void Database::loadConferences()
 {
-	std::cout << "Loading conferences...";
+	log.addLog("Loading conferences...");
 	readFileClassVector<Conference>(DATABASE_CONFERENCES_FILENAME, conferences);
-	std::cout << "Done" << std::endl;
+	log.addLog("Done");
 }
 void Database::loadSubmissions()
 {
-	std::cout << "Loading submissions...";
+	log.addLog("Loading submissions...");
 	readFileClassVector<Submission>(DATABASE_SUBMISSIONS_FILENAME, submissions);
-	std::cout << "Done" << std::endl;
+	log.addLog("Done");
+}
+void Database::loadReviews()
+{
+	log.addLog("Loading reviews...");
+	readFileClassVector<Review>(DATABASE_REVIEWS_FILENAME, reviews);
+	log.addLog("Done");
 }
 
 void Database::addAccount(const Account &acc)
@@ -189,12 +209,19 @@ void Database::editSubmission(Submission &sub)
 		log.addLog("Edited submission. Title: " + sub.getTitle());
 	}
 }
+void Database::addLog(const std::string &event)
+{
+	log.addLog(event);
+}
+void Database::getRecentLog(std::vector<std::string> &logList)
+{
+	log.getRecentLog(logList);
+}
 
 void Database::setupFiles()
 {
 	// log set up
-	log.addLog("Initialised database.");
-	std::cout << "First time set up." << std::endl;
+	log.addLog("Initial setup: Initialised database.");
 	// create default admin account
 	Account admin;
 	admin.setUsername(SYSTEM_ADMIN_DEFAULT_USERNAME);
@@ -223,6 +250,12 @@ bool Database::filesExist()
 			fin.close();
 			fin.open(DATABASE_SUBMISSIONS_FILENAME, std::ios::binary);
 			fileStatus = fin.good();
+			if (fileStatus)
+			{
+				fin.close();
+				fin.open(DATABASE_REVIEWS_FILENAME, std::ios::binary);
+				fileStatus = fin.good();
+			}
 		}
 	}
 	fin.close();
@@ -249,7 +282,7 @@ LogManager::LogManager()
 {
 	updateLogDate();
 	// set current log file name according to current date
-	std::cout << "log file name today: " << logFilename << std::endl;
+	std::cout << "Today's log filename: " << logFilename << std::endl;
 }
 
 void LogManager::updateLogDate()
@@ -257,23 +290,24 @@ void LogManager::updateLogDate()
 	std::ostringstream os;
 	os << getDate() << ".log";
 	logFilename = os.str();
+	std::cout << "Updating log filename: " << logFilename << std::endl;
 }
 
 void LogManager::addLog(const std::string &aEvent)
 {
 	std::string timestamp = getTimestamp();
-	std::cout << "Logging event - " << timestamp << ": " << aEvent << std::endl;
+	std::cout << "[Log] " << timestamp << ": " << aEvent << std::endl;
 	std::ofstream fout;
 	std::ostringstream fullFilename;
 	fullFilename << DATABASE_LOGS_DIRECTORY << logFilename;
 	
-	std::cout << "filename: " << fullFilename.str() << std::endl;
+	//std::cout << "filename: " << fullFilename.str() << std::endl;
 	fout.open(fullFilename.str().c_str(), std::ios::app);
 	// make the file if it doesn't exist
 	if (!fout.good())
 	{
 		fout.close();
-		std::cout << "file doesn't exist" << std::endl;
+		//std::cout << "file doesn't exist" << std::endl;
 		std::ofstream create(fullFilename.str().c_str());
 		create << "Start Log" << std::endl;
 		create.close();

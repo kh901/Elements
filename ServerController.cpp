@@ -8,54 +8,12 @@ ServerController::ServerController()
 void ServerController::autoAllocate()
 {
 	std::cout << "Allocating..." << std::endl;
-	int numOfReviewers = 0;
-	int maxReviewers = 0;
-	int spotsLeft = 0;
-	bool verdict = false;
-	bool reviewerAlready = false;
-	std::string username;
-	for (int i = 0; i < (int)deadlineSubmissions.size(); i++)
-	{
-		for (int j = 0; j <(int)submissions.size(); j++)
-		{
-			if (deadlineSubmissions[i] == submissions[j].getTitle())
-			{
-				numOfReviewers = submissions[j].getReviewerCount();
-				for (int k = 0; k < (int)conferences.size(); k++)
-				{
-					if (submissions[j].getConference() == conferences[k].getName())
-					{
-						maxReviewers = conferences[k].getMaxPaperReviewers();
-					}
-				}
-				spotsLeft = maxReviewers - numOfReviewers;
-				if (spotsLeft == 0)
-				{
-					deadlineSubmissions.erase(deadlineSubmissions.begin()+i);
-				}
-				else
-				{
-					for (int k = 0; k < (int)accounts.size() || verdict == true || spotsLeft > 0; k++)
-					{
-						verdict = accounts[k].matchKeywordsForSubmission(submissions[j]);
-						if (verdict == true)
-						{
-							username = accounts[k].getUsername();
-							if (submissions[j].hasReviewer(username))
-							{
-								verdict = false;
-							}
-							else
-							{
-								submissions[j].addReviewer(username);
-								spotsLeft--;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	/*
+		go through each conference that is currently on the allocation phase
+		check if meeting or past the conference's deadline for that phase
+		call allocate on that conference
+		move the conference to the next phase
+	*/
 }
 
 void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client)
@@ -79,15 +37,13 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	{
 		return; 	// ignore request if conference is not found
 	}
-	std::cout << "Conference found" << std::endl;
-	if (accounts[findIndex].getAccess(conference) < Account::Access_Author)
+	if (data.accounts[findIndex].getAccess(conference) < Account::Access_Author)
 	{
 		return;		// ignore request if user is not at least an author of that conference
 	}
-	std::cout << "User is at least an author" << std::endl;
 	
 	// check conference is in submission phase
-	if (conferences[confIndex].getCurrentPhase() != "Submission")
+	if (data.conferences[confIndex].getCurrentPhase() != "Submission")
 	{
 		return;		// ignore request if conference is not accepting submissions
 	}
@@ -96,13 +52,16 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 	if (checkSubmission(title, conference) == -1)
 	{
 		// set the papers university to the submitting author
-		sub.setUniversity(accounts[findIndex].getUniversity());
+		sub.setUniversity(data.accounts[findIndex].getUniversity());
 		// add the submitting author as an author
-		std::string firstname = accounts[findIndex].getFirstName();
-		std::string lastname = accounts[findIndex].getLastName();
+		std::string firstname = data.accounts[findIndex].getFirstName();
+		std::string lastname = data.accounts[findIndex].getLastName();
+		
 		sub.addAuthor(firstname, lastname);
-		submissions.push_back(sub);
-		std::cout << "Submitted paper: " << title << " by " << username << std::endl;
+		data.submissions.push_back(sub);
+		data.saveSubmissions();
+		
+		data.addLog("Paper was submitted: " + title + " by " + username + " for conference " + conference);
 		addNotification(username, "You submitted a paper '" + title + "' to " + conference);
 		notifyConference(conference, 
 			username + " submitted a paper '" + title + "' to " + conference, 
@@ -125,7 +84,10 @@ void ServerController::run()
 	sf::TcpListener listener;
 	
 	if(listener.listen(60000)!= sf::Socket::Done)
-		std::cout<<"error"<<std::endl;
+	{
+		data.addLog("Could not bind server to the defined network port (60000).");
+		return;
+	}
 		
 	selector.add(listener);
 	
@@ -147,7 +109,7 @@ void ServerController::run()
 				sf::TcpSocket* client = new sf::TcpSocket;
 				if (listener.accept(*client) == sf::Socket::Done)
 				{
-					std::cout << "New connection from " << client->getRemoteAddress().toString() << std::endl;
+					data.addLog("New connection from " + client->getRemoteAddress().toString());
 					// Add the new client to the clients list
 					clients.push_back(client);
 					// Add the new client to the selector so that we will
@@ -175,14 +137,14 @@ void ServerController::run()
 						status = client.receive(packet);
 						if (status == sf::Socket::Done)
 						{
-							std::cout << "Processing client" << std::endl;
 							processClient(packet, client);
 							packet.clear();
 						}
 						// The client has disconnected, stop listening to them
 						else if (status == sf::Socket::Disconnected)
 						{
-							std::cout << "Client disconnected" << std::endl;
+							data.addLog("Client (" + client.getRemoteAddress().toString() 
+								+ ") disconnected");
 							packet.clear();
 							
 							sf::TcpSocket * del = *it;
@@ -233,9 +195,11 @@ void ServerController::loadFalseAccounts(){
 	admin.addKeyword("technology");
 	admin.addAccess("Medical Conference", Account::Access_Admin);
 		
-	accounts.push_back(author);
-	accounts.push_back(reviewer);
-	accounts.push_back(admin);
+	data.accounts.push_back(author);
+	data.accounts.push_back(reviewer);
+	data.accounts.push_back(admin);
+	data.saveAccounts();
+	data.addLog("Created false accounts for testing.");
 }
 
 void ServerController::loadFalseConferences(){
@@ -273,9 +237,11 @@ void ServerController::loadFalseConferences(){
 	con2.addSubchair("Jonathan");
 	con3.addSubchair("Adam");
 	
-	conferences.push_back(con);
-	conferences.push_back(con2);
-	conferences.push_back(con3);
+	data.conferences.push_back(con);
+	data.conferences.push_back(con2);
+	data.conferences.push_back(con3);
+	data.saveConferences();
+	data.addLog("Created false conferences for testing");
 }
 
 /*void ServerController::loadFalseSubmissions(){
@@ -284,16 +250,17 @@ void ServerController::loadFalseConferences(){
 	temp2.submit();
 	temp3.submit();
 	
-	submissions.push_back(temp1);
-	submissions.push_back(temp2);
-	submissions.push_back(temp3);
+	data.submissions.push_back(temp1);
+	data.submissions.push_back(temp2);
+	data.submissions.push_back(temp3);
+	data.saveSubmissions();
 }*/
 
 int ServerController::checkSubmission(const std::string &title, const std::string &conf)
 {
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getTitle() == title && submissions[i].getConference() == conf)
+		if (data.submissions[i].getTitle() == title && data.submissions[i].getConference() == conf)
 		{
 			return i;
 		}
@@ -303,9 +270,9 @@ int ServerController::checkSubmission(const std::string &title, const std::strin
 
 int ServerController::checkConference(std::string conference)
 {
-	for (int i = 0; i < (int)conferences.size(); i++)
+	for (int i = 0; i < (int)data.conferences.size(); i++)
 	{
-		if (conferences[i].getName() == conference)
+		if (data.conferences[i].getName() == conference)
 		{
 			return i;
 		}
@@ -314,10 +281,10 @@ int ServerController::checkConference(std::string conference)
 }
 
 int ServerController::checkAccount(std::string username, std::string password){
-	for(int i=0;i<accounts.size();i++){
-		if(accounts[i].matchUsername(username))
+	for(int i = 0; i < (int)data.accounts.size();i++){
+		if(data.accounts[i].matchUsername(username))
 		{
-			if (password=="#USERNAMEONLY" || accounts[i].matchPassword(password, false))
+			if (password=="#USERNAMEONLY" || data.accounts[i].matchPassword(password, false))
 			{
 				return i;
 			}
@@ -344,8 +311,9 @@ void ServerController::loginAccount(sf::Packet &packet, sf::TcpSocket &client){
 	if (valid)
 	{
 		// set the user as logged in
-		accounts[findIndex].startSession();
-		std::cout << username << " has logged in" << std::endl;
+		data.accounts[findIndex].startSession();
+		data.addLog(username + " has logged in.");
+		data.saveAccounts();
 	}
 	validate << valid;
 	client.send(validate);
@@ -369,7 +337,7 @@ bool ServerController::registerAccount(sf::Packet &packet, sf::TcpSocket &client
 	int index = checkAccount(username);
 	if (index == -1)
 	{
-		std::cout << "New user registered! Welcome " << username << std::endl;
+		data.addLog("New user registered! Welcome " + username);
 		Account tmp;
 		tmp.setUsername(username);
 		tmp.setPassword(password);
@@ -383,7 +351,8 @@ bool ServerController::registerAccount(sf::Packet &packet, sf::TcpSocket &client
 		}
 		// registered users start logged in
 		tmp.startSession();	
-		accounts.push_back(tmp);
+		data.accounts.push_back(tmp);
+		data.saveAccounts();
 	}
 	else
 	{
@@ -399,7 +368,7 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 		
 	packet >> protocol;
 		
-	std::cout << "Protocol " << protocol << std::endl;
+	std::cout << "Interpreting Packet Protocol: " << protocol << std::endl;
 		
 	if(protocol=="LOGIN"){
 		loginAccount(packet, client);
@@ -533,26 +502,28 @@ void ServerController::assignReviewer(sf::Packet &packet, sf::TcpSocket &client)
 	
 	packet >> conference >> paperTitle >> targetUsername;
 	int findIndex = checkAccount(targetUsername);
-	firstname = accounts[findIndex].getFirstName();
-	lastname = accounts[findIndex].getLastName();
+	firstname = data.accounts[findIndex].getFirstName();
+	lastname = data.accounts[findIndex].getLastName();
 	int confIndex = checkConference(conference);
-	int maxReviewers = conferences[confIndex].getMaxPaperReviewers();
+	int maxReviewers = data.conferences[confIndex].getMaxPaperReviewers();
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference);
+		if (data.submissions[i].getConference() == conference);
 		{
-			if (submissions[i].getTitle() == paperTitle)
+			if (data.submissions[i].getTitle() == paperTitle)
 			{
-				if (!submissions[i].isAuthorIncluded(firstname, lastname)
-					&& !submissions[i].hasReviewer(targetUsername))
+				if (!data.submissions[i].isAuthorIncluded(firstname, lastname)
+					&& !data.submissions[i].hasReviewer(targetUsername))
 				{
-					submissions[i].addReviewer(targetUsername);
-					accounts[findIndex].incrementAllocated(conference, maxReviewers);
+					data.submissions[i].addReviewer(targetUsername);
+					data.accounts[findIndex].incrementAllocated(conference, maxReviewers);
 				}
 			}
 		}
-	}				
+	}	
+	data.saveAccounts();
+	data.saveSubmissions();			
 }
 
 void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &client)
@@ -565,14 +536,15 @@ void ServerController::getFreeReviewers(sf::Packet &packet, sf::TcpSocket &clien
 	packet >> conference;
 	
 	int confIndex = checkConference(conference);
-	conferences[confIndex].getReviewers(reviewerList);
-	int maxReviewers = conferences[confIndex].getMaxPaperReviewers();
+	data.conferences[confIndex].getReviewers(reviewerList);
+	int maxReviewers = data.conferences[confIndex].getMaxPaperReviewers();
 	
+	std::cout << "Getting a list of free reviewers for conference " << conference << std::endl;
 	for (int i = 0; i < (int)reviewerList.size(); i++)
 	{
 		int findIndex = checkAccount(reviewerList[i]);
 		std::cout << "Displaying Reviewers: " << reviewerList[i] << std::endl;
-		if (accounts[findIndex].checkAllocation(conference, maxReviewers))
+		if (data.accounts[findIndex].checkAllocation(conference, maxReviewers))
 		{
 			std::cout << "Pushing" << std::endl;
 			freeList.push_back(reviewerList[i]);
@@ -598,15 +570,15 @@ void ServerController::checkPaperAlloc(sf::Packet &packet, sf::TcpSocket &client
 	packet >> conference >> paperTitle;
 	
 	int confIndex = checkConference(conference);
-	int max_rev = conferences[confIndex].getMaxPaperReviewers();
+	int max_rev = data.conferences[confIndex].getMaxPaperReviewers();
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if(submissions[i].getTitle() == paperTitle)
+			if(data.submissions[i].getTitle() == paperTitle)
 			{
-				rev_count = submissions[i].getReviewerCount();
+				rev_count = data.submissions[i].getReviewerCount();
 				if (rev_count < max_rev)
 				{
 					result = true;
@@ -627,11 +599,11 @@ void ServerController::getConfSubmissions(sf::Packet &packet, sf::TcpSocket &cli
 	
 	packet >> conference;
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if(submissions[i].getConference() == conference)
+		if(data.submissions[i].getConference() == conference)
 		{
-			submission.push_back(submissions[i].getTitle());
+			submission.push_back(data.submissions[i].getTitle());
 		}
 	}
 	
@@ -654,7 +626,7 @@ void ServerController::getReviewers(sf::Packet &packet, sf::TcpSocket &client)
 	packet >> username >> conference;	
 
 	int confIndex = checkConference(conference);
-	conferences[confIndex].getReviewers(reviewer);
+	data.conferences[confIndex].getReviewers(reviewer);
 	
 	response << (int)reviewer.size();
 	
@@ -685,15 +657,15 @@ void ServerController::getFinalReview(sf::Packet &packet, sf::TcpSocket &client)
 	{
 		return;
 	}
-	if (accounts[accIndex].getAccess(conference))
+	if (data.accounts[accIndex].getAccess(conference))
 	{
-		for (int i = 0; i < (int)reviews.size(); ++i)
+		for (int i = 0; i < (int)data.reviews.size(); ++i)
 		{
-			if (reviews[i].getConference() == conference &&
-				reviews[i].getTitle() == paper &&
-					reviews[i].getFinal())
+			if (data.reviews[i].getConference() == conference &&
+				data.reviews[i].getTitle() == paper &&
+					data.reviews[i].getFinal())
 			{
-				finalRev = reviews[i].getReviewID();
+				finalRev = data.reviews[i].getReviewID();
 				exists = true;
 				break;
 			}
@@ -717,16 +689,16 @@ void ServerController::checkReviewed(sf::Packet &packet, sf::TcpSocket &client)
 	int	findIndex = checkAccount(user);
 	if (findIndex != -1)
 	{
-		first = accounts[findIndex].getFirstName();
-		last = accounts[findIndex].getLastName();
+		first = data.accounts[findIndex].getFirstName();
+		last = data.accounts[findIndex].getLastName();
 	}
 	
 	bool hasReviewed = false;
-	for (int i = 0; i < (int)reviews.size(); ++i)
+	for (int i = 0; i < (int)data.reviews.size(); ++i)
 	{
-		if (reviews[i].getTitle() == paper && reviews[i].getConference() == conference)
+		if (data.reviews[i].getTitle() == paper && data.reviews[i].getConference() == conference)
 		{
-			if (reviews[i].getPCMember() == (first + " " + last))
+			if (data.reviews[i].getPCMember() == (first + " " + last))
 			{
 				hasReviewed = true;
 				break;
@@ -754,7 +726,7 @@ void ServerController::decidePaper(sf::Packet &packet, sf::TcpSocket &client, co
 		return;
 	}
 	// authenticate privileges
-	if (accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
+	if (data.accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
 	{
 		return;
 	}
@@ -766,11 +738,11 @@ void ServerController::decidePaper(sf::Packet &packet, sf::TcpSocket &client, co
 	}
 	if (approved)
 	{
-		submissions[paperIndex].accept();
+		data.submissions[paperIndex].accept();
 	}
 	else
 	{
-		submissions[paperIndex].reject();
+		data.submissions[paperIndex].reject();
 	}
 }
 
@@ -794,11 +766,11 @@ void ServerController::getLimit(sf::Packet &packet, sf::TcpSocket &client, const
 	}
 	if (mode == "ALLOCATED")
 	{
-		limit = conferences[confIndex].getMaxReviewedPapers();
+		limit = data.conferences[confIndex].getMaxReviewedPapers();
 	}
 	else if (mode == "PAPERREV")
 	{
-		limit = conferences[confIndex].getMaxPaperReviewers();
+		limit = data.conferences[confIndex].getMaxPaperReviewers();
 	}
 	response << limit;
 	client.send(response);
@@ -823,7 +795,7 @@ void ServerController::changeLimit(sf::Packet &packet, sf::TcpSocket &client, co
 		return;
 	}
 	// authenticate privileges
-	if (accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
+	if (data.accounts[accIndex].getAccess(conference) < Account::Access_Chairman)
 	{
 		return;
 	}
@@ -831,18 +803,19 @@ void ServerController::changeLimit(sf::Packet &packet, sf::TcpSocket &client, co
 	{
 		if (mode == "ALLOCATED")
 		{
-			conferences[confIndex].setMaxReviewedPapers(setVal);
+			data.conferences[confIndex].setMaxReviewedPapers(setVal);
 			notifyConference(conference, 
 				username + " has changed the max papers per reviewer limit for " + conference, 
 					Account::Access_Chairman);
 		}
 		else if (mode == "PAPERREV")
 		{
-			conferences[confIndex].setMaxPaperReviewers(setVal);
+			data.conferences[confIndex].setMaxPaperReviewers(setVal);
 			notifyConference(conference, 
 				username + " has changed the max reviewers per paper limit for " + conference, 
 					Account::Access_Chairman);
 		}
+		data.saveConferences();
 	}
 }
 
@@ -862,8 +835,8 @@ void ServerController::getAccountName(sf::Packet &packet, sf::TcpSocket &client)
 	if (targetIndex != -1)
 	{
 		std::cout << "User does exist" << std::endl;
-		first = accounts[targetIndex].getFirstName();
-		last = accounts[targetIndex].getLastName();
+		first = data.accounts[targetIndex].getFirstName();
+		last = data.accounts[targetIndex].getLastName();
 		exists = true;
 		response << exists << first << last;
 		client.send(response);
@@ -892,7 +865,7 @@ void ServerController::getReview(sf::Packet &packet, sf::TcpSocket &client)
 	}
 	// find review with id
 	std::vector<Review>::iterator it;
-	for (it = reviews.begin(); it != reviews.end(); ++it)
+	for (it = data.reviews.begin(); it != data.reviews.end(); ++it)
 	{
 		if (it->getReviewID() == id)
 		{
@@ -929,16 +902,18 @@ void ServerController::addMember(sf::Packet &packet, sf::TcpSocket &client, Acco
 		return;
 	}
 	// add access to the conference in the target user's accessmap
-	accounts[targetIndex].addAccess(conference, level);
+	data.accounts[targetIndex].addAccess(conference, level);
 	if (level == Account::Access_Reviewer)
 	{
-		conferences[confIndex].addReviewer(targetUser);
+		data.conferences[confIndex].addReviewer(targetUser);
 	}
 	// add welcome notification to the user
 	addNotification(targetUser, "Welcome to " + conference + "!");
 	success = true;
 	response << success;
 	client.send(response);
+	data.saveAccounts();
+	data.saveConferences();
 }
 
 void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
@@ -948,15 +923,15 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 	packet >> username >> conference >> subTitle >> newComment;
 	
 	int subIndex = -1;
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if (submissions[i].getTitle() == subTitle)
+			if (data.submissions[i].getTitle() == subTitle)
 			{
-				if (submissions[i].hasReviewer(username))
+				if (data.submissions[i].hasReviewer(username))
 				{
-					submissions[i].addComment(username, newComment);
+					data.submissions[i].addComment(username, newComment);
 					subIndex = i;
 				}
 			}
@@ -965,7 +940,7 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 	if (subIndex != -1)
 	{
 		std::vector<std::string> revList;
-		submissions[subIndex].getReviewerList(revList);
+		data.submissions[subIndex].getReviewerList(revList);
 		for (int r = 0; r < (int)revList.size(); ++r)
 		{
 			if (revList[r] != username)
@@ -974,6 +949,7 @@ void ServerController::sendComments(sf::Packet &packet, sf::TcpSocket &client)
 			}
 		}
 	}
+	data.saveSubmissions();
 }
 
 void ServerController::getComments(sf::Packet &packet, sf::TcpSocket &client)
@@ -984,13 +960,13 @@ void ServerController::getComments(sf::Packet &packet, sf::TcpSocket &client)
 	packet >> conference >> paperTitle;
 	std::vector<Comment> comments;
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if (submissions[i].getTitle() == paperTitle)
+			if (data.submissions[i].getTitle() == paperTitle)
 			{
-				submissions[i].getComments(comments);
+				data.submissions[i].getComments(comments);
 			}
 		}
 	}
@@ -1017,45 +993,49 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 	{
 		return;		// ignore request if user does not exist
 	}
-	firstname = accounts[findIndex].getFirstName();
-	lastname = accounts[findIndex].getLastName();
+	firstname = data.accounts[findIndex].getFirstName();
+	lastname = data.accounts[findIndex].getLastName();
 	
 	review.setPCMember(firstname + " " + lastname);
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if (submissions[i].getTitle() == paperTitle)
+			if (data.submissions[i].getTitle() == paperTitle)
 			{
-				if (submissions[i].hasReviewer(username))
+				if (data.submissions[i].hasReviewer(username))
 				{					
 					// overwrite the old review by this reviewer
 					bool exists = false;
-					for (int q = 0; q < (int)reviews.size(); ++q)
+					for (int q = 0; q < (int)data.reviews.size(); ++q)
 					{
-						if (reviews[q].getConference() == conference &&
-							reviews[q].getTitle() == paperTitle &&
-								reviews[q].getPCMember() == (firstname + " " + lastname))
+						if (data.reviews[q].getConference() == conference &&
+							data.reviews[q].getTitle() == paperTitle &&
+								data.reviews[q].getPCMember() == (firstname + " " + lastname))
 						{
-							reviews[q] = review;		// overwrite the old review
+							data.reviews[q] = review;		// overwrite the old review
 							exists = true;
 							break;
 						}
 					}
 					if (!exists)
 					{
-						std::cout << "Review submitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
-						reviews.push_back(review);
+						data.addLog("Review submitted in Conference " + conference + 
+							" for Paper " + paperTitle + " by " + username);
+						data.reviews.push_back(review);
+						data.saveReviews();
 					}
 					else
 					{
-						std::cout << "Review resubmitted in Conference " << conference << " for Paper " << paperTitle << " by " << username << std::endl;
+						data.addLog("Review resubmitted in Conference " + conference +
+							" for Paper " + paperTitle + " by " + username);
 					}
 					if (review.getFinal())
 					{
-						std::cout << "Submitted review is final" << std::endl;
-						submissions[i].setReviewed();
+						data.addLog("Submitted review is final");
+						data.submissions[i].setReviewed();
+						data.saveSubmissions();
 					}
 					break;
 				}
@@ -1082,7 +1062,7 @@ void ServerController::sendSubDetail(sf::Packet &packet, sf::TcpSocket &client)
 		return;		// ignore request if paper is not found
 	}
 	
-	Submission result = submissions[subIndex]; 
+	Submission result = data.submissions[subIndex]; 
 	response << result;
 	client.send(response);
 }
@@ -1096,7 +1076,7 @@ void ServerController::getConferenceSubs(sf::Packet &packet, sf::TcpSocket &clie
 	// add all matching submissions with this conference name
 	std::vector<std::string> results;
 	std::vector<Submission>::iterator it;
-	for (it = submissions.begin(); it != submissions.end(); ++it)
+	for (it = data.submissions.begin(); it != data.submissions.end(); ++it)
 	{
 		if (it->getConference() == conf)
 		{
@@ -1124,21 +1104,21 @@ void ServerController::getReviewList(sf::Packet &packet, sf::TcpSocket &client, 
 		findIndex = checkAccount(user);
 		if (findIndex != -1)
 		{
-			first = accounts[findIndex].getFirstName();
-			last = accounts[findIndex].getLastName();
+			first = data.accounts[findIndex].getFirstName();
+			last = data.accounts[findIndex].getLastName();
 		}
 	}
 	
 	std::vector<std::string> reviewIDs;
-	for (int i = 0; i < (int)reviews.size(); i++)
+	for (int i = 0; i < (int)data.reviews.size(); i++)
 	{
-		if (reviews[i].getConference() == conference)
+		if (data.reviews[i].getConference() == conference)
 		{
-			bool isOwnPaper = (reviews[i].getPCMember() == first + " " + last);
-			if (reviews[i].getTitle() == paperTitle && 
+			bool isOwnPaper = (data.reviews[i].getPCMember() == first + " " + last);
+			if (data.reviews[i].getTitle() == paperTitle && 
 					(allReviewers || !allReviewers && isOwnPaper))
 			{
-				reviewIDs.push_back(reviews[i].getReviewID());
+				reviewIDs.push_back(data.reviews[i].getReviewID());
 			}
 		}
 	}
@@ -1162,13 +1142,13 @@ void ServerController::getAllocations(sf::Packet &packet, sf::TcpSocket &client)
 	
 	packet >> username >> conference;
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if (submissions[i].hasReviewer(username))
+			if (data.submissions[i].hasReviewer(username))
 			{
-				allocatedPapers.push_back(submissions[i].getTitle());
+				allocatedPapers.push_back(data.submissions[i].getTitle());
 				allocatedSize++;
 			}
 		}
@@ -1205,35 +1185,35 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 	{
 		return; 	// ignore request if conference is not found
 	}
-	if (accounts[findIndex].getAccess(conf) < Account::Access_Reviewer)
+	if (data.accounts[findIndex].getAccess(conf) < Account::Access_Reviewer)
 	{
 		return;		// ignore request if user is not at least a reviewer of that conference
 	}
 	
 	std::cout << "Bid list for Reviewer " << username << " in Conference " << conf << std::endl;
 	
-	std::string firstname = accounts[findIndex].getFirstName();
-	std::string lastname = accounts[findIndex].getLastName();
+	std::string firstname = data.accounts[findIndex].getFirstName();
+	std::string lastname = data.accounts[findIndex].getLastName();
 	
 	std::vector<std::string> results;
-	for (int a = 0; a < (int)submissions.size(); ++a)
+	for (int a = 0; a < (int)data.submissions.size(); ++a)
 	{
-		std::cout << "Considering sub: " << submissions[a].getTitle() << " conf: " << submissions[a].getConference() << std::endl;
+		std::cout << "Considering sub: " << data.submissions[a].getTitle() << " conf: " << data.submissions[a].getConference() << std::endl;
 		// match conference
-		if (submissions[a].getConference() == conf)
+		if (data.submissions[a].getConference() == conf)
 		{
 			// check not already bid for paper and avoid conflicts of interest
-			if (!(submissions[a].hasReviewer(username)))
+			if (!(data.submissions[a].hasReviewer(username)))
 			{
-				if (submissions[a].getUniversity() != accounts[findIndex].getUniversity() && 
-						!submissions[a].isAuthorIncluded(firstname, lastname))
+				if (data.submissions[a].getUniversity() != data.accounts[findIndex].getUniversity() && 
+						!data.submissions[a].isAuthorIncluded(firstname, lastname))
 				{
-					int numReviewers = submissions[a].getReviewerCount();
-					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
+					int numReviewers = data.submissions[a].getReviewerCount();
+					int maxPaperReviewers = data.conferences[confIndex].getMaxPaperReviewers();
 					// check reviewer slots are free
 					if (numReviewers < maxPaperReviewers)
 					{
-						results.push_back(submissions[a].getTitle());
+						results.push_back(data.submissions[a].getTitle());
 					}
 					else
 					{
@@ -1269,11 +1249,11 @@ void ServerController::bidList(sf::Packet &packet, sf::TcpSocket &client)
 
 bool ServerController::checkAllFinalised(const std::string &conference)
 {
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if (!submissions[i].getReviewed())
+			if (!data.submissions[i].getReviewed())
 			{
 				return false;
 			}
@@ -1303,21 +1283,25 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 	}
 	
 	// check that they have admin rights to the conference
-	Account::AccessLevel access = accounts[findIndex].getAccess(conference);
+	Account::AccessLevel access = data.accounts[findIndex].getAccess(conference);
 	
 	if (access >= Account::Access_Chairman)
 	{
 		std::string reason;
-		std::string oldAdvancePhase = conferences[confIndex].getCurrentPhase();
+		std::string oldAdvancePhase = data.conferences[confIndex].getCurrentPhase();
 		if (oldAdvancePhase == "Allocation")
 		{
-			std::cout << "Semi auto allocation for conference " << conference << std::endl;
+			data.addLog("Attempting semi auto allocation for conference " + conference);
 			result = allocate(conference);
 			if (!result)
-			{
+			{	
+				data.addLog("Auto allocation could not allocate some papers. Manual allocation recommended");
 				reason = "Auto Allocation failed. Please manually allocate to rectify.";
 			}
-			std::cout << "Finished allocation" << std::endl;
+			else
+			{
+				data.addLog("Finished allocation");
+			}
 		}
 		// auto reject all papers in a conference that have not been approved
 		else if (oldAdvancePhase == "Finalising")
@@ -1343,12 +1327,13 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 		}
 		else
 		{
-			std::cout << username << " moved Conference " << conference << " from " << oldAdvancePhase;
-			conferences[confIndex].advancePhase();
-			std::cout << " to " << conferences[confIndex].getCurrentPhase() << std::endl;
+			data.conferences[confIndex].advancePhase();
+			data.addLog(username + " moved Conference " + conference + " from " + oldAdvancePhase
+				+ " to " + data.conferences[confIndex].getCurrentPhase());
 		}
-		notifyConference(conference, conference + " is now in " + conferences[confIndex].getCurrentPhase());
+		notifyConference(conference, conference + " is now in " + data.conferences[confIndex].getCurrentPhase());
 		client.send(response);
+		data.saveConferences();
 	}
 }
 
@@ -1362,14 +1347,14 @@ void ServerController::autoNotifyAuthors(const Submission &sub)
 	{
 		std::string authFirst = list[e].firstname;
 		std::string authLast = list[e].surname;
-		for (int w = 0; w < (int)accounts.size(); ++w)
+		for (int w = 0; w < (int)data.accounts.size(); ++w)
 		{
-			std::string accountFirst = accounts[w].getFirstName();
-			std::string accountLast = accounts[w].getLastName();
+			std::string accountFirst = data.accounts[w].getFirstName();
+			std::string accountLast = data.accounts[w].getLastName();
 			if (accountFirst == authFirst && accountLast == authLast &&
-					accounts[w].hasAccess(sub.getConference()))
+					data.accounts[w].hasAccess(sub.getConference()))
 			{
-				addNotification(accounts[w].getUsername(), paper + " has been " + status);
+				addNotification(data.accounts[w].getUsername(), paper + " has been " + status);
 			}
 		}
 	}
@@ -1377,16 +1362,17 @@ void ServerController::autoNotifyAuthors(const Submission &sub)
 
 void ServerController::autoRejectPapers(const std::string &conference)
 {
-	for (int i = 0; i < (int)submissions.size(); ++i)
+	for (int i = 0; i < (int)data.submissions.size(); ++i)
 	{
-		std::string status = submissions[i].getStatus();
-		if (submissions[i].getConference() == conference && 
+		std::string status = data.submissions[i].getStatus();
+		if (data.submissions[i].getConference() == conference && 
 			status == "Pending")
 		{
-			submissions[i].reject();
+			data.submissions[i].reject();
 		}
-		autoNotifyAuthors(submissions[i]);
+		autoNotifyAuthors(data.submissions[i]);
 	}
+	data.saveSubmissions();
 }
 
 bool ServerController::allocate(const std::string &conference)
@@ -1405,44 +1391,47 @@ bool ServerController::allocate(const std::string &conference)
 		return false;
 	}
 	
-	for (int i = 0; i < (int)submissions.size(); i++)
+	for (int i = 0; i < (int)data.submissions.size(); i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			std::cout << "Allocating reviewers for Paper " << submissions[i].getTitle() << std::endl;
-			reviewerCount = submissions[i].getReviewerCount();
-			maxReviewer = conferences[confIndex].getMaxPaperReviewers();
-			maxPapers = conferences[confIndex].getMaxReviewedPapers();
+			data.addLog("Allocating reviewers by keywords for Paper " + data.submissions[i].getTitle());
+			reviewerCount = data.submissions[i].getReviewerCount();
+			maxReviewer = data.conferences[confIndex].getMaxPaperReviewers();
+			maxPapers = data.conferences[confIndex].getMaxReviewedPapers();
 			spotsLeft = maxReviewer - reviewerCount;
 			if (spotsLeft != 0)
 			{
-				for (int j = 0; j < (int)accounts.size(); j++)
+				for (int j = 0; j < (int)data.accounts.size(); j++)
 				{
-					firstname = accounts[j].getFirstName();
-					lastname = accounts[j].getLastName();
-					verdict = accounts[j].matchKeywordsForSubmission(submissions[i]);
+					firstname = data.accounts[j].getFirstName();
+					lastname = data.accounts[j].getLastName();
+					verdict = data.accounts[j].matchKeywordsForSubmission(data.submissions[i]);
 					if (verdict == true && spotsLeft > 0)
 					{
-						username = accounts[j].getUsername();
-						if (!submissions[i].hasReviewer(username) &&
-								!submissions[i].isAuthorIncluded(firstname, lastname) &&
-									accounts[j].incrementAllocated(conference, maxPapers) )
+						username = data.accounts[j].getUsername();
+						if (!data.submissions[i].hasReviewer(username) &&
+								!data.submissions[i].isAuthorIncluded(firstname, lastname) &&
+									data.accounts[j].incrementAllocated(conference, maxPapers) )
 						{
-							std::cout << "Allocated Reviewer " << username << " to Paper " << submissions[i].getTitle() << std::endl;
-							submissions[i].addReviewer(username);
+							data.addLog("Allocated Reviewer " + username + 
+								" to Paper " + data.submissions[i].getTitle());
+							data.submissions[i].addReviewer(username);
 							spotsLeft--;
 						}
 					}
 				}
 			}
-			reviewerCount = submissions[i].getReviewerCount();
+			reviewerCount = data.submissions[i].getReviewerCount();
 			if (reviewerCount == 0)
 			{
-				std::cout << "This paper has no reviewers assigned to it!" << std::endl;
+				data.addLog("Could not allocate reviewers to paper " + data.submissions[i].getTitle());
 				allAllocated = false;
 			}
 		}
 	}
+	data.saveAccounts();
+	data.saveSubmissions();
 	
 	return allAllocated;
 }
@@ -1489,11 +1478,11 @@ void ServerController::checkNotifyCount(sf::Packet &packet, sf::TcpSocket &clien
 
 void ServerController::notifyConference(const std::string &conf, const std::string &msg, Account::AccessLevel minAccess)
 {
-	for (int i = 0; i < (int)accounts.size(); ++i)
+	for (int i = 0; i < (int)data.accounts.size(); ++i)
 	{
-		if (accounts[i].hasAccess(conf) && accounts[i].getAccess(conf) >= minAccess)
+		if (data.accounts[i].hasAccess(conf) && data.accounts[i].getAccess(conf) >= minAccess)
 		{
-			this->addNotification(accounts[i].getUsername(), msg);
+			this->addNotification(data.accounts[i].getUsername(), msg);
 		}
 	}
 }
@@ -1525,8 +1514,9 @@ void ServerController::logoutUser(sf::Packet &packet, sf::TcpSocket &client)
 	{
 		return;		// ignore request if user is not found
 	}
-	std::cout << username << " logged out" << std::endl;
-	accounts[findIndex].endSession();	// log out found user
+	data.addLog(username + " logged out");
+	data.accounts[findIndex].endSession();	// log out found user
+	data.saveAccounts();
 }
 
 void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &client)
@@ -1542,7 +1532,7 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 	{
 		return;		// ignore request if user is not found
 	}
-	bool isAdmin = accounts[findIndex].isSystemAdmin();
+	bool isAdmin = data.accounts[findIndex].isSystemAdmin();
 	if (!isAdmin)
 	{
 		return;		// ignore request if user is not an admin
@@ -1552,12 +1542,14 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 	exists = conferenceExists(addConf.getName());
 	if (!exists)
 	{
-		std::cout << "Admin user " << username;
-		std::cout << " created conference " << addConf.getName() << std::endl;
-		conferences.push_back(addConf);
+		data.addLog("Admin user " + username +
+			" created conference " + addConf.getName());
+		data.conferences.push_back(addConf);
+		
 		// add conference to user access map
-		accounts[findIndex].addAccess(addConf.getName(), Account::Access_Admin);
+		data.accounts[findIndex].addAccess(addConf.getName(), Account::Access_Admin);
 		addNotification(username, "Welcome to " + addConf.getName() + "!");
+		
 		// add conference to reviewers access map
 		std::vector<std::string> revs;
 		addConf.getReviewers(revs);
@@ -1566,10 +1558,12 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 			int getIndex = checkAccount(revs[i]);
 			if (getIndex != -1)
 			{
-				accounts[getIndex].addAccess(addConf.getName(), Account::Access_Reviewer);
+				data.accounts[getIndex].addAccess(addConf.getName(), Account::Access_Reviewer);
 				addNotification(revs[i], "Welcome to " + addConf.getName() + "!");
 			}
 		}
+		data.saveConferences();
+		data.saveAccounts();
 	}
 	// send response
 	response << exists;
@@ -1579,7 +1573,7 @@ void ServerController::createConference(sf::Packet &packet, sf::TcpSocket &clien
 bool ServerController::conferenceExists(const std::string &title)
 {
 	std::vector<Conference>::iterator it;
-	for (it = conferences.begin(); it != conferences.end(); ++it)
+	for (it = data.conferences.begin(); it != data.conferences.end(); ++it)
 	{
 		if (it->getName() == title)
 		{
@@ -1602,7 +1596,7 @@ void ServerController::getAdminStatus(sf::Packet &packet, sf::TcpSocket &client)
 		client.send(adminPacket);
 		return;
 	}
-	bool isAdmin = accounts[findIndex].isSystemAdmin();
+	bool isAdmin = data.accounts[findIndex].isSystemAdmin();
 	std::cout << "User is " << (isAdmin ? "" : "not ") << "an admin" << std::endl;
 	adminPacket << isAdmin;
 	client.send(adminPacket);
@@ -1623,20 +1617,20 @@ void ServerController::getSubmissions(sf::Packet &packet, sf::TcpSocket &client)
 		client.send(subPacket);
 		return;
 	}
-	firstname = accounts[findIndex].getFirstName();
-	lastname = accounts[findIndex].getLastName();		//get the fullname for the account
+	firstname = data.accounts[findIndex].getFirstName();
+	lastname = data.accounts[findIndex].getLastName();		//get the fullname for the account
 	
 	std::vector<std::string> sub;
 	int count=0;
 	
-	for(int i=0;i<(int)submissions.size();i++)
+	for(int i=0;i<(int)data.submissions.size();i++)
 	{
-		if (submissions[i].getConference() == conference)
+		if (data.submissions[i].getConference() == conference)
 		{
-			if(submissions[i].isAuthorIncluded(firstname, lastname))
+			if(data.submissions[i].isAuthorIncluded(firstname, lastname))
 			{
 				count++;
-				sub.push_back(submissions[i].getTitle());
+				sub.push_back(data.submissions[i].getTitle());
 			}
 		}
 	}
@@ -1659,7 +1653,7 @@ void ServerController::getAccess(sf::Packet &packet, sf::TcpSocket &socket)
 	Account::AccessLevel level;
 	if (findIndex != -1)
 	{
-		level = accounts[findIndex].getAccess(conference);
+		level = data.accounts[findIndex].getAccess(conference);
 		accessDetails << level;
 		socket.send(accessDetails);
 	}
@@ -1675,7 +1669,7 @@ void ServerController::getConferences(sf::Packet &packet, sf::TcpSocket &socket)
 	std::vector<std::string> results;
 	if (findIndex != -1)
 	{
-		accounts[findIndex].getConferences(results);
+		data.accounts[findIndex].getConferences(results);
 		list << (int) results.size();
 		for (int i = 0; i < (int)results.size(); ++i)
 		{
@@ -1701,8 +1695,8 @@ void ServerController::checkPhase(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (confIndex != -1)
 	{
-		//level = accounts[findIndex].getAccess(conference);
-		currentPhase = conferences[confIndex].getCurrentPhase();
+		//level = data.accounts[findIndex].getAccess(conference);
+		currentPhase = data.conferences[confIndex].getCurrentPhase();
 	
 		//response << level << currentPhase;
 		response << currentPhase;
@@ -1723,21 +1717,23 @@ void ServerController::bidPaper(sf::Packet &packet, sf::TcpSocket &client)
 	
 	if (confIndex != -1 && findIndex != -1)
 	{
-		if (conferences[confIndex].getCurrentPhase() == "Allocation")
+		if (data.conferences[confIndex].getCurrentPhase() == "Allocation")
 		{
-			for (int i = 0; i < (int)submissions.size(); i++)
+			for (int i = 0; i < (int)data.submissions.size(); i++)
 			{
-				if (conf == submissions[i].getConference() && subTitle == submissions[i].getTitle())
+				if (conf == data.submissions[i].getConference() && subTitle == data.submissions[i].getTitle())
 				{
-					int reviewerCount = submissions[i].getReviewerCount();
-					int maxPaperReviewers = conferences[confIndex].getMaxPaperReviewers();
-					if (accounts[findIndex].incrementAllocated(conf, maxPaperReviewers))
+					int reviewerCount = data.submissions[i].getReviewerCount();
+					int maxPaperReviewers = data.conferences[confIndex].getMaxPaperReviewers();
+					if (data.accounts[findIndex].incrementAllocated(conf, maxPaperReviewers))
 					{
-						submissions[i].addReviewer(username);
+						data.submissions[i].addReviewer(username);
 						break;
 					}
 				}
 			}
 		}			
 	}
+	data.saveAccounts();
+	data.saveSubmissions();
 }

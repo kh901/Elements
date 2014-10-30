@@ -1,3 +1,6 @@
+#ifndef PHASE_H
+#define PHASE_H
+
 #include <iostream>
 #include <string>
 #include "File.h"
@@ -21,3 +24,4 @@ class Phase : public FileIO
         int phaseID;
         static const std::string phases[];
 };
+#endif

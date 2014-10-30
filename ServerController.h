@@ -9,6 +9,7 @@
 #include "Submission.h"
 #include "common.h"
 #include "Review.h"
+#include "Database.h"
 
 #ifndef SERVER_CONTROLLER
 #define SERVER_CONTROLLER
@@ -25,11 +26,13 @@ class ServerController
 	private:
 		std::list<sf::TcpSocket*> clients;
 		sf::SocketSelector selector;
+		Database data;
+		/*
 		std::vector<Account> accounts;
 		std::vector<Submission> submissions;
 		std::vector<Conference> conferences;
-		std::vector<std::string> deadlineSubmissions;
 		std::vector<Review> reviews;
+		*/
 		NotifyMap notifications;
 	
 		void loadFalseAccounts();//
