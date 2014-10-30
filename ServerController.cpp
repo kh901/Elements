@@ -1226,7 +1226,10 @@ void ServerController::advancePhase(sf::Packet &packet, sf::TcpSocket &client)
 			{
 				reason = "Final reviews missing. Please complete the final reviews on all papers.";
 			}
-			autoRejectPapers(conference);
+			else
+			{
+				autoRejectPapers(conference);
+			}
 		}
 		else if (oldAdvancePhase == "Completed")
 		{
