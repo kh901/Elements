@@ -776,7 +776,7 @@ void UserController::account()
 {
 	Menu accountMenu;
 	std::string accountMenuOptions[] = {
-		"Change username",
+		"Username: " + username,
 		"Change password",
 		"Back"
 	};
@@ -787,10 +787,6 @@ void UserController::account()
     	option = accountMenu.doMenu();
     	switch(option)
     	{
-    		// changing username
-    		case 0:
-    			this->changeUsername();
-    		break;
     		// changing password
     		case 1:
 		        this->changePassword();
@@ -799,19 +795,18 @@ void UserController::account()
     } while (accountMenu.notExited(option));
 }
 
-void UserController::changeUsername()
-{
-	std::cout << "Change username: ";
-	std::string newUser;
-	getline(std::cin, newUser);
-	Menu::eraseLine(newUser + "Change username: ");
-}
 void UserController::changePassword()
 {
+	sf::Packet request;
+	std::string protocol = "CHANGE_PASSWORD";
 	std::cout << "Change password: ";
 	std::string newPass;
 	getline(std::cin, newPass);
 	Menu::eraseLine(newPass + "Change password: ");
+	
+	request << protocol << username << newPass;
+	
+	socket.send(request);
 }
 
 void UserController::submitPaper()
