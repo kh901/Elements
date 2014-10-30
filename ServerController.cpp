@@ -919,7 +919,7 @@ void ServerController::submitReview(sf::Packet &packet, sf::TcpSocket &client)
 		{
 			if (data.submissions[i].getTitle() == paperTitle)
 			{
-				if (data.submissions[i].hasReviewer(username))
+				if (data.submissions[i].hasReviewer(username) || review.getFinal())
 				{					
 					// overwrite the old review by this reviewer
 					bool exists = false;
