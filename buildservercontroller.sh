@@ -1,13 +1,14 @@
-g++ ServerController.cpp -c
-g++ Account.cpp -c
-g++ File.cpp -c
-g++ Conference.cpp -c
-g++ Submission.cpp -c
-g++ Phase.cpp -c
-g++ Database.cpp -c
-g++ common.cpp -c
-g++ Menu.cpp -c
-g++ server_main.cpp -c
-g++ Review.cpp -c
-g++ Database.cpp -c 
+g++ ./Source/ServerController.cpp -c
+g++ ./Source/Account.cpp -c
+g++ ./Source/File.cpp -c
+g++ ./Source/Conference.cpp -c
+g++ ./Source/Submission.cpp -c
+g++ ./Source/Phase.cpp -c
+g++ ./Source/Database.cpp -c
+g++ ./Source/common.cpp -c
+g++ ./Source/Menu.cpp -c
+g++ ./Source/server_main.cpp -c
+g++ ./Source/Review.cpp -c
+g++ ./Source/Database.cpp -c 
 g++ -o servercontroller server_main.o ServerController.o Menu.o Account.o Submission.o Phase.o File.o Database.o common.o Conference.o Review.o -lsfml-network -lsfml-system -Wall
+rm *.o
