@@ -44,6 +44,7 @@ class Conference : public FileIO
 		void getReviewers(std::vector<std::string>&);
 		void printReviewers();
         void addSubchair(const std::string &);
+        void getSubchairs(std::vector<std::string>&);
         void printSubchairs();
 
 		Conference & operator=(const Conference &);

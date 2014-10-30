@@ -121,6 +121,10 @@ void Conference::getReviewers(std::vector<std::string> &list)
 {
 	list = reviewers;
 }
+void Conference::getSubchairs(std::vector<std::string> &list)
+{
+	list = subchairs;
+}
 
 void Conference::addReviewer(const std::string &aReviewer)
 {
