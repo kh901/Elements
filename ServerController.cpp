@@ -76,11 +76,7 @@ void ServerController::paperSubmission(sf::Packet &packet, sf::TcpSocket &client
 }
 
 void ServerController::run()
-{
-	loadFalseAccounts();
-	//loadFalseSubmissions();
-	loadFalseConferences();
-	
+{	
 	sf::TcpListener listener;
 	
 	if(listener.listen(60000)!= sf::Socket::Done)

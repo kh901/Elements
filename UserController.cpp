@@ -685,9 +685,9 @@ bool UserController::createConference()
 			break;
 			// enter chairman
 			case 3:
-				std::cout << "Enter chairmans name: ";
+				std::cout << "Enter chairman's username: ";
 				getline(std::cin, buffer);
-				Menu::eraseLine(buffer + "Enter chairmans name: ");
+				Menu::eraseLine(buffer + "Enter chairman's username: ");
 				tmpConf.setChairman(buffer);
 				formOptions[3] = "Chairman: " + buffer;
 			break;
@@ -695,10 +695,10 @@ bool UserController::createConference()
 			case 4:
 				do
 				{
-					std::cout << "Enter subchair name: ";
+					std::cout << "Enter subchair username: ";
 					getline(std::cin, buffer);
 					tmpConf.addSubchair(buffer);
-					Menu::eraseLine(buffer + "Enter subchair name: ");
+					Menu::eraseLine(buffer + "Enter subchair username: ");
 				
 					std::cout << "Do you want to add another subchair? (y/n): ";
 					getline(std::cin, buffer);
