@@ -85,7 +85,6 @@ class UserController
         void getConferenceAccess();
         void submitPaper();
         void viewSubmissions();
-        void changeUsername();
         void changePassword();
         void getAdminStatus();
         void logOut();

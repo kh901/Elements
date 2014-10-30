@@ -90,6 +90,7 @@ class ServerController
 		void getFreeReviewers(sf::Packet&, sf::TcpSocket&);
 		void assignReviewer(sf::Packet&, sf::TcpSocket&);
 		bool checkAllFinalised(const std::string&);
+		void changePassword(sf::Packet&, sf::TcpSocket&);
 };
 
 #endif

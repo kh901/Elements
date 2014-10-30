@@ -490,9 +490,23 @@ void ServerController::processClient(sf::Packet &packet, sf::TcpSocket &client)
 	else if (protocol=="ASSIGN_REVIEWER"){
 		assignReviewer(packet, client);
 	}
+	else if (protocol=="CHANGE_PASSWORD"){
+		changePassword(packet, client);
+	}
 	else {
 		std::cout << "Unrecognised protocol" << std::endl;
 	}
+}
+
+void ServerController::changePassword(sf::Packet &packet, sf::TcpSocket &client)
+{
+	std::string username, password;
+	packet >> username >> password;
+	
+	int findIndex = checkAccount(username);
+	
+	data.accounts[findIndex].setPassword(password);
+	data.saveAccounts();
 }
 
 void ServerController::assignReviewer(sf::Packet &packet, sf::TcpSocket &client)
