@@ -226,6 +226,8 @@ void Database::setupFiles()
 	Account admin;
 	admin.setUsername(SYSTEM_ADMIN_DEFAULT_USERNAME);
 	admin.setPassword(SYSTEM_ADMIN_DEFAULT_PASSWORD);
+	admin.setFirstName("CMS");
+	admin.setLastName("Admin");
 	admin.setSystemAdmin();
 	addAccount(admin);
 	log.addLog("Created default admin account.");
