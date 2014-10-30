@@ -228,6 +228,7 @@ void Database::setupFiles()
 	admin.setPassword(SYSTEM_ADMIN_DEFAULT_PASSWORD);
 	admin.setSystemAdmin();
 	addAccount(admin);
+	log.addLog("Created default admin account.");
 	
 	// create the files
 	save();
